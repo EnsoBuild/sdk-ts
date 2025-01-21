@@ -16,7 +16,7 @@
     "prepare": "npm run build"
   },
   "repository": {
-    "url": "https://github.com/Ensobuild/shortcuts-sdk"
+    "url": "https://github.com/ensobuild/sdk-ts"
   },
   "type": "module",
   "exports": {
