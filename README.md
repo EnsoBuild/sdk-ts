@@ -1,7 +1,7 @@
 <div align="center">
 
-![NPM Version](https://img.shields.io/npm/v/%40ensofinance%2Fsdk)
-![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/EnsoBuild)
+[![NPM Version](https://img.shields.io/npm/v/%40ensofinance%2Fsdk)](https://www.npmjs.com/package/@ensofinance/sdk)
+[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/EnsoBuild)](https://x.com/EnsoBuild)
 
 </div>
 
