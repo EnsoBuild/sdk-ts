@@ -126,3 +126,16 @@ export type PriceData = {
   timestamp: number;
   confidence: number; // 0.99 means 99% confidence
 };
+
+export type ProtocolParams = {
+  slug?: string;
+};
+
+export type ProtocolData = {
+  chains: { name: string; id: number }[];
+  name: string | null;
+  description: string | null;
+  slug: string;
+  url: string;
+  logosUri: string[];
+};

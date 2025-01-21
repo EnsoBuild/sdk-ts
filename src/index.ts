@@ -12,6 +12,8 @@ import {
   TokenData,
   PriceData,
   PriceParams,
+  ProtocolParams,
+  ProtocolData,
 } from "./types";
 
 export {
@@ -128,6 +130,17 @@ export class EnsoClient {
     return this.request<PriceData>({
       method: "GET",
       url,
+    });
+  }
+
+  // Method to get protocol data
+  public async getProtocolData(params?: ProtocolParams) {
+    const url = `/protocols`;
+
+    return this.request<ProtocolData[]>({
+      method: "GET",
+      url,
+      params,
     });
   }
 }
