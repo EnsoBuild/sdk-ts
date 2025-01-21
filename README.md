@@ -1,3 +1,9 @@
+<div align="center">
+
+![NPM Version](https://img.shields.io/npm/v/%40ensofinance%2Fsdk)
+![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/EnsoBuild)
+
+</div>
 
 # Enso SDK
 
