@@ -16,15 +16,6 @@ import {
   ProtocolData,
 } from "./types";
 
-export {
-  ApproveParams,
-  ApproveData,
-  RouteParams,
-  RouteData,
-  QuoteData,
-  QuoteParams,
-};
-
 const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
 
 export class EnsoClient {
@@ -144,3 +135,20 @@ export class EnsoClient {
     });
   }
 }
+
+export {
+  ApproveParams,
+  ApproveData,
+  RouteParams,
+  RouteData,
+  QuoteData,
+  QuoteParams,
+  BalanceData,
+  BalanceParams,
+  TokenData,
+  TokenParams,
+  PriceData,
+  PriceParams,
+  ProtocolData,
+  ProtocolParams,
+};

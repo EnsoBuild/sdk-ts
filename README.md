@@ -37,7 +37,7 @@ npm install @ensofinance/sdk
 ### Importing the SDK
 
 ```typescript
-import { EnsoClient, ApproveParams, RouteParams, QuoteParams, BalanceParams } from "@ensofinance/sdk";
+import { EnsoClient } from "@ensofinance/sdk";
 ```
 
 ### Initializing the Client
@@ -102,8 +102,40 @@ Get wallet balances per chain:
 
 ```typescript
 const balances = await ensoClient.getBalances({
-    address: "0xYourAddress",
+    eoaAddress: "0xYourAddress",
     chainId: 1,
+});
+```
+
+#### Get Token Data
+
+Get token data by address:
+
+```typescript
+const tokenData = await ensoClient.getTokenData({
+    address: "0xTokenAddress",
+    chainId: 1,
+});
+```
+
+#### Get Price Data
+
+Get token price data:
+
+```typescript
+const priceData = await ensoClient.getPriceData({
+    chainId: 1,
+    address: "0xTokenAddress",
+});
+```
+
+#### Get Protocol Data
+
+Get protocol data:
+
+```typescript
+const protocolData = await ensoClient.getProtocolData({
+    slug: "protocol-slug",
 });
 ```
 
