@@ -91,7 +91,7 @@ export type BalanceData = {
 };
 
 export type TokenParams = {
-  address: Address;
+  address: Address | Address[];
   includeMetadata?: boolean;
   chainId: number;
 };
