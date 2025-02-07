@@ -3,6 +3,8 @@ export type RoutingStrategy = "router" | "delegate" | "ensowallet";
 // consider importing from shared if more types come
 export type Address = `0x${string}`;
 
+export type MultiAddress = Address | Address[];
+
 export type RouteParams = {
   fromAddress: Address;
   receiver: Address;
@@ -91,7 +93,10 @@ export type BalanceData = {
 };
 
 export type TokenParams = {
-  address: Address | Address[];
+  address?: MultiAddress;
+  underlyingTokens?: MultiAddress;
+  protocolSlug?: string;
+  type?: "defi" | "base";
   includeMetadata?: boolean;
   chainId: number;
 };
