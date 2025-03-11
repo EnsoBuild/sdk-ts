@@ -95,6 +95,9 @@ export type BalanceData = {
 export type TokenParams = {
   address?: MultiAddress;
   underlyingTokens?: MultiAddress;
+  underlyingTokensExact?: MultiAddress;
+  apy?: number;
+  tvl?: number;
   protocolSlug?: string;
   type?: "defi" | "base";
   includeMetadata?: boolean;
@@ -117,6 +120,7 @@ export type TokenData = Token & {
   underlyingTokens: Token[];
   primaryAddress: Address;
   apy: number | null;
+  tvl: number | null;
 };
 
 export type PriceParams = {
