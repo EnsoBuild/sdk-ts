@@ -14,6 +14,10 @@ import {
   PriceParams,
   ProtocolParams,
   ProtocolData,
+  BundleParams,
+  BundleData,
+  BundleAction,
+  BundleActionType,
 } from "./types";
 
 const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
@@ -134,6 +138,22 @@ export class EnsoClient {
       params,
     });
   }
+
+  // Method to construct bundled transaction data
+  public async getBundleData(params: BundleParams, actions: BundleAction[]) {
+    const url = "/shortcuts/bundle";
+
+    if (!params.routingStrategy) {
+      params.routingStrategy = "router";
+    }
+
+    return this.request<BundleData>({
+      method: "POST",
+      url,
+      params,
+      data: actions,
+    });
+  }
 }
 
 export {
@@ -151,4 +171,8 @@ export {
   PriceParams,
   ProtocolData,
   ProtocolParams,
+  BundleParams,
+  BundleData,
+  BundleAction,
+  BundleActionType,
 };

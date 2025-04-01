@@ -148,3 +148,113 @@ export type ProtocolData = {
   url: string;
   logosUri: string[];
 };
+
+type AmountInArgument =
+  | string
+  | {
+      useOutputOfCallAt: number;
+      index?: number;
+    };
+
+export type BundleParams = {
+  chainId: number;
+  fromAddress: Address;
+  routingStrategy?: RoutingStrategy;
+  receiver?: Address;
+  spender?: Address;
+};
+
+export enum BundleActionType {
+  Swap = "swap",
+  Transfer = "transfer",
+  Bridge = "bridge",
+  Deposit = "deposit",
+  DepositCLMM = "depositclmm",
+  Redeem = "redeem",
+  RedeemCLMM = "redeemclmm",
+  Route = "route",
+  Balance = "balance",
+}
+
+export type DepositAction = {
+  action: BundleActionType.Deposit;
+  args: {
+    amountIn: AmountInArgument;
+    tokenIn: Address;
+    tokenOut: Address;
+  };
+};
+
+export type DepositCLMMAction = {
+  action: BundleActionType.DepositCLMM;
+  args: {
+    amountIn: [AmountInArgument, AmountInArgument];
+    tokenIn: [Address, Address];
+    tokenOut: Address;
+    tickLower: string;
+    tickUpper: string;
+  };
+};
+
+export type RouteAction = {
+  protocol: "enso";
+  action: BundleActionType.Route;
+  args: {
+    amountIn: AmountInArgument;
+    tokenIn: Address;
+    tokenOut: Address;
+  };
+};
+
+export type BridgeAction = {
+  action: BundleActionType.Bridge;
+  args: {
+    receiver: Address;
+    primaryAddress: Address;
+    amountIn: AmountInArgument;
+    tokenIn: Address;
+    destinationChainId: number;
+    callback: any[];
+  };
+};
+
+export type BalanceAction = {
+  protocol: "enso";
+  action: BundleActionType.Balance;
+  args: {
+    tokenIn: Address;
+  };
+};
+
+export type TransferAction = {
+  protocol: "enso";
+  action: BundleActionType.Transfer;
+  args: {
+    tokenIn: Address;
+    amountIn: AmountInArgument;
+    receiver?: Address;
+  };
+};
+
+export type BundleAction = {
+  protocol: string;
+} & (
+  | DepositAction
+  | DepositCLMMAction
+  | RouteAction
+  | BridgeAction
+  | BalanceAction
+  | TransferAction
+);
+
+export type BundleData = {
+  bundle: BundleAction[];
+  gas: string;
+  createdAt: number;
+  tx: {
+    data: string;
+    to: Address;
+    from: Address;
+    value: string;
+  };
+};
