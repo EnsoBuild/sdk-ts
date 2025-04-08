@@ -99,6 +99,7 @@ export type TokenParams = {
   apy?: number;
   tvl?: number;
   protocolSlug?: string;
+  project?: string;
   type?: "defi" | "base";
   includeMetadata?: boolean;
   chainId: number;
