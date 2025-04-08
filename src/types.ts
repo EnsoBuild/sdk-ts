@@ -117,6 +117,7 @@ export type Token = {
 
 // put above object into type
 export type TokenData = Token & {
+  project: string;
   protocolSlug: string;
   underlyingTokens: Token[];
   primaryAddress: Address;
@@ -138,6 +139,7 @@ export type PriceData = {
 };
 
 export type ProtocolParams = {
+  chainId: number;
   slug?: string;
 };
 
@@ -201,6 +203,7 @@ export type RouteAction = {
   protocol: "enso";
   action: BundleActionType.Route;
   args: {
+    slippage?: string;
     amountIn: AmountInArgument;
     tokenIn: Address;
     tokenOut: Address;
@@ -252,6 +255,9 @@ export type BundleData = {
   bundle: BundleAction[];
   gas: string;
   createdAt: number;
+  amountsOut: {
+    [address: Address]: string;
+  };
   tx: {
     data: string;
     to: Address;
