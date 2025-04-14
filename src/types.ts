@@ -185,6 +185,7 @@ export type DepositAction = {
     amountIn: AmountInArgument;
     tokenIn: Address;
     tokenOut: Address;
+    primaryAddress: Address;
   };
 };
 
@@ -240,6 +241,18 @@ export type TransferAction = {
   };
 };
 
+export type RedeemAction = {
+  protocol: "enso";
+  action: BundleActionType.Redeem;
+  args: {
+    tokenIn: Address;
+    tokenOut: Address;
+    amountIn: AmountInArgument;
+    receiver?: Address;
+    primaryAddress: Address;
+  };
+};
+
 export type BundleAction = {
   protocol: string;
 } & (
@@ -249,6 +262,7 @@ export type BundleAction = {
   | BridgeAction
   | BalanceAction
   | TransferAction
+  | RedeemAction
 );
 
 export type BundleData = {
