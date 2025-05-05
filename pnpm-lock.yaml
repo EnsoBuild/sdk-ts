@@ -21,6 +21,9 @@ importers:
       axios-mock-adapter:
         specifier: ^2.1.0
         version: 2.1.0(axios@1.7.9)
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@22.15.3)
       prettier:
         specifier: ^3.4.2
         version: 3.4.2
