@@ -5,6 +5,7 @@ import { BundleAction } from "./types/actions";
 
 /**
  * Represents the different routing strategies available for transactions.
+ * {@link https://docs.enso.build/pages/build/reference/routing-strategies}
  */
 export type RoutingStrategy =
   | "router"
@@ -13,6 +14,7 @@ export type RoutingStrategy =
   | "delegate-legacy"
   | "ensowallet";
 
+export type TokenType = "defi" | "base";
 /**
  * Ethereum address format - must be a 42-character hexadecimal string starting with '0x'.
  * @example '0x123456789abcdef123456789abcdef1234567890'
@@ -30,7 +32,10 @@ export type MultiAddress = Address | Address[];
 export type Transaction = {
   /** Raw transaction data in hexadecimal format */
   data: string;
-  /** Recipient address */
+  /** Address of the recipient for the transaction - an [Enso contract](https://docs.enso.build/pages/build/reference/deployments)
+   * determined by the routing strategy you used in the request
+   * @see {@link RoutingStrategy}
+   */
   to: Address;
   /** Sender address */
   from: Address;
@@ -209,7 +214,7 @@ export interface TokenParams {
   /** Chain ID of the network of the token */
   chainId?: number;
   /** Type of token. If not provided, both types will be taken into account */
-  type?: "defi" | "base";
+  type?: TokenType;
   /** Only include tokens with APY over this value */
   apyFrom?: number;
   /** Only include tokens with APY below this value */
@@ -235,7 +240,7 @@ export interface UnderlyingToken {
   /** Chain ID of the network of the token */
   chainId: number;
   /** Type of token */
-  type: string;
+  type: TokenType;
   /** Token decimals */
   decimals: number;
   /** Token symbol */
@@ -299,6 +304,19 @@ export type TokenData = Token & {
   /** The defi position TVL */
   tvl: number | null;
 };
+
+export type PaginatedTokenData = PaginatedResult & {
+  /** Array of token data */
+  data: TokenData[];
+};
+
+/**
+ * Paginated non-tokenized response.
+ */
+export interface PaginatedNonTokenizedPositionData extends PaginatedResult {
+  /** Returned data for current page */
+  data: NonTokenizedPositionData[];
+}
 
 /**
  * Parameters for getting token price data.
@@ -503,7 +521,7 @@ export interface IporShortcutData {
 /**
  * Non-tokenized position data.
  */
-export interface NonTokenizedData {
+export interface NonTokenizedPositionData {
   /** Chain ID of the network of the nontokenized position */
   chainId: number;
   /** The specific standard integration or version of the nontokenized position */
@@ -554,3 +572,31 @@ export interface NetworkParams {
   chainId?: string;
 }
 export type { BundleAction };
+
+/**
+ * Pagination metadata.
+ */
+export interface PaginationMeta {
+  /** Total amount of pages */
+  total: number;
+  /** Last page number */
+  lastPage: number;
+  /** Current page number */
+  currentPage: number;
+  /** Amount of elements per page */
+  perPage: number;
+  /** Previous page */
+  prev: number | null;
+  /** Next page */
+  next: number | null;
+  /** Cursor for pagination */
+  cursor: number;
+}
+
+/**
+ * Base paginated result type.
+ */
+interface PaginatedResult {
+  /** Metadata for pagination */
+  meta: PaginationMeta;
+}
