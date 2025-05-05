@@ -1,7 +1,20 @@
-import { EnsoClient } from "../src";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { Address, BundleAction } from "../src/types";
+import { EnsoClient } from "../src";
+import {
+  ActionData,
+  Address,
+  BundleAction,
+  IporShortcutData,
+  IporShortcutInputData,
+  Network,
+  NetworkParams,
+  PaginatedNonTokenizedPositionData,
+  Project,
+  ProtocolData,
+  StandardData,
+  TokenParams,
+} from "../src/types";
 
 // Mock data fixtures
 const mockRouteData = {
@@ -396,6 +409,401 @@ describe("EnsoClient", () => {
         "0xToken1",
         "0xToken2",
       ]);
+    });
+  });
+
+  describe("getRouteNonTokenized", () => {
+    const params = {
+      fromAddress: "0xFrom" as Address,
+      tokenIn: ["0xTokenIn"] as Address[],
+      positionOut: "0xPositionOut" as Address,
+      amountIn: ["1000000"],
+      receiver: "0xReceiver" as Address,
+    };
+
+    it("should get route for non-tokenized position with default strategy", async () => {
+      mock.onGet("/shortcuts/route/nontokenized").reply(200, mockRouteData);
+
+      const result = await client.getRouteNonTokenized(params);
+
+      expect(result).toEqual(mockRouteData);
+      expect(mock.history.get[0].params.routingStrategy).toBe("delegate");
+    });
+
+    it("should use provided routing strategy", async () => {
+      mock.onGet("/shortcuts/route/nontokenized").reply(200, mockRouteData);
+
+      await client.getRouteNonTokenized({
+        ...params,
+        routingStrategy: "delegate",
+      });
+
+      expect(mock.history.get[0].params.routingStrategy).toBe("delegate");
+    });
+  });
+
+  describe("getIporShortcut", () => {
+    const params = {
+      fromAddress: "0xFrom",
+      chainId: 1,
+    };
+
+    const mockIporData: IporShortcutData = {
+      createdAt: 123456,
+      tx: {
+        data: "0xipor",
+        to: "0xTo" as Address,
+        from: "0xFrom" as Address,
+        value: "0",
+      },
+      logs: ["log1", "log2"],
+      simulationURL: "https://tenderly.co/simulation",
+    };
+
+    const inputData: IporShortcutInputData = {
+      amountIn: "1000000",
+      tokenIn: "0xTokenIn",
+      tokenBToBuy: "0xTokenB",
+      percentageForTokenB: "5000", // 50%
+      slippage: "100", // 1%
+      simulate: true,
+    };
+
+    it("should get IPOR shortcut transaction", async () => {
+      mock.onPost("/shortcuts/static/ipor").reply(200, mockIporData);
+
+      const result = await client.getIporShortcut(params, inputData);
+
+      expect(result).toEqual(mockIporData);
+      expect(mock.history.post[0].data).toBe(JSON.stringify(inputData));
+    });
+
+    it("should handle optional chainId", async () => {
+      mock.onPost("/shortcuts/static/ipor").reply(200, mockIporData);
+
+      await client.getIporShortcut({ fromAddress: "0xFrom" }, inputData);
+
+      expect(mock.history.post[0].params).toEqual({ fromAddress: "0xFrom" });
+    });
+  });
+
+  describe("getStandards", () => {
+    const mockStandards: StandardData[] = [
+      {
+        protocol: { slug: "protocol1", url: "https://protocol1.com" },
+        forks: [],
+        actions: [
+          {
+            action: "swap",
+            name: "Swap",
+            functionNames: ["swap"],
+            supportedChains: [{ id: 1, name: "Ethereum" }],
+            inputs: ["tokenIn", "tokenOut"],
+          },
+        ],
+      },
+    ];
+
+    it("should get all standards", async () => {
+      mock.onGet("/standards").reply(200, mockStandards);
+
+      const result = await client.getStandards();
+
+      expect(result).toEqual(mockStandards);
+    });
+  });
+
+  describe("getStandardBySlug", () => {
+    const mockStandardBySlug: StandardData[] = [
+      {
+        protocol: { slug: "uniswap", url: "https://uniswap.org" },
+        forks: [],
+        actions: [
+          {
+            action: "swap",
+            name: "Swap",
+            functionNames: ["swap"],
+            supportedChains: [{ id: 1, name: "Ethereum" }],
+            inputs: ["tokenIn", "tokenOut"],
+          },
+        ],
+      },
+    ];
+
+    it("should get standard by slug", async () => {
+      mock.onGet("/standards/uniswap").reply(200, mockStandardBySlug);
+
+      const result = await client.getStandardBySlug("uniswap");
+
+      expect(result).toEqual(mockStandardBySlug);
+    });
+  });
+
+  describe("getActions", () => {
+    const mockActions: ActionData[] = [
+      {
+        action: "swap",
+        inputs: { tokenIn: "address", tokenOut: "address" },
+      },
+    ];
+
+    it("should get all actions", async () => {
+      mock.onGet("/actions").reply(200, mockActions);
+
+      const result = await client.getActions();
+
+      expect(result).toEqual(mockActions);
+    });
+  });
+
+  describe("getActionsBySlug", () => {
+    const mockProtocolActions: ActionData[] = [
+      {
+        action: "swap",
+        inputs: { tokenIn: "address", tokenOut: "address" },
+      },
+    ];
+
+    it("should get actions by protocol slug", async () => {
+      mock.onGet("/actions/uniswap").reply(200, mockProtocolActions);
+
+      const result = await client.getActionsBySlug("uniswap");
+
+      expect(result).toEqual(mockProtocolActions);
+    });
+  });
+
+  describe("getNonTokenizedPositions", () => {
+    const mockNonTokenizedPositions: PaginatedNonTokenizedPositionData = {
+      data: [
+        {
+          chainId: 1,
+          protocol: "aave",
+          address: "0xPosition",
+          primaryAddress: "0xPrimary",
+          underlyingTokens: null,
+        },
+      ],
+      meta: {
+        total: 1,
+        lastPage: 1,
+        currentPage: 1,
+        perPage: 1000,
+        prev: null,
+        next: null,
+        cursor: 0,
+      },
+    };
+
+    it("should get non-tokenized positions without params", async () => {
+      mock.onGet("/nontokenized").reply(200, mockNonTokenizedPositions);
+
+      const result = await client.getNonTokenizedPositions();
+
+      expect(result).toEqual(mockNonTokenizedPositions);
+    });
+
+    it("should get non-tokenized positions with params", async () => {
+      mock.onGet("/nontokenized").reply(200, mockNonTokenizedPositions);
+
+      const params: TokenParams = {
+        chainId: 1,
+        page: 1,
+      };
+
+      await client.getNonTokenizedPositions(params);
+
+      expect(mock.history.get[0].params).toEqual(params);
+    });
+  });
+
+  describe("getProjects", () => {
+    const mockProjects: Project[] = [
+      {
+        id: "aave",
+      },
+    ];
+
+    it("should get all projects", async () => {
+      mock.onGet("/projects").reply(200, mockProjects);
+
+      const result = await client.getProjects();
+
+      expect(result).toEqual(mockProjects);
+    });
+  });
+
+  describe("getProtocolsByProject", () => {
+    const mockProtocolsByProject: ProtocolData[] = [
+      {
+        slug: "aave-v2",
+        name: "Aave V2",
+        description: "Aave V2 Protocol",
+        url: "https://aave.com",
+        logosUri: ["https://logo.uri"],
+        chains: [{ id: 1, name: "Ethereum" }],
+      },
+    ];
+
+    it("should get protocols by project", async () => {
+      mock.onGet("/projects/aave/protocols").reply(200, mockProtocolsByProject);
+
+      const result = await client.getProtocolsByProject("aave");
+
+      expect(result).toEqual(mockProtocolsByProject);
+    });
+  });
+
+  describe("getNetworks", () => {
+    const mockNetworks: Network[] = [
+      {
+        id: 1,
+        name: "Ethereum",
+      },
+    ];
+
+    it("should get networks without params", async () => {
+      mock.onGet("/networks").reply(200, mockNetworks);
+
+      const result = await client.getNetworks();
+
+      expect(result).toEqual(mockNetworks);
+    });
+
+    it("should get networks with params", async () => {
+      mock.onGet("/networks").reply(200, mockNetworks);
+
+      const params: NetworkParams = {
+        chainId: "1",
+      };
+
+      await client.getNetworks(params);
+
+      expect(mock.history.get[0].params).toEqual(params);
+    });
+  });
+
+  describe("getAggregators", () => {
+    const mockAggregators = ["uniswap", "sushiswap", "pancakeswap"];
+
+    it("should get all aggregators", async () => {
+      mock.onGet("/aggregators").reply(200, mockAggregators);
+
+      const result = await client.getAggregators();
+
+      expect(result).toEqual(mockAggregators);
+    });
+  });
+
+  describe("getVolume", () => {
+    const mockVolume = {
+      totalUsdVolume: "1000000",
+      totalTransactions: 5000,
+    };
+
+    it("should get volume for specific chain", async () => {
+      mock.onGet("/volume/1").reply(200, mockVolume);
+
+      const result = await client.getVolume(1);
+
+      expect(result).toEqual(mockVolume);
+    });
+  });
+
+  describe("Error Handling - Additional Methods", () => {
+    it("should handle error in getStandards", async () => {
+      mock.onGet("/standards").reply(500, { error: "Server Error" });
+
+      await expect(client.getStandards()).rejects.toThrow("API Request failed");
+    });
+
+    it("should handle error in getStandardBySlug", async () => {
+      mock.onGet("/standards/uniswap").reply(404, { error: "Not Found" });
+
+      await expect(client.getStandardBySlug("uniswap")).rejects.toThrow(
+        "API Request failed",
+      );
+    });
+
+    it("should handle error in getActions", async () => {
+      mock.onGet("/actions").reply(500, { error: "Server Error" });
+
+      await expect(client.getActions()).rejects.toThrow("API Request failed");
+    });
+
+    it("should handle error in getNonTokenizedPositions", async () => {
+      mock.onGet("/nontokenized").reply(500, { error: "Server Error" });
+
+      await expect(client.getNonTokenizedPositions()).rejects.toThrow(
+        "API Request failed",
+      );
+    });
+
+    it("should handle error in getIporShortcut", async () => {
+      mock
+        .onPost("/shortcuts/static/ipor")
+        .reply(400, { error: "Bad Request" });
+
+      await expect(
+        client.getIporShortcut(
+          { fromAddress: "0xFrom" },
+          {
+            amountIn: "1000000",
+            tokenIn: "0xToken",
+            tokenBToBuy: "0xTokenB",
+            percentageForTokenB: "5000",
+          },
+        ),
+      ).rejects.toThrow("API Request failed");
+    });
+  });
+
+  describe("Integration Tests - Complex Workflows", () => {
+    it("should handle token to non-tokenized position workflow", async () => {
+      // 1. Get token data
+      mock.onGet("/tokens").reply(200, {
+        data: [{ address: "0xToken", chainId: 1, type: "base", decimals: 18 }],
+        meta: {
+          total: 1,
+          lastPage: 1,
+          currentPage: 1,
+          perPage: 1000,
+          prev: null,
+          next: null,
+          cursor: 0,
+        },
+      });
+
+      // 2. Get price data
+      mock.onGet("/prices/1/0xToken").reply(200, {
+        price: "3600",
+        decimals: 18,
+        symbol: "WETH",
+        timestamp: 1699999999,
+        confidence: 0.99,
+        chainId: 1,
+      });
+
+      // 3. Get non-tokenized route
+      mock.onGet("/shortcuts/route/nontokenized").reply(200, mockRouteData);
+
+      // Execute workflow
+      const tokens = await client.getTokenData({ chainId: 1 });
+      const price = await client.getPriceData({
+        chainId: 1,
+        address: "0xToken",
+      });
+      const route = await client.getRouteNonTokenized({
+        fromAddress: "0xFrom",
+        tokenIn: ["0xToken"],
+        positionOut: "0xPositionOut",
+        amountIn: ["1000000"],
+        receiver: "0xReceiver",
+      });
+
+      expect(tokens).toBeDefined();
+      expect(price).toBeDefined();
+      expect(route).toBeDefined();
     });
   });
 });
