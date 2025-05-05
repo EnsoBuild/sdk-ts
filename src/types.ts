@@ -1,7 +1,6 @@
 /**
  * @fileoverview Type definitions for the Enso Finance API SDK
  */
-
 import { BundleAction } from "./types/actions";
 
 /**
@@ -554,5 +553,4 @@ export interface NetworkParams {
   /** Chain ID of the network to search for */
   chainId?: string;
 }
-
-export { BundleAction };
+export type { BundleAction };

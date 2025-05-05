@@ -8,10 +8,12 @@ const server = setupServer(
   // Route endpoints
   http.get("https://api.enso.finance/api/v1/shortcuts/route", ({ request }) => {
     const url = new URL(request.url);
-    const params = Object.fromEntries(url.searchParams);
-
+    const fromAddress = url.searchParams.get("fromAddress");
+    const tokenIn = url.searchParams.get("tokenIn[]");
+    const tokenOut = url.searchParams.get("tokenOut[]");
+    
     // Validate required params
-    if (!params.fromAddress || !params.tokenIn || !params.tokenOut) {
+    if (!fromAddress || !tokenIn || !tokenOut) {
       return new HttpResponse(null, { status: 400 });
     }
 
@@ -24,7 +26,7 @@ const server = setupServer(
       tx: {
         data: "0x123",
         to: "0xTo",
-        from: params.fromAddress,
+        from: fromAddress,
         value: "0",
       },
       feeAmount: [],
@@ -34,21 +36,23 @@ const server = setupServer(
   // Approval endpoint
   http.get("https://api.enso.finance/api/v1/wallet/approve", ({ request }) => {
     const url = new URL(request.url);
-    const params = Object.fromEntries(url.searchParams);
+    const fromAddress = url.searchParams.get("fromAddress");
+    const tokenAddress = url.searchParams.get("tokenAddress");
+    const amount = url.searchParams.get("amount");
 
-    if (!params.fromAddress || !params.tokenAddress || !params.amount) {
+    if (!fromAddress || !tokenAddress || !amount) {
       return new HttpResponse(null, { status: 400 });
     }
 
     return HttpResponse.json({
-      amount: params.amount,
+      amount: amount,
       gas: "50000",
       spender: "0xSpender",
-      token: params.tokenAddress,
+      token: tokenAddress,
       tx: {
         data: "0xapprove",
-        to: params.tokenAddress,
-        from: params.fromAddress,
+        to: tokenAddress,
+        from: fromAddress,
         value: "0",
       },
     });
@@ -59,10 +63,10 @@ const server = setupServer(
     "https://api.enso.finance/api/v1/shortcuts/bundle",
     async ({ request }) => {
       const url = new URL(request.url);
-      const params = Object.fromEntries(url.searchParams);
       const body = await request.json();
+      const fromAddress = url.searchParams.get("fromAddress");
 
-      if (!params.fromAddress || !body || !Array.isArray(body)) {
+      if (!fromAddress || !body || !Array.isArray(body)) {
         return new HttpResponse(null, { status: 400 });
       }
 
@@ -73,7 +77,7 @@ const server = setupServer(
         tx: {
           data: "0xbundle",
           to: "0xBundleAddress",
-          from: params.fromAddress,
+          from: fromAddress,
           value: "0",
         },
       });
@@ -141,6 +145,7 @@ describe("EnsoClient Integration Tests", () => {
           tokenIn: "0xToken1" as Address,
           tokenOut: "0xToken2" as Address,
           primaryAddress: "0xPrimary" as Address,
+          receiver: "0xReceiver" as Address,
           amountIn: "1000000",
           slippage: "300",
         },

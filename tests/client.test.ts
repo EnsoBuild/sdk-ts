@@ -1,7 +1,7 @@
 import { EnsoClient } from "../src";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { Address } from "../src/types";
+import { Address, BundleAction } from "../src/types";
 
 // Mock data fixtures
 const mockRouteData = {
@@ -250,13 +250,13 @@ describe("EnsoClient", () => {
       fromAddress: "0xFrom" as Address,
     };
 
-    const bundleActions = [
+    const bundleActions: BundleAction[] = [
       {
         protocol: "enso",
         action: "route",
         args: {
-          tokenIn: "0xTokenIn",
-          tokenOut: "0xTokenOut",
+          tokenIn: "0xTokenIn" as Address,
+          tokenOut: "0xTokenOut" as Address,
           amountIn: "1000000",
         },
       },
