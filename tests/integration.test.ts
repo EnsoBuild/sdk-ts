@@ -99,7 +99,7 @@ describe("EnsoClient Integration Tests", () => {
     const fromAddress = "0x123456789abcdef123456789abcdef1234567890";
     const tokenIn = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USDC
     const tokenOut = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
-    const amount = "1000000000"; // 1000 USDC
+    const amount = 1000000000; // 1000 USDC
 
     // Step 1: Get approval
     const approval = await client.getApprovalData({
@@ -118,15 +118,16 @@ describe("EnsoClient Integration Tests", () => {
       receiver: fromAddress,
       spender: approval.spender,
       chainId: 1,
-      amountIn: [amount],
+      amountIn: [amount.toString()],
       tokenIn: [tokenIn],
       tokenOut: [tokenOut],
       slippage: 300, // 3%
+      routingStrategy: "delegate",
     });
 
     expect(route.amountOut).toBeDefined();
     expect(route.tx.data).toBeDefined();
-    expect(parseFloat(route.amountOut)).toBeGreaterThan(0);
+    expect(parseFloat(route.amountOut.toString())).toBeGreaterThan(0);
   });
 
   it("should handle bundle transactions correctly", async () => {
@@ -194,7 +195,7 @@ describe("EnsoClient Integration Tests", () => {
         fromAddress: "0x123",
         tokenAddress: "0x456",
         chainId: 1,
-        amount: "1000",
+        amount: 1000,
       }),
     ).rejects.toThrow("API Request failed");
   });

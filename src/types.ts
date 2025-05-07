@@ -1,3 +1,5 @@
+// src/types.ts - Updated types to match OpenAPI specification
+
 /**
  * @fileoverview Type definitions for the Enso Finance API SDK
  */
@@ -8,11 +10,11 @@ import { BundleAction } from "./types/actions";
  * {@link https://docs.enso.build/pages/build/reference/routing-strategies}
  */
 export type RoutingStrategy =
+  | "ensowallet"
   | "router"
   | "delegate"
   | "router-legacy"
-  | "delegate-legacy"
-  | "ensowallet";
+  | "delegate-legacy";
 
 export type TokenType = "defi" | "base";
 /**
@@ -50,11 +52,11 @@ export type RouteParams = {
   /** Ethereum address of the wallet to send the transaction from */
   fromAddress: Address;
   /** Ethereum address of the receiver of the tokenOut */
-  receiver: Address;
+  receiver?: Address;
   /** Ethereum address of the spender of the tokenIn */
-  spender: Address;
+  spender?: Address;
   /** Chain ID of the network to execute the transaction on */
-  chainId: number;
+  chainId?: number;
   /** Amount of tokenIn to swap in wei */
   amountIn: string[];
   /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
@@ -75,6 +77,46 @@ export type RouteParams = {
   ignoreAggregators?: string[];
   /** A list of standards to be ignored from consideration */
   ignoreStandards?: string[];
+  /** Flag that indicates if gained tokenOut should be sent to EOA (deprecated) */
+  toEoa?: boolean;
+};
+
+/**
+ * Parameters for posting route data between two tokens.
+ */
+export type RouteShortcutVariableInputs = {
+  /** Chain ID of the network to execute the transaction on */
+  chainId?: number;
+  /** Ethereum address of the wallet to send the transaction from */
+  fromAddress: Address;
+  /** Routing strategy to use */
+  routingStrategy?: RoutingStrategy;
+  /** Ethereum address of the token to swap from. For ETH, use 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee */
+  tokenIn: Address[];
+  /** Ethereum address of the token to swap to. For ETH, use 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee */
+  tokenOut: Address[];
+  /** Flag that indicates if gained tokenOut should be sent to EOA (deprecated) */
+  toEoa?: boolean;
+  /** Ethereum address of the receiver of the tokenOut */
+  receiver?: Address;
+  /** Ethereum address of the spender of the tokenIn */
+  spender?: Address;
+  /** Amount of tokenIn to swap in wei */
+  amountIn: string[];
+  /** Minimum amount out in wei. If specified, slippage should not be specified */
+  minAmountOut?: string[];
+  /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
+  slippage?: string;
+  /** Fee in basis points (1/10000) for each amountIn value. Must be in range 0-100 */
+  fee?: string[];
+  /** The Ethereum address that will receive the collected fee. Required if fee is provided */
+  feeReceiver?: Address;
+  /** A list of swap aggregators to be ignored from consideration */
+  ignoreAggregators?: string[];
+  /** A list of standards to be ignored from consideration */
+  ignoreStandards?: string[];
+  /** Variable estimates for the transaction */
+  variableEstimates: object | null;
 };
 
 /**
@@ -115,6 +157,8 @@ export type Hop = {
   primary: string;
   /** Internal routes used in this hop */
   internalRoutes: string[];
+  /** Arguments for this hop */
+  args: object;
 };
 
 /**
@@ -122,13 +166,13 @@ export type Hop = {
  */
 export type RouteData = {
   /** Array of segments representing the calculated route */
-  route: RouteSegment[];
-  /** Estimated gas used by the transaction. Increase by 50% as a buffer */
+  route: Hop[];
+  /** Estimated gas used by the transaction */
   gas: string;
   /** Estimated amount received */
-  amountOut: string;
+  amountOut: number;
   /** Price impact in basis points, null if USD price not found */
-  priceImpact: string | null;
+  priceImpact: number | null;
   /** Block number the transaction was created on */
   createdAt: number;
   /** The tx object to use in ethers */
@@ -146,9 +190,9 @@ export type ApproveParams = {
   /** ERC20 token address of the token to approve */
   tokenAddress: Address;
   /** Chain ID of the network to execute the transaction on */
-  chainId: number;
+  chainId?: number;
   /** Amount of tokens to approve in wei */
-  amount: string;
+  amount: number;
   /** Routing strategy to use. Use the same routing strategy you used to create the transaction */
   routingStrategy?: RoutingStrategy;
 };
@@ -188,7 +232,7 @@ export type WalletBalance = {
  */
 export type BalanceParams = {
   /** Chain ID of the network to execute the transaction on */
-  chainId: number;
+  chainId?: number;
   /** Address of the eoa with which to associate the ensoWallet for balances */
   eoaAddress: Address;
   /** If true returns balances for the provided eoaAddress, instead of the associated ensoWallet */
@@ -229,6 +273,10 @@ export interface TokenParams {
   cursor?: number;
   /** Whether to include token metadata (symbol, name and logos) */
   includeMetadata?: boolean;
+  /** Names of the tokens */
+  name?: string[];
+  /** Symbols of the tokens */
+  symbol?: string[];
 }
 
 /**
@@ -329,19 +377,29 @@ export type PriceParams = {
 };
 
 /**
+ * Parameters for getting multiple token prices.
+ */
+export type MultiPriceParams = {
+  /** Chain ID of the network to search for */
+  chainId: number;
+  /** Addresses of tokens to check prices for */
+  addresses: Address[];
+};
+
+/**
  * Token price data response.
  */
 export type PriceData = {
   /** Token price in USD */
-  price: string;
+  price: number;
+  /** Token address */
+  address: string;
   /** Token decimals */
   decimals: number;
   /** Token symbol */
   symbol: string;
   /** Unix timestamp of the price */
   timestamp: number;
-  /** Confidence level of the price (0-1) */
-  confidence: number;
   /** Chain ID of the token */
   chainId: number;
 };
@@ -351,7 +409,7 @@ export type PriceData = {
  */
 export type ProtocolParams = {
   /** Chain ID of the network to search for */
-  chainId: number;
+  chainId?: number | string;
   /** Slug of the project to search for */
   slug?: string;
 };
@@ -360,18 +418,20 @@ export type ProtocolParams = {
  * Protocol information.
  */
 export type ProtocolData = {
-  /** Supported chains for this protocol */
-  chains: { name: string; id: number }[];
+  /** Protocol project (category) */
+  project: string;
+  /** Protocol slug identifier */
+  slug: string;
   /** Protocol name */
   name: string | null;
   /** Protocol description */
   description: string | null;
-  /** Protocol slug identifier */
-  slug: string;
   /** Protocol website URL */
-  url: string;
+  url: string | null;
   /** Protocol logo URIs */
-  logosUri: string[];
+  logosUri: string[] | null;
+  /** Supported chains for this protocol */
+  chains: Network[] | null;
 };
 
 /**
@@ -391,7 +451,7 @@ export type AmountInArgument =
  */
 export type BundleParams = {
   /** Chain ID of the network to execute the transaction on */
-  chainId: number;
+  chainId?: number;
   /** Ethereum address of the wallet to send the transaction from */
   fromAddress: Address;
   /** Routing strategy to use */
@@ -400,6 +460,8 @@ export type BundleParams = {
   receiver?: Address;
   /** Ethereum address of the spender of the tokenIn */
   spender?: Address;
+  /** A list of swap aggregators to be ignored from consideration */
+  ignoreAggregators?: string[];
 };
 
 /**
@@ -414,6 +476,8 @@ export type BundleData = {
   createdAt: number;
   /** The tx object to use in ethers */
   tx: Transaction;
+  /** Amounts out for each action */
+  amountsOut: Record<string, any>;
 };
 
 /**
@@ -427,11 +491,27 @@ export interface Network {
 }
 
 /**
+ * Connected network information.
+ */
+export interface ConnectedNetwork {
+  /** Network ID */
+  id: number;
+  /** Network name */
+  name: string;
+  /** Whether the network is connected */
+  isConnected: boolean;
+}
+
+/**
  * Project information.
  */
 export interface Project {
   /** Project identifier */
   id: string;
+  /** Supported chains for the project */
+  chains: number[];
+  /** Protocols supported in the project */
+  protocols: string[];
 }
 
 /**
@@ -535,6 +615,26 @@ export interface NonTokenizedPositionData {
 }
 
 /**
+ * Parameters for querying non-tokenized positions.
+ */
+export interface NonTokenizedParams {
+  /** The overarching project or platform associated with the DeFi position */
+  project?: string;
+  /** The specific standard integration or version of the DeFi project */
+  protocolSlug?: string;
+  /** Chain ID of the network of the nontokenized position */
+  chainId?: number;
+  /** Ethereum addresses of the nontokenized positions */
+  address?: string[];
+  /** Ethereum addresses for contract interaction of nontokenized position */
+  primaryAddress?: string[];
+  /** Pagination page number. Pages are of length 1000 */
+  page?: number;
+  /** Cursor for pagination. Pages are of length 1000 */
+  cursor?: number;
+}
+
+/**
  * Parameters for routing to non-tokenized position.
  */
 export interface RouteNonTokenizedParams {
@@ -543,7 +643,7 @@ export interface RouteNonTokenizedParams {
   /** Ethereum address of the wallet to send the transaction from */
   fromAddress: string;
   /** Routing strategy to use (must be 'delegate') */
-  routingStrategy?: "delegate";
+  routingStrategy?: "delegate" | "delegate-legacy";
   /** Input tokens */
   tokenIn: string[];
   /** Non-tokenized position to receive */
@@ -571,6 +671,15 @@ export interface NetworkParams {
   /** Chain ID of the network to search for */
   chainId?: string;
 }
+
+/**
+ * Parameters for volume query.
+ */
+export interface VolumeParams {
+  /** Chain ID of the network to search for */
+  chainId: number;
+}
+
 export type { BundleAction };
 
 /**
@@ -599,4 +708,25 @@ export interface PaginationMeta {
 interface PaginatedResult {
   /** Metadata for pagination */
   meta: PaginationMeta;
+}
+
+/**
+ * Parameters for simple path.
+ */
+export interface SimplePath {
+  /** Amount of tokenIn to swap in wei */
+  amountIn: string;
+  /** Ordered array of steps to build */
+  path: {
+    /** Input token */
+    tokenIn: string;
+    /** Output token */
+    tokenOut: string;
+    /** Protocol to use */
+    protocol: string;
+    /** Action to perform */
+    action: string;
+    /** Primary contract address */
+    primary: string;
+  }[];
 }

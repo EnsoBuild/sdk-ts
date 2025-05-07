@@ -1,3 +1,5 @@
+// src/index.ts - Client implementation updates to match OpenAPI specification
+
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import {
   Address,
@@ -11,6 +13,7 @@ import {
   TokenData,
   PriceData,
   PriceParams,
+  MultiPriceParams,
   ProtocolParams,
   ProtocolData,
   BundleParams,
@@ -23,11 +26,15 @@ import {
   ActionData,
   NonTokenizedPositionData,
   Network,
+  ConnectedNetwork,
   Project,
   RouteNonTokenizedParams,
   NetworkParams,
   PaginatedTokenData,
   PaginatedNonTokenizedPositionData,
+  NonTokenizedParams,
+  VolumeParams,
+  RouteShortcutVariableInputs,
 } from "./types";
 
 const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
@@ -106,10 +113,6 @@ export class EnsoClient {
   public async getApprovalData(params: ApproveParams) {
     const url = "/wallet/approve";
 
-    if (!params.routingStrategy) {
-      params.routingStrategy = "router";
-    }
-
     return this.request<ApproveData>({
       url,
       method: "GET",
@@ -136,20 +139,53 @@ export class EnsoClient {
    *   amountIn: ['1000000000'],
    *   tokenIn: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'], // USDC
    *   tokenOut: ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'], // WETH
-   *   slippage: 300 // 3%
+   *   slippage: '50' // 0.5%
    * });
    */
   public async getRouteData(params: RouteParams) {
     const url = "/shortcuts/route";
 
-    if (!params.routingStrategy) {
-      params.routingStrategy = "router";
-    }
-
     return this.request<RouteData>({
       method: "GET",
       url,
       params,
+    });
+  }
+
+  /**
+   * Posts execution data for the best route from a token to another.
+   *
+   * Calculates optimal transaction with the best route between two tokens, which may involve
+   * several actions that interact with various DeFi protocols.
+   *
+   * @param {RouteShortcutVariableInputs} data - Data for the route request
+   * @returns {Promise<RouteData>} Route execution data
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const route = await client.postRouteData({
+   *   fromAddress: '0x123...',
+   *   receiver: '0x456...',
+   *   spender: '0x789...',
+   *   chainId: 1,
+   *   amountIn: ['1000000000'],
+   *   tokenIn: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'], // USDC
+   *   tokenOut: ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'], // WETH
+   *   slippage: '50', // 0.5%
+   *   variableEstimates: null
+   * });
+   */
+  public async postRouteData(data: RouteShortcutVariableInputs) {
+    const url = "/shortcuts/route";
+
+    if (!data.routingStrategy) {
+      data.routingStrategy = "router";
+    }
+
+    return this.request<RouteData>({
+      method: "POST",
+      url,
+      data,
     });
   }
 
@@ -190,7 +226,7 @@ export class EnsoClient {
    * Returns tokens and their details with pagination.
    *
    * @param {TokenParams} params - Parameters for the token query
-   * @returns {Promise<{ data: TokenData[] }>} Paginated token data
+   * @returns {Promise<PaginatedTokenData>} Paginated token data
    * @throws {Error} If the API request fails
    *
    * @example
@@ -238,6 +274,34 @@ export class EnsoClient {
   }
 
   /**
+   * Gets price data for multiple tokens.
+   *
+   * Returns prices for multiple tokens for the given chainId.
+   *
+   * @param {MultiPriceParams} params - Parameters for the multiple price query
+   * @returns {Promise<PriceData[]>} Array of token price data
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const prices = await client.getMultiplePriceData({
+   *   chainId: 1,
+   *   addresses: [
+   *     '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
+   *     '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'  // USDC
+   *   ]
+   * });
+   */
+  public async getMultiplePriceData(params: MultiPriceParams) {
+    const url = `/prices/${params.chainId}`;
+
+    return this.request<PriceData[]>({
+      method: "GET",
+      url,
+      params: { addresses: params.addresses },
+    });
+  }
+
+  /**
    * Gets protocol data.
    *
    * Returns all available protocols with supported chains.
@@ -278,12 +342,13 @@ export class EnsoClient {
    *   },
    *   [
    *     {
-   *       protocol: 'enso',
+   *       protocol: ['enso'],
    *       action: 'route',
    *       args: {
    *         tokenIn: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
    *         tokenOut: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-   *         amountIn: '1000000000'
+   *         amountIn: '1000000000',
+   *         receiver: '0x123...'
    *       }
    *     }
    *   ]
@@ -291,10 +356,6 @@ export class EnsoClient {
    */
   public async getBundleData(params: BundleParams, actions: BundleAction[]) {
     const url = "/shortcuts/bundle";
-
-    if (!params.routingStrategy) {
-      params.routingStrategy = "router";
-    }
 
     return this.request<BundleData>({
       method: "POST",
@@ -320,15 +381,12 @@ export class EnsoClient {
    *   tokenIn: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'],
    *   positionOut: '0xPositionAddress',
    *   amountIn: ['1000000000'],
-   *   receiver: '0x123...'
+   *   receiver: '0x123...',
+   *   slippage: '50' // 0.5%
    * });
    */
   public async getRouteNonTokenized(params: RouteNonTokenizedParams) {
     const url = "/shortcuts/route/nontokenized";
-
-    if (!params.routingStrategy) {
-      params.routingStrategy = "delegate";
-    }
 
     return this.request<RouteData>({
       method: "GET",
@@ -354,6 +412,11 @@ export class EnsoClient {
     data: IporShortcutInputData,
   ) {
     const url = "/shortcuts/static/ipor";
+
+    // Set default slippage if not provided
+    if (data.slippage === undefined) {
+      data.slippage = "300";
+    }
 
     return this.request<IporShortcutData>({
       method: "POST",
@@ -436,11 +499,11 @@ export class EnsoClient {
    *
    * Returns a list of all nontokenized positions with details.
    *
-   * @param {TokenParams} [params] - Optional parameters for filtering
-   * @returns {Promise<{ data: NonTokenizedPositionData[] }>} Paginated non-tokenized position data
+   * @param {NonTokenizedParams} [params] - Optional parameters for filtering
+   * @returns {Promise<PaginatedNonTokenizedPositionData>} Paginated non-tokenized position data
    * @throws {Error} If the API request fails
    */
-  public async getNonTokenizedPositions(params?: TokenParams) {
+  public async getNonTokenizedPositions(params?: NonTokenizedParams) {
     const url = "/nontokenized";
 
     return this.request<PaginatedNonTokenizedPositionData>({
@@ -491,13 +554,13 @@ export class EnsoClient {
    * Returns networks supported by Enso.
    *
    * @param {NetworkParams} [params] - Optional parameters for filtering networks
-   * @returns {Promise<Network[]>} Array of network data
+   * @returns {Promise<ConnectedNetwork[]>} Array of network data
    * @throws {Error} If the API request fails
    */
   public async getNetworks(params?: NetworkParams) {
     const url = "/networks";
 
-    return this.request<Network[]>({
+    return this.request<ConnectedNetwork[]>({
       method: "GET",
       url,
       params,
@@ -509,15 +572,18 @@ export class EnsoClient {
    *
    * Fetches aggregators supported by Enso.
    *
+   * @param {number} [chainId] - Chain ID to filter aggregators for
    * @returns {Promise<string[]>} Array of aggregator names
    * @throws {Error} If the API request fails
    */
-  public async getAggregators() {
+  public async getAggregators(chainId?: number) {
     const url = "/aggregators";
+    const params = chainId ? { chainId } : undefined;
 
     return this.request<string[]>({
       method: "GET",
       url,
+      params,
     });
   }
 
@@ -552,6 +618,7 @@ export {
   TokenParams,
   PriceData,
   PriceParams,
+  MultiPriceParams,
   ProtocolData,
   ProtocolParams,
   BundleParams,
@@ -562,7 +629,9 @@ export {
   StandardData,
   StandardAction,
   ActionData,
-  NonTokenizedPositionData as NonTokenizedData,
+  NonTokenizedPositionData,
   Network,
+  ConnectedNetwork,
   Project,
+  RouteShortcutVariableInputs,
 };

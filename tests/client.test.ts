@@ -4,14 +4,19 @@ import { EnsoClient } from "../src";
 import {
   ActionData,
   Address,
+  ApproveParams,
   BundleAction,
   IporShortcutData,
   IporShortcutInputData,
   Network,
   NetworkParams,
+  NonTokenizedParams,
   PaginatedNonTokenizedPositionData,
   Project,
   ProtocolData,
+  RouteData,
+  RouteNonTokenizedParams,
+  RouteParams,
   StandardData,
   TokenParams,
 } from "../src/types";
@@ -89,11 +94,12 @@ describe("EnsoClient", () => {
   });
 
   describe("getApprovalData", () => {
-    const approveParams = {
+    const approveParams: ApproveParams = {
       fromAddress: "0xFrom" as Address,
       tokenAddress: "0xToken" as Address,
       chainId: 1,
-      amount: "1000000",
+      amount: 1000000,
+      routingStrategy: "router",
     };
 
     it("should call the correct endpoint with correct params", async () => {
@@ -102,10 +108,7 @@ describe("EnsoClient", () => {
       const result = await client.getApprovalData(approveParams);
 
       expect(mock.history.get[0].url).toBe("/wallet/approve");
-      expect(mock.history.get[0].params).toEqual({
-        ...approveParams,
-        routingStrategy: "router",
-      });
+      expect(mock.history.get[0].params).toEqual(approveParams);
       expect(result).toEqual(mockApproveData);
     });
 
@@ -130,7 +133,7 @@ describe("EnsoClient", () => {
   });
 
   describe("getRouteData", () => {
-    const routeParams = {
+    const routeParams: RouteParams = {
       fromAddress: "0xFrom" as Address,
       receiver: "0xReceiver" as Address,
       spender: "0xSpender" as Address,
@@ -301,7 +304,7 @@ describe("EnsoClient", () => {
 
       await client.getBundleData(bundleParams, bundleActions);
 
-      expect(mock.history.post[0].params.routingStrategy).toBe("router");
+      expect(mock.history.post[0].params.routingStrategy).toBeUndefined()
     });
   });
 
@@ -321,7 +324,7 @@ describe("EnsoClient", () => {
         fromAddress: "0xFrom",
         tokenAddress: "0xToken",
         chainId: 1,
-        amount: "1000000",
+        amount: 1000000,
       });
 
       const route = await client.getRouteData({
@@ -354,7 +357,7 @@ describe("EnsoClient", () => {
           fromAddress: "0xFrom",
           tokenAddress: "0xToken",
           chainId: 1,
-          amount: "1000000",
+          amount: 1000000,
         }),
       ).rejects.toThrow();
     });
@@ -367,7 +370,7 @@ describe("EnsoClient", () => {
           fromAddress: "0xFrom",
           tokenAddress: "0xToken",
           chainId: 1,
-          amount: "1000000",
+          amount: 1000000,
         }),
       ).rejects.toThrow();
     });
@@ -375,7 +378,7 @@ describe("EnsoClient", () => {
 
   describe("Edge Cases", () => {
     it("should handle large numbers correctly", async () => {
-      const largeAmount = "1000000000000000000000000";
+      const largeAmount = 1000000000000000000000000;
       const approveParams = {
         fromAddress: "0xFrom" as Address,
         tokenAddress: "0xToken" as Address,
@@ -413,12 +416,13 @@ describe("EnsoClient", () => {
   });
 
   describe("getRouteNonTokenized", () => {
-    const params = {
+    const params: RouteNonTokenizedParams = {
       fromAddress: "0xFrom" as Address,
       tokenIn: ["0xTokenIn"] as Address[],
       positionOut: "0xPositionOut" as Address,
       amountIn: ["1000000"],
       receiver: "0xReceiver" as Address,
+      routingStrategy: "delegate",
     };
 
     it("should get route for non-tokenized position with default strategy", async () => {
@@ -606,7 +610,7 @@ describe("EnsoClient", () => {
     it("should get non-tokenized positions with params", async () => {
       mock.onGet("/nontokenized").reply(200, mockNonTokenizedPositions);
 
-      const params: TokenParams = {
+      const params: NonTokenizedParams = {
         chainId: 1,
         page: 1,
       };
@@ -620,7 +624,14 @@ describe("EnsoClient", () => {
   describe("getProjects", () => {
     const mockProjects: Project[] = [
       {
+        id: "bex",
+        chains: [80094],
+        protocols: ["bex", "bex-vaults"],
+      },
+      {
         id: "aave",
+        chains: [1, 137, 42161, 10, 56, 8453, 43114, 324, 146, 100],
+        protocols: ["aave-v3", "aave-static-atokens", "aave-v2"],
       },
     ];
 
@@ -636,12 +647,54 @@ describe("EnsoClient", () => {
   describe("getProtocolsByProject", () => {
     const mockProtocolsByProject: ProtocolData[] = [
       {
+        project: "aave",
+        slug: "aave-v3",
+        name: "Aave v3",
+        description: "",
+        url: "https://www.aave.org/",
+        logosUri: ["https://icons.llama.fi/aave-v3.png"],
+        chains: [
+          { id: 1, name: "mainnet" },
+          { id: 137, name: "polygon" },
+          { id: 42161, name: "arbitrum" },
+          { id: 10, name: "optimism" },
+          { id: 56, name: "binance" },
+          { id: 8453, name: "base" },
+          { id: 43114, name: "avalanche" },
+          { id: 324, name: "zksync" },
+          { id: 146, name: "sonic" },
+        ],
+      },
+      {
+        project: "aave",
+        slug: "aave-static-atokens",
+        name: "Aave Static Atokens",
+        description: "",
+        url: "https://www.aave.org/",
+        logosUri: ["https://icons.llama.fi/aave-v2.png"],
+        chains: [
+          { id: 1, name: "mainnet" },
+          { id: 137, name: "polygon" },
+          { id: 42161, name: "arbitrum" },
+          { id: 10, name: "optimism" },
+          { id: 56, name: "binance" },
+          { id: 8453, name: "base" },
+          { id: 43114, name: "avalanche" },
+          { id: 100, name: "gnosis" },
+          { id: 324, name: "zksync" },
+        ],
+      },
+      {
+        project: "aave",
         slug: "aave-v2",
-        name: "Aave V2",
-        description: "Aave V2 Protocol",
-        url: "https://aave.com",
-        logosUri: ["https://logo.uri"],
-        chains: [{ id: 1, name: "Ethereum" }],
+        name: "Aave v2",
+        description: "",
+        url: "https://www.aave.org/",
+        logosUri: ["https://icons.llama.fi/aave-v2.png"],
+        chains: [
+          { id: 1, name: "mainnet" },
+          { id: 137, name: "polygon" },
+        ],
       },
     ];
 

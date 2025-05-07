@@ -1,3 +1,5 @@
+// src/types/actions.ts - Updated types to match OpenAPI specification
+
 import { Address, AmountInArgument } from "../types";
 
 /**
@@ -70,7 +72,7 @@ export type BorrowAction = {
   /** Action arguments */
   args: {
     /** Collateral token address */
-    collateral: Address;
+    collateral: Address | Address[];
     /** Token to borrow */
     tokenOut: Address;
     /** Amount to borrow */
@@ -96,6 +98,7 @@ export type HarvestAction = {
     primaryAddress: Address;
   };
 };
+
 /**
  * Repay a loan to a lending protocol.
  */
@@ -142,6 +145,8 @@ export type CallAction = {
 export type SplitAction = {
   /** Action type */
   action: "split";
+  /** Protocol to interact with */
+  protocol: string;
   /** Action arguments */
   args: Record<string, any>;
 };
@@ -152,6 +157,8 @@ export type SplitAction = {
 export type MergeAction = {
   /** Action type */
   action: "merge";
+  /** Protocol to interact with */
+  protocol: string;
   /** Action arguments */
   args: Record<string, any>;
 };
@@ -162,6 +169,8 @@ export type MergeAction = {
 export type MinAmountOutAction = {
   /** Action type */
   action: "minAmountOut";
+  /** Protocol to interact with */
+  protocol: string;
   /** Action arguments */
   args: Record<string, any>;
 };
@@ -172,6 +181,32 @@ export type MinAmountOutAction = {
 export type SlippageAction = {
   /** Action type */
   action: "slippage";
+  /** Protocol to interact with */
+  protocol: string;
+  /** Action arguments */
+  args: Record<string, any>;
+};
+
+/**
+ * Fee action.
+ */
+export type FeeAction = {
+  /** Action type */
+  action: "fee";
+  /** Protocol to interact with */
+  protocol: string;
+  /** Action arguments */
+  args: Record<string, any>;
+};
+
+/**
+ * Enso fee action.
+ */
+export type EnsoFeeAction = {
+  /** Action type */
+  action: "ensofee";
+  /** Protocol to interact with */
+  protocol: string;
   /** Action arguments */
   args: Record<string, any>;
 };
@@ -567,7 +602,7 @@ export type SwapAction = {
     /** Amount to deposit */
     amountIn: AmountInArgument;
     /** Primary contract address */
-    primaryAddress: Address;
+    primaryAddress?: Address;
     /** Receiver address */
     receiver: Address;
     /** Optional slippage in basis points */
@@ -634,4 +669,6 @@ export type BundleAction =
   | SplitAction
   | MergeAction
   | MinAmountOutAction
-  | SlippageAction;
+  | SlippageAction
+  | FeeAction
+  | EnsoFeeAction;
