@@ -6,6 +6,7 @@ import {
   Address,
   ApproveParams,
   BundleAction,
+  BundleParams,
   IporShortcutData,
   IporShortcutInputData,
   Network,
@@ -141,6 +142,7 @@ describe("EnsoClient", () => {
       amountIn: ["1000000"],
       tokenIn: ["0xTokenIn"] as Address[],
       tokenOut: ["0xTokenOut"] as Address[],
+      routingStrategy: "router",
     };
 
     it("should get route data successfully", async () => {
@@ -261,9 +263,10 @@ describe("EnsoClient", () => {
   });
 
   describe("Bundle Methods", () => {
-    const bundleParams = {
+    const bundleParams: BundleParams = {
       chainId: 1,
       fromAddress: "0xFrom" as Address,
+      routingStrategy: "router",
     };
 
     const bundleActions: BundleAction[] = [
@@ -298,14 +301,6 @@ describe("EnsoClient", () => {
       expect(result).toEqual(mockBundleData);
       expect(mock.history.post[0].data).toBe(JSON.stringify(bundleActions));
     });
-
-    it("should use default routing strategy for bundle", async () => {
-      mock.onPost("/shortcuts/bundle").reply(200, mockBundleData);
-
-      await client.getBundleData(bundleParams, bundleActions);
-
-      expect(mock.history.post[0].params.routingStrategy).toBeUndefined();
-    });
   });
 
   describe("Complex Integration Tests", () => {
@@ -325,6 +320,7 @@ describe("EnsoClient", () => {
         tokenAddress: "0xToken",
         chainId: 1,
         amount: 1000000,
+        routingStrategy: "router",
       });
 
       const route = await client.getRouteData({
@@ -335,6 +331,7 @@ describe("EnsoClient", () => {
         amountIn: ["1000000"],
         tokenIn: ["0xToken"],
         tokenOut: ["0xTokenOut"],
+        routingStrategy: "router",
       });
 
       const balances = await client.getBalances({
@@ -358,6 +355,7 @@ describe("EnsoClient", () => {
           tokenAddress: "0xToken",
           chainId: 1,
           amount: 1000000,
+          routingStrategy: "router",
         }),
       ).rejects.toThrow();
     });
@@ -371,6 +369,7 @@ describe("EnsoClient", () => {
           tokenAddress: "0xToken",
           chainId: 1,
           amount: 1000000,
+          routingStrategy: "router",
         }),
       ).rejects.toThrow();
     });
@@ -379,11 +378,12 @@ describe("EnsoClient", () => {
   describe("Edge Cases", () => {
     it("should handle large numbers correctly", async () => {
       const largeAmount = 1000000000000000000000000;
-      const approveParams = {
+      const approveParams: ApproveParams = {
         fromAddress: "0xFrom" as Address,
         tokenAddress: "0xToken" as Address,
         chainId: 1,
         amount: largeAmount,
+        routingStrategy: "router",
       };
 
       mock.onGet("/wallet/approve").reply(200, mockApproveData);
@@ -394,7 +394,7 @@ describe("EnsoClient", () => {
     });
 
     it("should handle multiple tokenIn/tokenOut arrays", async () => {
-      const multiTokenParams = {
+      const multiTokenParams: RouteParams = {
         fromAddress: "0xFrom" as Address,
         receiver: "0xReceiver" as Address,
         spender: "0xSpender" as Address,
@@ -402,6 +402,7 @@ describe("EnsoClient", () => {
         amountIn: ["1000000", "2000000"],
         tokenIn: ["0xToken1" as Address, "0xToken2" as Address],
         tokenOut: ["0xTokenOut1" as Address, "0xTokenOut2" as Address],
+        routingStrategy: "router",
       };
 
       mock.onGet("/shortcuts/route").reply(200, mockRouteData);
@@ -423,6 +424,7 @@ describe("EnsoClient", () => {
       amountIn: ["1000000"],
       receiver: "0xReceiver" as Address,
       routingStrategy: "delegate",
+      chainId: 1,
     };
 
     it("should get route for non-tokenized position with default strategy", async () => {
@@ -667,6 +669,8 @@ describe("EnsoClient", () => {
       const params: NonTokenizedParams = {
         chainId: 1,
         page: 1,
+        project: "aave",
+        protocolSlug: "aave-v3",
       };
 
       await client.getNonTokenizedPositions(params);
@@ -782,6 +786,7 @@ describe("EnsoClient", () => {
 
       const params: NetworkParams = {
         chainId: "1",
+        name: "Ethereum",
       };
 
       await client.getNetworks(params);
@@ -910,6 +915,8 @@ describe("EnsoClient", () => {
         positionOut: "0xPositionOut",
         amountIn: ["1000000"],
         receiver: "0xReceiver",
+        chainId: 1,
+        routingStrategy: "delegate",
       });
 
       expect(tokens).toBeDefined();

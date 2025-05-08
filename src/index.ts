@@ -34,7 +34,6 @@ import {
   PaginatedNonTokenizedPositionData,
   NonTokenizedParams,
   VolumeParams,
-  RouteShortcutVariableInputs,
 } from "./types";
 
 const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
@@ -170,43 +169,6 @@ export class EnsoClient {
   }
 
   /**
-   * Posts execution data for the best route from a token to another.
-   *
-   * Calculates optimal transaction with the best route between two tokens, which may involve
-   * several actions that interact with various DeFi protocols.
-   *
-   * @param {RouteShortcutVariableInputs} data - Data for the route request
-   * @returns {Promise<RouteData>} Route execution data
-   * @throws {Error} If the API request fails
-   *
-   * @example
-   * const route = await client.postRouteData({
-   *   fromAddress: '0x123...',
-   *   receiver: '0x456...',
-   *   spender: '0x789...',
-   *   chainId: 1,
-   *   amountIn: ['1000000000'],
-   *   tokenIn: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'], // USDC
-   *   tokenOut: ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'], // WETH
-   *   slippage: '50', // 0.5%
-   *   variableEstimates: null
-   * });
-   */
-  public async postRouteData(data: RouteShortcutVariableInputs): Promise<RouteData> {
-    const url = "/shortcuts/route";
-
-    if (!data.routingStrategy) {
-      data.routingStrategy = "router";
-    }
-
-    return this.request<RouteData>({
-      method: "POST",
-      url,
-      data,
-    });
-  }
-
-  /**
    * Gets wallet balances per chain.
    *
    * Returns tokens balances for Enso Wallet associated with the given address.
@@ -308,7 +270,9 @@ export class EnsoClient {
    *   ]
    * });
    */
-  public async getMultiplePriceData(params: MultiPriceParams): Promise<PriceData[]> {
+  public async getMultiplePriceData(
+    params: MultiPriceParams,
+  ): Promise<PriceData[]> {
     const url = `/prices/${params.chainId}`;
 
     return this.request<PriceData[]>({
@@ -330,7 +294,9 @@ export class EnsoClient {
    * @example
    * const protocols = await client.getProtocolData({ chainId: 1 });
    */
-  public async getProtocolData(params?: ProtocolParams): Promise<ProtocolData[]> {
+  public async getProtocolData(
+    params?: ProtocolParams,
+  ): Promise<ProtocolData[]> {
     const url = `/protocols`;
 
     return this.request<ProtocolData[]>({
@@ -371,7 +337,10 @@ export class EnsoClient {
    *   ]
    * );
    */
-  public async getBundleData(params: BundleParams, actions: BundleAction[]): Promise<BundleData> {
+  public async getBundleData(
+    params: BundleParams,
+    actions: BundleAction[],
+  ): Promise<BundleData> {
     const url = "/shortcuts/bundle";
 
     return this.request<BundleData>({
@@ -402,7 +371,9 @@ export class EnsoClient {
    *   slippage: '50' // 0.5%
    * });
    */
-  public async getRouteNonTokenized(params: RouteNonTokenizedParams): Promise<RouteData> {
+  public async getRouteNonTokenized(
+    params: RouteNonTokenizedParams,
+  ): Promise<RouteData> {
     const url = "/shortcuts/route/nontokenized";
 
     return this.request<RouteData>({
@@ -520,7 +491,9 @@ export class EnsoClient {
    * @returns {Promise<PaginatedNonTokenizedPositionData>} Paginated non-tokenized position data
    * @throws {Error} If the API request fails
    */
-  public async getNonTokenizedPositions(params?: NonTokenizedParams): Promise<PaginatedNonTokenizedPositionData> {
+  public async getNonTokenizedPositions(
+    params?: NonTokenizedParams,
+  ): Promise<PaginatedNonTokenizedPositionData> {
     const url = "/nontokenized";
 
     return this.request<PaginatedNonTokenizedPositionData>({
@@ -574,7 +547,9 @@ export class EnsoClient {
    * @returns {Promise<ConnectedNetwork[]>} Array of network data
    * @throws {Error} If the API request fails
    */
-  public async getNetworks(params?: NetworkParams): Promise<ConnectedNetwork[]> {
+  public async getNetworks(
+    params?: NetworkParams,
+  ): Promise<ConnectedNetwork[]> {
     const url = "/networks";
 
     return this.request<ConnectedNetwork[]>({
@@ -662,5 +637,4 @@ export {
   Network,
   ConnectedNetwork,
   Project,
-  RouteShortcutVariableInputs,
 };

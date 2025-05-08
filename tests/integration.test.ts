@@ -107,6 +107,7 @@ describe("EnsoClient Integration Tests", () => {
       tokenAddress: tokenIn,
       chainId: 1,
       amount,
+      routingStrategy: "router",
     });
 
     expect(approval.spender).toBeDefined();
@@ -196,6 +197,7 @@ describe("EnsoClient Integration Tests", () => {
         tokenAddress: "0x456",
         chainId: 1,
         amount: 1000,
+        routingStrategy: "router",
       }),
     ).rejects.toThrow("API Error: Request failed with status code 500");
   });

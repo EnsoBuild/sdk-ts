@@ -1,6 +1,6 @@
 // src/types/actions.ts - Updated types to match OpenAPI specification
 
-import { Address, AmountInArgument, BigNumberIsh } from "../types";
+import { Address, AmountInArgument, Quantity } from "../types";
 
 /**
  * Route action using Enso's routing engine.
@@ -13,7 +13,7 @@ export type RouteAction = {
   /** Action arguments */
   args: {
     /** Slippage tolerance in basis points */
-    slippage?: BigNumberIsh;
+    slippage?: Quantity;
     /** Amount to route */
     amountIn: AmountInArgument;
     /** Input token address */
@@ -57,7 +57,7 @@ export type ApproveAction = {
     /** Spender address */
     spender: Address;
     /** Amount to approve */
-    amount: BigNumberIsh;
+    amount: Quantity;
   };
 };
 
@@ -76,7 +76,7 @@ export type BorrowAction = {
     /** Token to borrow */
     tokenOut: Address;
     /** Amount to borrow */
-    amountOut: BigNumberIsh;
+    amountOut: Quantity;
     /** Primary contract address */
     primaryAddress: Address;
   };
@@ -112,7 +112,7 @@ export type RepayAction = {
     /** Token to repay with */
     tokenIn: Address;
     /** Amount to repay */
-    amountIn: BigNumberIsh;
+    amountIn: Quantity;
     /** Primary contract address */
     primaryAddress: Address;
   };
@@ -282,7 +282,7 @@ export type BridgeAction = {
     /** Optional callback execution gas costs */
     callbackGasLimit?: string;
     /** Optional fee to pay in native asset */
-    bridgeFee?: BigNumberIsh;
+    bridgeFee?: Quantity;
   };
 };
 
@@ -303,9 +303,9 @@ export type DepositCLMMAction = {
     /** Output token address */
     tokenOut: Address;
     /** Ticks for the deposit */
-    ticks: BigNumberIsh;
+    ticks: Quantity;
     /** Fee for the pool to deposit into */
-    fee: [BigNumberIsh, BigNumberIsh];
+    fee: [Quantity, Quantity];
     /** Optional receiver address */
     receiver?: Address;
   };
@@ -606,7 +606,7 @@ export type SwapAction = {
     /** Receiver address */
     receiver: Address;
     /** Optional slippage in basis points */
-    slippage?: BigNumberIsh;
+    slippage?: Quantity;
   };
 };
 
@@ -623,7 +623,7 @@ export type PermitTransferFromAction = {
     /** Token(s) to approve */
     token: Address | Address[];
     /** Amount(s) to approve */
-    amount: BigNumberIsh | BigNumberIsh[];
+    amount: Quantity | Quantity[];
     /** Address to transfer from */
     sender: Address;
     /** Address to transfer to */
