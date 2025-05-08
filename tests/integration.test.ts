@@ -197,6 +197,6 @@ describe("EnsoClient Integration Tests", () => {
         chainId: 1,
         amount: 1000,
       }),
-    ).rejects.toThrow("API Request failed");
+    ).rejects.toThrow("API Error: Request failed with status code 500");
   });
 });

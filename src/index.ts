@@ -84,12 +84,29 @@ export class EnsoClient {
    * @returns {Promise<T>} The response data
    * @throws {Error} When the API request fails
    */
-  private async request<T>(config: AxiosRequestConfig): Promise<T> {
+  private async request<T>(
+    config: AxiosRequestConfig,
+    retries = 3,
+  ): Promise<T> {
     try {
       const response = await this.client.request<T>(config);
       return response.data;
     } catch (error: any) {
-      throw new Error(`API Request failed: ${error.message}`);
+      if (error.response) {
+        // The request was made and the server responded with an error status
+        throw new EnsoApiError(
+          `API Error: ${error.response.data?.message || error.message}`,
+          error.response.status,
+          error.response.data,
+        );
+      } else if (error.request && retries > 0) {
+        // Network error - retry with backoff
+        const delay = 2 ** (3 - retries) * 1000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return this.request<T>(config, retries - 1);
+      } else {
+        throw new Error(`Request Error: ${error.message}`);
+      }
     }
   }
 
@@ -110,7 +127,7 @@ export class EnsoClient {
    *   amount: '1000000000'
    * });
    */
-  public async getApprovalData(params: ApproveParams) {
+  public async getApprovalData(params: ApproveParams): Promise<ApproveData> {
     const url = "/wallet/approve";
 
     return this.request<ApproveData>({
@@ -142,7 +159,7 @@ export class EnsoClient {
    *   slippage: '50' // 0.5%
    * });
    */
-  public async getRouteData(params: RouteParams) {
+  public async getRouteData(params: RouteParams): Promise<RouteData> {
     const url = "/shortcuts/route";
 
     return this.request<RouteData>({
@@ -175,7 +192,7 @@ export class EnsoClient {
    *   variableEstimates: null
    * });
    */
-  public async postRouteData(data: RouteShortcutVariableInputs) {
+  public async postRouteData(data: RouteShortcutVariableInputs): Promise<RouteData> {
     const url = "/shortcuts/route";
 
     if (!data.routingStrategy) {
@@ -206,7 +223,7 @@ export class EnsoClient {
    *   useEoa: true
    * });
    */
-  public async getBalances(params: BalanceParams) {
+  public async getBalances(params: BalanceParams): Promise<WalletBalance[]> {
     const url = "/wallet/balances";
 
     if (typeof params.useEoa === "undefined") {
@@ -236,7 +253,7 @@ export class EnsoClient {
    *   includeMetadata: true
    * });
    */
-  public async getTokenData(params: TokenParams) {
+  public async getTokenData(params: TokenParams): Promise<PaginatedTokenData> {
     const url = `/tokens`;
     if (!params.page) {
       params.page = 1;
@@ -264,7 +281,7 @@ export class EnsoClient {
    *   address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' // WETH
    * });
    */
-  public async getPriceData(params: PriceParams) {
+  public async getPriceData(params: PriceParams): Promise<PriceData> {
     const url = `/prices/${params.chainId}/${params.address}`;
 
     return this.request<PriceData>({
@@ -291,7 +308,7 @@ export class EnsoClient {
    *   ]
    * });
    */
-  public async getMultiplePriceData(params: MultiPriceParams) {
+  public async getMultiplePriceData(params: MultiPriceParams): Promise<PriceData[]> {
     const url = `/prices/${params.chainId}`;
 
     return this.request<PriceData[]>({
@@ -313,7 +330,7 @@ export class EnsoClient {
    * @example
    * const protocols = await client.getProtocolData({ chainId: 1 });
    */
-  public async getProtocolData(params?: ProtocolParams) {
+  public async getProtocolData(params?: ProtocolParams): Promise<ProtocolData[]> {
     const url = `/protocols`;
 
     return this.request<ProtocolData[]>({
@@ -354,7 +371,7 @@ export class EnsoClient {
    *   ]
    * );
    */
-  public async getBundleData(params: BundleParams, actions: BundleAction[]) {
+  public async getBundleData(params: BundleParams, actions: BundleAction[]): Promise<BundleData> {
     const url = "/shortcuts/bundle";
 
     return this.request<BundleData>({
@@ -385,7 +402,7 @@ export class EnsoClient {
    *   slippage: '50' // 0.5%
    * });
    */
-  public async getRouteNonTokenized(params: RouteNonTokenizedParams) {
+  public async getRouteNonTokenized(params: RouteNonTokenizedParams): Promise<RouteData> {
     const url = "/shortcuts/route/nontokenized";
 
     return this.request<RouteData>({
@@ -410,7 +427,7 @@ export class EnsoClient {
   public async getIporShortcut(
     params: { chainId?: number; fromAddress: string },
     data: IporShortcutInputData,
-  ) {
+  ): Promise<IporShortcutData> {
     const url = "/shortcuts/static/ipor";
 
     // Set default slippage if not provided
@@ -434,7 +451,7 @@ export class EnsoClient {
    * @returns {Promise<StandardData[]>} Array of standard data
    * @throws {Error} If the API request fails
    */
-  public async getStandards() {
+  public async getStandards(): Promise<StandardData[]> {
     const url = "/standards";
 
     return this.request<StandardData[]>({
@@ -452,7 +469,7 @@ export class EnsoClient {
    * @returns {Promise<StandardData[]>} Array of standard data
    * @throws {Error} If the API request fails
    */
-  public async getStandardBySlug(slug: string) {
+  public async getStandardBySlug(slug: string): Promise<StandardData[]> {
     const url = `/standards/${slug}`;
 
     return this.request<StandardData[]>({
@@ -469,7 +486,7 @@ export class EnsoClient {
    * @returns {Promise<ActionData[]>} Array of action data
    * @throws {Error} If the API request fails
    */
-  public async getActions() {
+  public async getActions(): Promise<ActionData[]> {
     const url = "/actions";
 
     return this.request<ActionData[]>({
@@ -485,7 +502,7 @@ export class EnsoClient {
    * @returns {Promise<ActionData[]>} Array of action data for the protocol
    * @throws {Error} If the API request fails
    */
-  public async getActionsBySlug(slug: string) {
+  public async getActionsBySlug(slug: string): Promise<ActionData[]> {
     const url = `/actions/${slug}`;
 
     return this.request<ActionData[]>({
@@ -503,7 +520,7 @@ export class EnsoClient {
    * @returns {Promise<PaginatedNonTokenizedPositionData>} Paginated non-tokenized position data
    * @throws {Error} If the API request fails
    */
-  public async getNonTokenizedPositions(params?: NonTokenizedParams) {
+  public async getNonTokenizedPositions(params?: NonTokenizedParams): Promise<PaginatedNonTokenizedPositionData> {
     const url = "/nontokenized";
 
     return this.request<PaginatedNonTokenizedPositionData>({
@@ -521,7 +538,7 @@ export class EnsoClient {
    * @returns {Promise<Project[]>} Array of project data
    * @throws {Error} If the API request fails
    */
-  public async getProjects() {
+  public async getProjects(): Promise<Project[]> {
     const url = "/projects";
 
     return this.request<Project[]>({
@@ -539,7 +556,7 @@ export class EnsoClient {
    * @returns {Promise<ProtocolData[]>} Array of protocol data within the project
    * @throws {Error} If the API request fails
    */
-  public async getProtocolsByProject(project: string) {
+  public async getProtocolsByProject(project: string): Promise<ProtocolData[]> {
     const url = `/projects/${project}/protocols`;
 
     return this.request<ProtocolData[]>({
@@ -557,7 +574,7 @@ export class EnsoClient {
    * @returns {Promise<ConnectedNetwork[]>} Array of network data
    * @throws {Error} If the API request fails
    */
-  public async getNetworks(params?: NetworkParams) {
+  public async getNetworks(params?: NetworkParams): Promise<ConnectedNetwork[]> {
     const url = "/networks";
 
     return this.request<ConnectedNetwork[]>({
@@ -576,7 +593,7 @@ export class EnsoClient {
    * @returns {Promise<string[]>} Array of aggregator names
    * @throws {Error} If the API request fails
    */
-  public async getAggregators(chainId?: number) {
+  public async getAggregators(chainId?: number): Promise<string[]> {
     const url = "/aggregators";
     const params = chainId ? { chainId } : undefined;
 
@@ -596,13 +613,25 @@ export class EnsoClient {
    * @returns {Promise<unknown>} Volume data
    * @throws {Error} If the API request fails
    */
-  public async getVolume(chainId: number) {
+  public async getVolume(chainId: number): Promise<unknown> {
     const url = `/volume/${chainId}`;
 
     return this.request<unknown>({
       method: "GET",
       url,
     });
+  }
+}
+
+// Custom error classes
+export class EnsoApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public responseData?: any,
+  ) {
+    super(message);
+    this.name = "EnsoApiError";
   }
 }
 

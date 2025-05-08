@@ -23,6 +23,8 @@ export type TokenType = "defi" | "base";
  */
 export type Address = `0x${string}`;
 
+export type BigNumberIsh = string | number | bigint;
+
 /**
  * Can be a single address or an array of addresses.
  */
@@ -42,7 +44,7 @@ export type Transaction = {
   /** Sender address */
   from: Address;
   /** Value to send in wei */
-  value: string;
+  value: BigNumberIsh;
 };
 
 /**
@@ -58,11 +60,11 @@ export type RouteParams = {
   /** Chain ID of the network to execute the transaction on */
   chainId?: number;
   /** Amount of tokenIn to swap in wei */
-  amountIn: string[];
+  amountIn: BigNumberIsh[];
   /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
-  slippage?: number;
+  slippage?: BigNumberIsh;
   /** Minimum amount out in wei. If specified, slippage should not be specified */
-  minAmountOut?: string[];
+  minAmountOut?: BigNumberIsh[];
   /** Ethereum address of the token to swap from. For ETH, use 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee */
   tokenIn: Address[];
   /** Ethereum address of the token to swap to. For ETH, use 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee */
@@ -70,7 +72,7 @@ export type RouteParams = {
   /** Routing strategy to use */
   routingStrategy?: RoutingStrategy;
   /** Fee in basis points (1/10000) for each amountIn value. Must be in range 0-100 */
-  fee?: string[];
+  fee?: BigNumberIsh[];
   /** The Ethereum address that will receive the collected fee. Required if fee is provided */
   feeReceiver?: Address;
   /** A list of swap aggregators to be ignored from consideration */
@@ -102,13 +104,13 @@ export type RouteShortcutVariableInputs = {
   /** Ethereum address of the spender of the tokenIn */
   spender?: Address;
   /** Amount of tokenIn to swap in wei */
-  amountIn: string[];
+  amountIn: BigNumberIsh[];
   /** Minimum amount out in wei. If specified, slippage should not be specified */
-  minAmountOut?: string[];
+  minAmountOut?: BigNumberIsh[];
   /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
-  slippage?: string;
+  slippage?: BigNumberIsh;
   /** Fee in basis points (1/10000) for each amountIn value. Must be in range 0-100 */
-  fee?: string[];
+  fee?: BigNumberIsh[];
   /** The Ethereum address that will receive the collected fee. Required if fee is provided */
   feeReceiver?: Address;
   /** A list of swap aggregators to be ignored from consideration */
@@ -146,15 +148,15 @@ export type RouteSegment = {
  */
 export type Hop = {
   /** Input tokens for this hop */
-  tokenIn: string[];
+  tokenIn: Address[];
   /** Output tokens for this hop */
-  tokenOut: string[];
+  tokenOut: Address[];
   /** Protocol used for this hop */
   protocol: string;
   /** Action performed in this hop */
   action: string;
   /** Primary contract address */
-  primary: string;
+  primary: Address;
   /** Internal routes used in this hop */
   internalRoutes: string[];
   /** Arguments for this hop */
@@ -168,17 +170,17 @@ export type RouteData = {
   /** Array of segments representing the calculated route */
   route: Hop[];
   /** Estimated gas used by the transaction */
-  gas: string;
+  gas: BigNumberIsh;
   /** Estimated amount received */
-  amountOut: number;
-  /** Price impact in basis points, null if USD price not found */
-  priceImpact: number | null;
+  amountOut: BigNumberIsh;
+  /** Price impact in basis points, not present if USD price not found */
+  priceImpact?: BigNumberIsh;
   /** Block number the transaction was created on */
   createdAt: number;
   /** The tx object to use in ethers */
   tx: Transaction;
   /** Collected fee amounts for each amountIn input */
-  feeAmount: string[];
+  feeAmount: BigNumberIsh[];
 };
 
 /**
@@ -192,7 +194,7 @@ export type ApproveParams = {
   /** Chain ID of the network to execute the transaction on */
   chainId?: number;
   /** Amount of tokens to approve in wei */
-  amount: number;
+  amount: BigNumberIsh;
   /** Routing strategy to use. Use the same routing strategy you used to create the transaction */
   routingStrategy?: RoutingStrategy;
 };
@@ -202,9 +204,9 @@ export type ApproveParams = {
  */
 export type ApproveData = {
   /** Amount of tokens approved in wei */
-  amount: string;
+  amount: BigNumberIsh;
   /** Gas estimate for the transaction */
-  gas: string;
+  gas: BigNumberIsh;
   /** Address that is allowed to spend the tokens */
   spender: Address;
   /** Token address that was approved */
@@ -218,13 +220,13 @@ export type ApproveData = {
  */
 export type WalletBalance = {
   /** The unformatted balance of the token */
-  amount: string;
+  amount: BigNumberIsh;
   /** The number of decimals the token uses */
   decimals: number;
   /** The address of the token */
   token: Address;
   /** Price of the token in USD */
-  price: string;
+  price: BigNumberIsh;
 };
 
 /**
@@ -260,13 +262,13 @@ export interface TokenParams {
   /** Type of token. If not provided, both types will be taken into account */
   type?: TokenType;
   /** Only include tokens with APY over this value */
-  apyFrom?: number;
+  apyFrom?: BigNumberIsh;
   /** Only include tokens with APY below this value */
-  apyTo?: number;
+  apyTo?: BigNumberIsh;
   /** Only include tokens with TVL over this value */
-  tvlFrom?: number;
+  tvlFrom?: BigNumberIsh;
   /** Only include tokens with TVL below this value */
-  tvlTo?: number;
+  tvlTo?: BigNumberIsh;
   /** Pagination page number. Pages are of length 1000 */
   page?: number;
   /** Cursor for pagination. Pages are of length 1000 */
@@ -284,7 +286,7 @@ export interface TokenParams {
  */
 export interface UnderlyingToken {
   /** Ethereum address of the token */
-  address: string;
+  address: Address;
   /** Chain ID of the network of the token */
   chainId: number;
   /** Type of token */
@@ -324,15 +326,15 @@ export interface Token {
   /** The specific standard integration or version of the DeFi project */
   protocolSlug?: string;
   /** The defi position APY */
-  apy?: number | null;
+  apy?: BigNumberIsh;
   /** The defi position base APY */
-  apyBase?: number | null;
+  apyBase?: BigNumberIsh;
   /** The defi position reward APY */
-  apyReward?: number | null;
+  apyReward?: BigNumberIsh;
   /** The defi position TVL */
-  tvl?: number | null;
+  tvl?: BigNumberIsh;
   /** Ethereum address for contract interaction of defi token */
-  primaryAddress?: string;
+  primaryAddress?: Address;
 }
 
 /**
@@ -348,9 +350,9 @@ export type TokenData = Token & {
   /** Ethereum address for contract interaction of defi token */
   primaryAddress: Address;
   /** The defi position APY */
-  apy: number | null;
+  apy?: BigNumberIsh;
   /** The defi position TVL */
-  tvl: number | null;
+  tvl?: BigNumberIsh;
 };
 
 export type PaginatedTokenData = PaginatedResult & {
@@ -391,9 +393,9 @@ export type MultiPriceParams = {
  */
 export type PriceData = {
   /** Token price in USD */
-  price: number;
+  price: BigNumberIsh;
   /** Token address */
-  address: string;
+  address: Address;
   /** Token decimals */
   decimals: number;
   /** Token symbol */
@@ -471,13 +473,13 @@ export type BundleData = {
   /** Array of actions in the bundle */
   bundle: BundleAction[];
   /** Gas estimate for the bundle */
-  gas: string;
+  gas: BigNumberIsh;
   /** Block number the transaction was created on */
   createdAt: number;
   /** The tx object to use in ethers */
   tx: Transaction;
   /** Amounts out for each action */
-  amountsOut: Record<string, any>;
+  amountsOut: Record<Address, BigNumberIsh>;
 };
 
 /**
@@ -560,7 +562,7 @@ export interface ActionData {
   action: string;
   /** Input parameter definitions */
   inputs: {
-    [key: string]: string;
+    [key: string]: { type: string; description: string, optional?: boolean };
   };
 }
 
@@ -571,17 +573,17 @@ export interface IporShortcutInputData {
   /** Flag that indicates whether to use the shared router */
   isRouter?: boolean | null;
   /** Amount of tokenIn in wei */
-  amountIn: string;
+  amountIn: BigNumberIsh;
   /** Address of the tokenIn */
-  tokenIn: string;
+  tokenIn: Address;
   /** Address of the tokenBToBuy */
-  tokenBToBuy: string;
+  tokenBToBuy: Address;
   /** Percentage of tokenB to buy in basis points */
-  percentageForTokenB: string;
+  percentageForTokenB: BigNumberIsh;
   /** Slippage in basis points */
-  slippage?: string;
+  slippage?: BigNumberIsh;
   /** Flag that indicates whether to simulate the transaction */
-  simulate?: boolean | null;
+  simulate?: boolean;
 }
 
 /**
@@ -607,9 +609,9 @@ export interface NonTokenizedPositionData {
   /** The specific standard integration or version of the nontokenized position */
   protocol: string;
   /** Ethereum address of the nontokenized position */
-  address: string;
+  address: Address;
   /** Ethereum address of the nontokenized position */
-  primaryAddress: string;
+  primaryAddress: Address;
   /** Underlying tokens of nontokenized position */
   underlyingTokens: Token[] | null;
 }
@@ -625,9 +627,9 @@ export interface NonTokenizedParams {
   /** Chain ID of the network of the nontokenized position */
   chainId?: number;
   /** Ethereum addresses of the nontokenized positions */
-  address?: string[];
+  address?: Address[];
   /** Ethereum addresses for contract interaction of nontokenized position */
-  primaryAddress?: string[];
+  primaryAddress?: Address[];
   /** Pagination page number. Pages are of length 1000 */
   page?: number;
   /** Cursor for pagination. Pages are of length 1000 */
@@ -641,25 +643,25 @@ export interface RouteNonTokenizedParams {
   /** Chain ID of the network to execute the transaction on */
   chainId?: number;
   /** Ethereum address of the wallet to send the transaction from */
-  fromAddress: string;
+  fromAddress: Address;
   /** Routing strategy to use (must be 'delegate') */
   routingStrategy?: "delegate" | "delegate-legacy";
   /** Input tokens */
-  tokenIn: string[];
+  tokenIn: Address[];
   /** Non-tokenized position to receive */
-  positionOut: string;
+  positionOut: Address;
   /** Slippage in basis points */
-  slippage?: string;
+  slippage?: BigNumberIsh;
   /** Fee in basis points */
-  fee?: string[];
+  fee?: BigNumberIsh[];
   /** Fee receiver address */
-  feeReceiver?: string;
+  feeReceiver?: Address;
   /** Amount to send */
-  amountIn: string[];
+  amountIn: BigNumberIsh[];
   /** Receiver address */
-  receiver: string;
+  receiver: Address;
   /** Spender address */
-  spender?: string;
+  spender?: Address;
 }
 
 /**
@@ -708,25 +710,4 @@ export interface PaginationMeta {
 interface PaginatedResult {
   /** Metadata for pagination */
   meta: PaginationMeta;
-}
-
-/**
- * Parameters for simple path.
- */
-export interface SimplePath {
-  /** Amount of tokenIn to swap in wei */
-  amountIn: string;
-  /** Ordered array of steps to build */
-  path: {
-    /** Input token */
-    tokenIn: string;
-    /** Output token */
-    tokenOut: string;
-    /** Protocol to use */
-    protocol: string;
-    /** Action to perform */
-    action: string;
-    /** Primary contract address */
-    primary: string;
-  }[];
 }

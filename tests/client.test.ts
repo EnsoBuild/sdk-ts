@@ -127,7 +127,7 @@ describe("EnsoClient", () => {
       mock.onGet("/wallet/approve").reply(500, { error: "Server Error" });
 
       await expect(client.getApprovalData(approveParams)).rejects.toThrow(
-        "API Request failed",
+        "API Error: Request failed with status code 500",
       );
     });
   });
@@ -304,7 +304,7 @@ describe("EnsoClient", () => {
 
       await client.getBundleData(bundleParams, bundleActions);
 
-      expect(mock.history.post[0].params.routingStrategy).toBeUndefined()
+      expect(mock.history.post[0].params.routingStrategy).toBeUndefined();
     });
   });
 
@@ -547,7 +547,34 @@ describe("EnsoClient", () => {
     const mockActions: ActionData[] = [
       {
         action: "swap",
-        inputs: { tokenIn: "address", tokenOut: "address" },
+        inputs: {
+          tokenIn: {
+            type: "AddressArg",
+            description: "Address of token to send",
+          },
+          tokenOut: {
+            type: "AddressArg",
+            description: "Address of token to receive",
+          },
+          amountIn: {
+            type: "NumberArg",
+            description: "The amount to deposit",
+          },
+          primaryAddress: {
+            type: "AccountArg",
+            optional: true,
+            description: "The receiver account",
+          },
+          receiver: {
+            type: "AddressArg",
+            description: "Address of smart contract to interact with",
+          },
+          slippage: {
+            type: "Static<NumberArg>",
+            optional: true,
+            description: "Amount of slippage in BPS",
+          },
+        },
       },
     ];
 
@@ -563,8 +590,35 @@ describe("EnsoClient", () => {
   describe("getActionsBySlug", () => {
     const mockProtocolActions: ActionData[] = [
       {
-        action: "swap",
-        inputs: { tokenIn: "address", tokenOut: "address" },
+        action: "route",
+        inputs: {
+          tokenIn: {
+            type: "AddressArg",
+            description: "Address of token to send",
+          },
+          tokenOut: {
+            type: "AddressArg",
+            description: "Address of token to receive",
+          },
+          amountIn: {
+            type: "NumberArg",
+            description: "The amount to deposit",
+          },
+          primaryAddress: {
+            type: "AccountArg",
+            optional: true,
+            description: "The receiver account",
+          },
+          receiver: {
+            type: "AddressArg",
+            description: "Address of smart contract to interact with",
+          },
+          slippage: {
+            type: "Static<NumberArg>",
+            optional: true,
+            description: "Amount of slippage in BPS",
+          },
+        },
       },
     ];
 
@@ -767,28 +821,32 @@ describe("EnsoClient", () => {
     it("should handle error in getStandards", async () => {
       mock.onGet("/standards").reply(500, { error: "Server Error" });
 
-      await expect(client.getStandards()).rejects.toThrow("API Request failed");
+      await expect(client.getStandards()).rejects.toThrow(
+        "API Error: Request failed with status code 500",
+      );
     });
 
     it("should handle error in getStandardBySlug", async () => {
       mock.onGet("/standards/uniswap").reply(404, { error: "Not Found" });
 
       await expect(client.getStandardBySlug("uniswap")).rejects.toThrow(
-        "API Request failed",
+        "API Error: Request failed with status code 404",
       );
     });
 
     it("should handle error in getActions", async () => {
       mock.onGet("/actions").reply(500, { error: "Server Error" });
 
-      await expect(client.getActions()).rejects.toThrow("API Request failed");
+      await expect(client.getActions()).rejects.toThrow(
+        "API Error: Request failed with status code 500",
+      );
     });
 
     it("should handle error in getNonTokenizedPositions", async () => {
       mock.onGet("/nontokenized").reply(500, { error: "Server Error" });
 
       await expect(client.getNonTokenizedPositions()).rejects.toThrow(
-        "API Request failed",
+        "API Error: Request failed with status code 500",
       );
     });
 
@@ -807,7 +865,7 @@ describe("EnsoClient", () => {
             percentageForTokenB: "5000",
           },
         ),
-      ).rejects.toThrow("API Request failed");
+      ).rejects.toThrow("API Error: Request failed with status code 400");
     });
   });
 
