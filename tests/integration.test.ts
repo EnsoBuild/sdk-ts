@@ -1,4 +1,4 @@
-import { EnsoClient } from "../src";
+import { EnsoClient } from "../src/index";
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import { Address, BundleAction } from "../src/types";
@@ -141,7 +141,7 @@ describe("EnsoClient Integration Tests", () => {
 
     const actions: BundleAction[] = [
       {
-        protocol: "uniswap-v2",
+        protocol: "enso",
         action: "swap",
         args: {
           tokenIn: "0xToken1" as Address,

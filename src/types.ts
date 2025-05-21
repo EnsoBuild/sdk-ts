@@ -597,7 +597,7 @@ export interface NonTokenizedPositionData {
  */
 export interface NonTokenizedParams {
   /** The overarching project or platform associated with the DeFi position */
-  project: string;
+  project?: string;
   /** The specific standard integration or version of the DeFi project */
   protocolSlug?: string;
   /** Chain ID of the network of the nontokenized position */

@@ -1,6 +1,6 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { EnsoClient } from "../src";
+import { EnsoClient } from "../src/index";
 import {
   ActionData,
   Address,

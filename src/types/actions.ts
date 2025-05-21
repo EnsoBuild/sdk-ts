@@ -20,8 +20,10 @@ export type RouteAction = {
     amountIn: AmountInArgument;
     /** Primary contract address (optional) */
     primaryAddress?: Address;
+    /** Spender address */
+    spender?: Address;
     /** Receiver address */
-    receiver: Address;
+    receiver?: Address;
     /** Optional slippage in basis points */
     slippage?: Quantity;
     /** Optional pool fee */
