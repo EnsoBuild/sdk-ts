@@ -73,7 +73,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
       - name: Bump version
-        run: npm version patch
+        run: npm version prerelease --preid=beta
 
       - name: Push version change
         run: |
