@@ -3,6 +3,8 @@
 [![NPM Version](https://img.shields.io/npm/v/%40ensofinance%2Fsdk)](https://www.npmjs.com/package/@ensofinance/sdk)
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/EnsoBuild)](https://x.com/EnsoBuild)
 
+</div>
+
 # Enso SDK
 
 The Enso SDK provides a set of tools and methods to interact with the Enso API. It includes functionalities for token approvals, routing, quoting, and balance checking.
