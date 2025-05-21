@@ -1,178 +1,39 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+// src/index.ts - Client implementation updates to match OpenAPI specification
 import {
-  ApproveParams,
+  ActionData,
+  Address,
   ApproveData,
-  RouteParams,
-  RouteData,
-  QuoteData,
-  QuoteParams,
+  ApproveParams,
   BalanceParams,
-  BalanceData,
-  TokenParams,
-  TokenData,
+  BundleAction,
+  BundleData,
+  BundleParams,
+  ConnectedNetwork,
+  IporShortcutData,
+  IporShortcutInputData,
+  MultiPriceParams,
+  Network,
+  NonTokenizedPositionData,
   PriceData,
   PriceParams,
-  ProtocolParams,
+  Project,
   ProtocolData,
-  BundleParams,
-  BundleData,
-  BundleAction,
-  BundleActionType,
+  ProtocolParams,
+  RouteData,
+  RouteParams,
+  RoutingStrategy,
+  StandardAction,
+  StandardData,
+  TokenData,
+  TokenParams,
+  WalletBalance
 } from "./types";
 
-const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
-
-export class EnsoClient {
-  private client: AxiosInstance;
-
-  constructor({
-    baseURL = DEFAULT_BASE_URL,
-    apiKey,
-  }: {
-    baseURL?: string;
-    apiKey: string;
-  }) {
-    this.client = axios.create({
-      baseURL,
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-    });
-  }
-
-  private async request<T>(config: AxiosRequestConfig): Promise<T> {
-    try {
-      const response = await this.client.request<T>(config);
-      return response.data;
-    } catch (error: any) {
-      throw new Error(`API Request failed: ${error.message}`);
-    }
-  }
-
-  // Method to get approval data to spend a token
-  public async getApprovalData(params: ApproveParams) {
-    const url = "/wallet/approve";
-
-    if (!params.routingStrategy) {
-      params.routingStrategy = "router";
-    }
-
-    return this.request<ApproveData>({
-      url,
-      method: "GET",
-      params,
-    });
-  }
-
-  // Method to get execution data for best route from a token to another
-  public async getRouterData(params: RouteParams) {
-    const url = "/shortcuts/route";
-
-    if (!params.routingStrategy) {
-      params.routingStrategy = "router";
-    }
-
-    return this.request<RouteData>({
-      method: "GET",
-      url,
-      params,
-    });
-  }
-
-  // Method to quote swap from a token to another even if the user doesn't have the token or approve
-  public async getQuoteData(params: QuoteParams) {
-    const url = "/shortcuts/quote";
-
-    return this.request<QuoteData>({
-      method: "GET",
-      url,
-      params,
-    });
-  }
-
-  // Method to get wallet balances per chain
-  public async getBalances(params: BalanceParams) {
-    const url = "/wallet/balances";
-
-    if (typeof params.useEoa === "undefined") {
-      params.useEoa = true;
-    }
-
-    return this.request<BalanceData[]>({
-      method: "GET",
-      url,
-      params,
-    });
-  }
-
-  // Method to get token data by address
-  public async getTokenData(params: TokenParams) {
-    const url = `/tokens`;
-    // @ts-ignore
-    params.page = 1;
-
-    return this.request<{ data: TokenData[] }>({
-      method: "GET",
-      url,
-      params,
-    });
-  }
-
-  // Method to get token price data
-  public async getPriceData(params: PriceParams) {
-    const url = `/prices/${params.chainId}/${params.address}`;
-
-    return this.request<PriceData>({
-      method: "GET",
-      url,
-    });
-  }
-
-  // Method to get protocol data
-  public async getProtocolData(params?: ProtocolParams) {
-    const url = `/protocols`;
-
-    return this.request<ProtocolData[]>({
-      method: "GET",
-      url,
-      params,
-    });
-  }
-
-  // Method to construct bundled transaction data
-  public async getBundleData(params: BundleParams, actions: BundleAction[]) {
-    const url = "/shortcuts/bundle";
-
-    if (!params.routingStrategy) {
-      params.routingStrategy = "router";
-    }
-
-    return this.request<BundleData>({
-      method: "POST",
-      url,
-      params,
-      data: actions,
-    });
-  }
-}
-
-export {
-  ApproveParams,
-  ApproveData,
-  RouteParams,
-  RouteData,
-  QuoteData,
-  QuoteParams,
-  BalanceData,
-  BalanceParams,
-  TokenData,
-  TokenParams,
-  PriceData,
-  PriceParams,
-  ProtocolData,
-  ProtocolParams,
-  BundleParams,
-  BundleData,
-  BundleAction,
-  BundleActionType,
+export type {
+  ActionData, Address, ApproveData, ApproveParams, BalanceParams, BundleAction, BundleData, BundleParams, ConnectedNetwork, IporShortcutData, IporShortcutInputData, MultiPriceParams, Network, NonTokenizedPositionData, PriceData,
+  PriceParams, Project, ProtocolData,
+  ProtocolParams, RouteData, RouteParams, RoutingStrategy, StandardAction, StandardData, TokenData,
+  TokenParams, WalletBalance,
 };
+
+export { EnsoClient } from "./client";
