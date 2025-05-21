@@ -33,7 +33,7 @@ import {
   PaginatedTokenData,
   PaginatedNonTokenizedPositionData,
   NonTokenizedParams,
-  VolumeParams,
+  RoutingStrategy,
 } from "./types";
 
 const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
@@ -155,7 +155,8 @@ export class EnsoClient {
    *   amountIn: ['1000000000'],
    *   tokenIn: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'], // USDC
    *   tokenOut: ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'], // WETH
-   *   slippage: '50' // 0.5%
+   *   slippage: '50', // 0.5%
+   *   referralCode: '0123456789ABCDEF'
    * });
    */
   public async getRouteData(params: RouteParams): Promise<RouteData> {
@@ -188,10 +189,6 @@ export class EnsoClient {
   public async getBalances(params: BalanceParams): Promise<WalletBalance[]> {
     const url = "/wallet/balances";
 
-    if (typeof params.useEoa === "undefined") {
-      params.useEoa = true;
-    }
-
     return this.request<WalletBalance[]>({
       method: "GET",
       url,
@@ -217,9 +214,6 @@ export class EnsoClient {
    */
   public async getTokenData(params: TokenParams): Promise<PaginatedTokenData> {
     const url = `/tokens`;
-    if (!params.page) {
-      params.page = 1;
-    }
 
     return this.request<PaginatedTokenData>({
       method: "GET",
@@ -321,7 +315,8 @@ export class EnsoClient {
    *   {
    *     chainId: 1,
    *     fromAddress: '0x123...',
-   *     routingStrategy: 'delegate'
+   *     routingStrategy: 'delegate',
+   *     referralCode: '0123456789ABCDEF'
    *   },
    *   [
    *     {
@@ -368,7 +363,8 @@ export class EnsoClient {
    *   positionOut: '0xPositionAddress',
    *   amountIn: ['1000000000'],
    *   receiver: '0x123...',
-   *   slippage: '50' // 0.5%
+   *   slippage: '50', // 0.5%
+   *   referralCode: '0123456789ABCDEF'
    * });
    */
   public async getRouteNonTokenized(
@@ -400,11 +396,6 @@ export class EnsoClient {
     data: IporShortcutInputData,
   ): Promise<IporShortcutData> {
     const url = "/shortcuts/static/ipor";
-
-    // Set default slippage if not provided
-    if (data.slippage === undefined) {
-      data.slippage = "300";
-    }
 
     return this.request<IporShortcutData>({
       method: "POST",
@@ -637,4 +628,5 @@ export {
   Network,
   ConnectedNetwork,
   Project,
+  RoutingStrategy,
 };

@@ -4,13 +4,13 @@
  * @fileoverview Type definitions for the Enso Finance API SDK
  */
 import { BundleAction } from "./types/actions";
+export type { BundleAction };
 
 /**
  * Represents the different routing strategies available for transactions.
  * {@link https://docs.enso.build/pages/build/reference/routing-strategies}
  */
 export type RoutingStrategy =
-  | "ensowallet"
   | "router"
   | "delegate"
   | "router-legacy"
@@ -81,6 +81,8 @@ export type RouteParams = {
   ignoreStandards?: string[];
   /** Flag that indicates if gained tokenOut should be sent to EOA (deprecated) */
   toEoa?: boolean;
+  /** Referral code that will be included in an on-chain event */
+  referralCode?: string;
 };
 
 /**
@@ -122,20 +124,22 @@ export type Hop = {
   /** Internal routes used in this hop */
   internalRoutes: string[];
   /** Arguments for this hop */
-  args: object;
+  args: Record<string, any>;
+  /** Chain ID of the network */
+  chainId: number;
 };
 
 /**
  * Response data from route calculation.
  */
 export type RouteData = {
-  /** Array of segments representing the calculated route */
+  /** Array of hops representing the calculated route */
   route: Hop[];
   /** Estimated gas used by the transaction */
   gas: Quantity;
   /** Estimated amount received */
   amountOut: Quantity;
-  /** Price impact in basis points, not present if USD price not found */
+  /** Price impact in basis points, null if USD price not found */
   priceImpact: Quantity | null;
   /** Block number the transaction was created on */
   createdAt: number;
@@ -189,6 +193,12 @@ export type WalletBalance = {
   token: Address;
   /** Price of the token in USD */
   price: Quantity;
+  /** Name of the token */
+  name: string;
+  /** Symbol of the token */
+  symbol: string;
+  /** Logo URI of the token */
+  logoUri: string;
 };
 
 /**
@@ -366,6 +376,8 @@ export type PriceData = {
   timestamp: number;
   /** Chain ID of the token */
   chainId: number;
+  /** Confidence level of the price (0-1) */
+  confidence: number;
 };
 
 /**
@@ -426,6 +438,8 @@ export type BundleParams = {
   spender?: Address;
   /** A list of swap aggregators to be ignored from consideration */
   ignoreAggregators?: string[];
+  /** Referral code that will be included in an on-chain event */
+  referralCode?: string;
 };
 
 /**
@@ -583,11 +597,11 @@ export interface NonTokenizedPositionData {
  */
 export interface NonTokenizedParams {
   /** The overarching project or platform associated with the DeFi position */
-  project: string | null;
+  project: string;
   /** The specific standard integration or version of the DeFi project */
-  protocolSlug: string | null;
+  protocolSlug?: string;
   /** Chain ID of the network of the nontokenized position */
-  chainId: number;
+  chainId?: number;
   /** Ethereum addresses of the nontokenized positions */
   address?: Address[];
   /** Ethereum addresses for contract interaction of nontokenized position */
@@ -624,6 +638,8 @@ export interface RouteNonTokenizedParams {
   receiver: Address;
   /** Spender address */
   spender?: Address;
+  /** Referral code that will be included in an on-chain event */
+  referralCode?: string;
 }
 
 /**
@@ -631,7 +647,7 @@ export interface RouteNonTokenizedParams {
  */
 export interface NetworkParams {
   /** Name of the network to search for */
-  name: string | null;
+  name?: string;
   /** Chain ID of the network to search for */
   chainId?: string;
 }
@@ -643,8 +659,6 @@ export interface VolumeParams {
   /** Chain ID of the network to search for */
   chainId: number;
 }
-
-export type { BundleAction };
 
 /**
  * Pagination metadata.

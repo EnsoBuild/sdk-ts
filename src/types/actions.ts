@@ -6,24 +6,26 @@ import { Address, AmountInArgument, Quantity } from "../types";
  * Route action using Enso's routing engine.
  */
 export type RouteAction = {
-  /** Must be 'enso' for route actions */
-  protocol: "enso";
+  /** Protocol for the route */
+  protocol: string;
   /** Action type */
   action: "route";
-  /** Action arguments */
+  /** Action arguments matching OpenAPI spec */
   args: {
-    /** Slippage tolerance in basis points */
-    slippage?: Quantity;
-    /** Amount to route */
-    amountIn: AmountInArgument;
     /** Input token address */
     tokenIn: Address;
     /** Output token address */
     tokenOut: Address;
-    /** Optional primary contract address */
+    /** Amount to route */
+    amountIn: AmountInArgument;
+    /** Primary contract address (optional) */
     primaryAddress?: Address;
-    /** Optional receiver address */
-    receiver?: Address;
+    /** Receiver address */
+    receiver: Address;
+    /** Optional slippage in basis points */
+    slippage?: Quantity;
+    /** Optional pool fee */
+    poolFee?: Quantity;
   };
 };
 
