@@ -413,18 +413,6 @@ export type ProtocolData = {
 };
 
 /**
- * Represents an amount input that can either be a fixed value or reference to another call's output.
- */
-export type AmountInArgument =
-  | string
-  | {
-      /** Index of the call whose output should be used */
-      useOutputOfCallAt: number;
-      /** Optional specific index within the output */
-      index?: number;
-    };
-
-/**
  * Parameters for bundle creation.
  */
 export type BundleParams = {

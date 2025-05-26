@@ -1,13 +1,13 @@
-// src/types/actions.ts - Updated types to match OpenAPI specification
+// src/types/actions.ts - Updated to match OpenAPI specification
 
-import { Address, AmountInArgument, Quantity } from "../types";
+import { Address, BytesArg, Quantity } from "../types";
 
 /**
  * Route action using Enso's routing engine.
  */
 export type RouteAction = {
   /** Protocol for the route */
-  protocol: string;
+  protocol: "enso";
   /** Action type */
   action: "route";
   /** Action arguments matching OpenAPI spec */
@@ -17,7 +17,7 @@ export type RouteAction = {
     /** Output token address */
     tokenOut: Address;
     /** Amount to route */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address (optional) */
     primaryAddress?: Address;
     /** Spender address */
@@ -245,7 +245,9 @@ export type DepositAction = {
     /** Output token(s) (optional) */
     tokenOut?: Address;
     /** Amount to deposit */
-    amountIn: AmountInArgument | AmountInArgument[];
+    amountIn:
+      | ActionOutputReference<Quantity>
+      | ActionOutputReference<Quantity>[];
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional recipient address */
@@ -268,7 +270,7 @@ export type RedeemAction = {
     /** Output token */
     tokenOut: Address | Address[];
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional recipient address */
@@ -286,10 +288,10 @@ export type BridgeAction = {
   protocol: string;
   /** Action arguments */
   args: {
-    /** Amount to bridge */
-    amountIn: AmountInArgument;
     /** Input token address */
     tokenIn: Address;
+    /** Amount to bridge */
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Destination chain ID */
@@ -297,11 +299,11 @@ export type BridgeAction = {
     /** Receiver address on destination chain */
     receiver: Address;
     /** Optional callback data to execute on the destination chain */
-    callbackData?: BundleAction[];
+    callback?: BundleAction[];
     /** Optional callback execution gas costs */
     callbackGasLimit?: string;
     /** Optional fee to pay in native asset */
-    bri?: Quantity;
+    bridgeFee?: string;
   };
 };
 
@@ -315,16 +317,16 @@ export type DepositCLMMAction = {
   action: "depositclmm";
   /** Action arguments */
   args: {
-    /** Amount of tokens to deposit */
-    amountIn: [AmountInArgument, AmountInArgument];
     /** Input token addresses */
-    tokenIn: [Address, Address];
+    tokenIn: Address[];
     /** Output token address */
     tokenOut: Address;
+    /** Amount of tokens to deposit */
+    amountIn: ActionOutputReference<Quantity>[];
     /** Ticks for the deposit */
-    ticks: Quantity;
+    ticks: Quantity[];
     /** Fee for the pool to deposit into */
-    fee: [Quantity, Quantity]; // Should be poolFee: string
+    poolFee: Quantity;
     /** Optional receiver address */
     receiver?: Address;
   };
@@ -343,9 +345,9 @@ export type RedeemCLMMAction = {
     /** Input token address to redeem */
     tokenIn: Address;
     /** Output token addresses to receive */
-    tokenOut: [Address, Address];
+    tokenOut: Address[];
     /** Amount of liquidity to redeem */
-    liquidity: AmountInArgument;
+    liquidity: ActionOutputReference<Quantity>;
     /** Token ID of the NFT position */
     tokenId: string;
     /** Optional receiver address */
@@ -368,7 +370,7 @@ export type TokenizedSingleDepositAction = {
     /** Output token address (required) */
     tokenOut: Address;
     /** Amount to deposit */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -391,7 +393,7 @@ export type TokenizedMultiDepositAction = {
     /** Output token address (required) */
     tokenOut: Address;
     /** Amounts to deposit */
-    amountIn: AmountInArgument[];
+    amountIn: ActionOutputReference<Quantity>[];
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -409,12 +411,12 @@ export type TokenizedSingleRedeemAction = {
   action: "tokenizedsingleredeem";
   /** Action arguments */
   args: {
-    /** Input token address (optional) */
+    /** Input token address */
     tokenIn: Address;
     /** Output token address */
     tokenOut: Address;
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -432,12 +434,12 @@ export type TokenizedMultiRedeemAction = {
   action: "tokenizedmultiredeem";
   /** Action arguments */
   args: {
-    /** Input token address (optional) */
+    /** Input token address */
     tokenIn: Address;
     /** Output token addresses */
     tokenOut: Address[];
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -458,7 +460,7 @@ export type TransferAction = {
     /** Token to transfer */
     token: Address;
     /** Amount to transfer */
-    amount: AmountInArgument;
+    amount: ActionOutputReference<Quantity>;
     /** Address to transfer to */
     receiver: Address;
     /** Optional ERC721 or ERC1155 token ID */
@@ -483,7 +485,7 @@ export type TransferFromAction = {
     /** Address to transfer to */
     receiver: Address;
     /** Amount to transfer */
-    amount: AmountInArgument;
+    amount: ActionOutputReference<Quantity>;
     /** Optional ERC721 or ERC1155 token ID */
     id?: string;
   };
@@ -504,7 +506,7 @@ export type SingleDepositAction = {
     /** Output token address (optional) */
     tokenOut?: Address;
     /** Amount to deposit */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -527,7 +529,7 @@ export type MultiDepositAction = {
     /** Output token address (optional) */
     tokenOut?: Address;
     /** Amounts to deposit */
-    amountIn: AmountInArgument[];
+    amountIn: ActionOutputReference<Quantity>[];
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -550,7 +552,7 @@ export type SingleRedeemAction = {
     /** Output token address */
     tokenOut: Address;
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -573,7 +575,7 @@ export type MultiRedeemAction = {
     /** Output token addresses */
     tokenOut: Address[];
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -596,7 +598,7 @@ export type MultiOutSingleDepositAction = {
     /** Output token addresses */
     tokenOut: Address[];
     /** Amount to deposit */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -619,14 +621,14 @@ export type SwapAction = {
     /** Output token address */
     tokenOut: Address;
     /** Amount to deposit */
-    amountIn: AmountInArgument;
-    /** Primary contract address */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Primary contract address (optional) */
     primaryAddress?: Address;
     /** Receiver address */
     receiver: Address;
     /** Optional slippage in basis points */
     slippage?: Quantity;
-    /**  */
+    /** Optional pool fee */
     poolFee?: Quantity;
   };
 };
@@ -650,11 +652,11 @@ export type PermitTransferFromAction = {
     /** Address to transfer to */
     receiver: Address;
     /** Permit nonce */
-    nonce: string;
+    nonce: Quantity;
     /** Permit deadline */
-    deadline: string;
+    deadline: Quantity;
     /** Permit signature */
-    signature: string;
+    signature: BytesArg;
   };
 };
 
