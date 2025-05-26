@@ -188,8 +188,18 @@ export type SlippageAction = {
   /** Protocol to interact with */
   protocol: string;
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    amountOut: ActionOutputReference<Quantity>;
+    bps: string;
+  };
 };
+
+export type ActionOutputReference<T> =
+  | T
+  | {
+      useOutputOfCallAt: number;
+      index?: number;
+    };
 
 /**
  * Fee action.
@@ -212,7 +222,12 @@ export type EnsoFeeAction = {
   /** Protocol to interact with */
   protocol: string;
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    token: string;
+    amount: ActionOutputReference<Quantity>;
+    bps: string;
+    receiver?: string;
+  };
 };
 
 /**
@@ -282,11 +297,11 @@ export type BridgeAction = {
     /** Receiver address on destination chain */
     receiver: Address;
     /** Optional callback data to execute on the destination chain */
-    callbackData?: string;
+    callbackData?: BundleAction[];
     /** Optional callback execution gas costs */
     callbackGasLimit?: string;
     /** Optional fee to pay in native asset */
-    bridgeFee?: Quantity;
+    bri?: Quantity;
   };
 };
 
@@ -309,7 +324,7 @@ export type DepositCLMMAction = {
     /** Ticks for the deposit */
     ticks: Quantity;
     /** Fee for the pool to deposit into */
-    fee: [Quantity, Quantity];
+    fee: [Quantity, Quantity]; // Should be poolFee: string
     /** Optional receiver address */
     receiver?: Address;
   };
@@ -395,7 +410,7 @@ export type TokenizedSingleRedeemAction = {
   /** Action arguments */
   args: {
     /** Input token address (optional) */
-    tokenIn?: Address;
+    tokenIn: Address;
     /** Output token address */
     tokenOut: Address;
     /** Amount to redeem */
@@ -418,7 +433,7 @@ export type TokenizedMultiRedeemAction = {
   /** Action arguments */
   args: {
     /** Input token address (optional) */
-    tokenIn?: Address;
+    tokenIn: Address;
     /** Output token addresses */
     tokenOut: Address[];
     /** Amount to redeem */
@@ -611,6 +626,8 @@ export type SwapAction = {
     receiver: Address;
     /** Optional slippage in basis points */
     slippage?: Quantity;
+    /**  */
+    poolFee?: Quantity;
   };
 };
 

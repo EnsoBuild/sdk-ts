@@ -25,6 +25,8 @@ export type Address = `0x${string}`;
 
 export type Quantity = string | number;
 
+export type BytesArg = `0x${string}`;
+
 /**
  * Can be a single address or an array of addresses.
  */
