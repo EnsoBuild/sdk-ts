@@ -575,15 +575,21 @@ describe("docs", () => {
       [
         {
           protocol: "enso",
+          action: "balance",
+          args: {
+            token: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+          },
+        },
+        {
+          protocol: "enso",
           action: "split",
           args: {
-            tokenIn: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
+            tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
             tokenOut: [
-              "0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI
-              "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-              "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
+              "0x6b175474e89094c44da98b954eedeac495271d0f", // USDC
+              "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
             ],
-            amountIn: "3000000000000000000", // 3 ETH to split
+            amountIn: { useOutputOfCallAt: 0 }, // Use the balance from the first action
           },
         },
       ],
@@ -650,22 +656,14 @@ describe("docs", () => {
       [
         // First action to get an output
         {
-          protocol: "enso",
-          action: "route",
+          protocol: "uniswap-v2",
+          action: "swap",
           args: {
-            tokenIn: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
+            tokenIn: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
             tokenOut: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-            amountIn: "1000000000000000000", // 1 ETH
-            slippage: "300", // 3% slippage
-          },
-        },
-        // Second action to calculate minimum
-        {
-          protocol: "enso",
-          action: "slippage",
-          args: {
-            bps: "200", // 2% slippage for minimum calculation
-            amountOut: { useOutputOfCallAt: 0 }, // Reference first action's output
+            amountIn: "1000000000000000000", // 1 WETH
+            primaryAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // Uniswap V2 Router
+            receiver: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
           },
         },
         // Now apply minAmountOut check
@@ -674,7 +672,7 @@ describe("docs", () => {
           action: "minamountout",
           args: {
             amountOut: { useOutputOfCallAt: 0 }, // Reference to first action's output
-            minAmountOut: { useOutputOfCallAt: 1 }, // Reference to second action's output
+            minAmountOut: "1940000000", // hardcoded minimum amount (1.94 USDC)
           },
         },
       ],
