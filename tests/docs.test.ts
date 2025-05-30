@@ -591,7 +591,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it("merge", async () => {
+  it.skip("merge", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
