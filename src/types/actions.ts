@@ -204,9 +204,9 @@ export type MinAmountOutAction = {
   /** Action arguments */
   args: {
     /** Expected output amount in wei (with full decimals) */
-    amountOut: ActionOutputReference<Quantity>;
+    amountOut: StrictOutputReference<Quantity>;
     /** Minimum acceptable amount */
-    minAmountOut: StrictOutputReference<Quantity>;
+    minAmountOut: ActionOutputReference<Quantity>;
   };
 };
 
@@ -223,7 +223,7 @@ export type SlippageAction = {
     /** Maximum acceptable slippage in basis points (1 bps = 0.01%, 100 bps = 1%) */
     bps: Quantity;
     /** Expected output amount (with full decimals) or a return value from a previous action */
-    amountOut: ActionOutputReference<Quantity>;
+    amountOut: StrictOutputReference<Quantity>;
   };
 };
 
