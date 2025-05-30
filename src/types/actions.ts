@@ -1,13 +1,13 @@
-// src/types/actions.ts - Updated types to match OpenAPI specification
+// src/types/actions.ts - Updated to match OpenAPI specification
 
-import { Address, AmountInArgument, Quantity } from "../types";
+import { Address, BytesArg, Quantity } from "../types";
 
 /**
  * Route action using Enso's routing engine.
  */
 export type RouteAction = {
-  /** Protocol for the route */
-  protocol: string;
+  /** Must be 'enso' for route actions */
+  protocol: "enso";
   /** Action type */
   action: "route";
   /** Action arguments matching OpenAPI spec */
@@ -16,18 +16,26 @@ export type RouteAction = {
     tokenIn: Address;
     /** Output token address */
     tokenOut: Address;
-    /** Amount to route */
-    amountIn: AmountInArgument;
-    /** Primary contract address (optional) */
-    primaryAddress?: Address;
-    /** Spender address */
-    spender?: Address;
-    /** Receiver address */
-    receiver?: Address;
-    /** Optional slippage in basis points */
+    /** Amount to route in wei (with full decimals) */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Slippage tolerance in basis points (100 = 1%) */
     slippage?: Quantity;
-    /** Optional pool fee */
+    /** Address to receive the output tokens if not the caller */
+    receiver?: Address;
+    /** Optional address of the router or primary contract to use */
+    primaryAddress?: Address;
+    /** Optional pool fee in basis points when using specific pools */
     poolFee?: Quantity;
+    /** The minimum amount out */
+    minAmountOut?: Quantity;
+    /** The fee in basis points */
+    fee?: Quantity;
+    /** Fee receiver */
+    feeReceiver?: Address;
+    /** A list of aggregators to be ignored from consideration */
+    ignoreAggregators?: string[];
+    /** A list of standards to be ignored from consideration */
+    ignoreStandards?: string[];
   };
 };
 
@@ -41,32 +49,34 @@ export type BalanceAction = {
   action: "balance";
   /** Action arguments */
   args: {
-    /** Token address to get balance for */
-    tokenIn: Address;
+    /** Address of the token to check balance */
+    token: Address;
   };
 };
 
 /**
- * Approve token spending.
+ *  Approve token spending.
  */
 export type ApproveAction = {
+  /** Protocol to approve for */
+  protocol: "erc20";
   /** Action type */
   action: "approve";
-  /** Protocol to approve for */
-  protocol: string;
   /** Action arguments */
   args: {
     /** Token to approve */
     token: Address;
-    /** Spender address */
+    /** Spender address (protocol or router) */
     spender: Address;
-    /** Amount to approve */
-    amount: Quantity;
+    /** Amount to approve in wei (with full decimals) */
+    amount: ActionOutputReference<Quantity>;
+    /** Routing strategy must be router */
+    routingStrategy?: "router";
   };
 };
 
 /**
- * Borrow tokens from a lending protocol.
+ *  Borrow tokens from a lending protocol.
  */
 export type BorrowAction = {
   /** Protocol to borrow from */
@@ -75,13 +85,13 @@ export type BorrowAction = {
   action: "borrow";
   /** Action arguments */
   args: {
-    /** Collateral token address */
+    /** Collateral token address(es) */
     collateral: Address | Address[];
     /** Token to borrow */
     tokenOut: Address;
-    /** Amount to borrow */
-    amountOut: Quantity;
-    /** Primary contract address */
+    /** Amount to borrow in wei (with full decimals) */
+    amountOut: ActionOutputReference<Quantity>;
+    /** Address of the lending pool contract */
     primaryAddress: Address;
   };
 };
@@ -104,20 +114,20 @@ export type HarvestAction = {
 };
 
 /**
- * Repay a loan to a lending protocol.
+ *  Repay a loan to a lending protocol.
  */
 export type RepayAction = {
-  /** Action type */
-  action: "repay";
   /** Protocol to repay to */
   protocol: string;
+  /** Action type */
+  action: "repay";
   /** Action arguments */
   args: {
     /** Token to repay with */
     tokenIn: Address;
-    /** Amount to repay */
-    amountIn: Quantity;
-    /** Primary contract address */
+    /** Amount to repay in wei (with full decimals) */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Address of the lending pool contract */
     primaryAddress: Address;
   };
 };
@@ -144,79 +154,128 @@ export type CallAction = {
 };
 
 /**
- * Split action.
+ * Splits an amount into multiple parts based on specified percentages.
+ *
  */
 export type SplitAction = {
+  /** Must be 'enso' for split actions */
+  protocol: "enso";
   /** Action type */
   action: "split";
-  /** Protocol to interact with */
-  protocol: string;
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    /** The token to split */
+    tokenIn: Address;
+    tokenOut: Address[];
+    amountIn: ActionOutputReference<Quantity>;
+    receiver?: Address;
+  };
 };
 
 /**
- * Merge action.
+ * Merge multiple token inputs into a single output.
  */
 export type MergeAction = {
+  /** Must be 'enso' for merge actions */
+  protocol: "enso";
   /** Action type */
   action: "merge";
-  /** Protocol to interact with */
-  protocol: string;
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    /** Address of token to input */
+    tokenIn: Address[];
+    /** Address of token to receive */
+    tokenOut: Address;
+    /** The amount to send */
+    amountIn: ActionOutputReference<Quantity>[];
+    /** The receiver account */
+    receiver?: Address;
+  };
 };
 
 /**
- * Minimum amount out action.
+ * Minimum amount out action - provides slippage protection with `minAmountOut` as threshold.
  */
 export type MinAmountOutAction = {
+  /** Must be 'enso' for minAmountOut actions */
+  protocol: "enso";
   /** Action type */
-  action: "minAmountOut";
-  /** Protocol to interact with */
-  protocol: string;
+  action: "minamountout";
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    /** Expected output amount in wei (with full decimals) */
+    amountOut: ActionOutputReference<Quantity>;
+    /** Minimum acceptable amount */
+    minAmountOut: StrictOutputReference<Quantity>;
+  };
 };
 
 /**
- * Slippage action.
+ *  Slippage action.
  */
 export type SlippageAction = {
+  /** Must be 'enso' for slippage actions */
+  protocol: "enso";
   /** Action type */
   action: "slippage";
-  /** Protocol to interact with */
-  protocol: string;
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    /** Maximum acceptable slippage in basis points (1 bps = 0.01%, 100 bps = 1%) */
+    bps: Quantity;
+    /** Expected output amount (with full decimals) or a return value from a previous action */
+    amountOut: ActionOutputReference<Quantity>;
+  };
+};
+
+export type ActionOutputReference<T> = T | StrictOutputReference<T>;
+
+export type StrictOutputReference<T> = {
+  useOutputOfCallAt: number;
+  index?: number;
 };
 
 /**
- * Fee action.
+ * Fee action - calculates and deducts a fee from a specified amount.
  */
 export type FeeAction = {
+  /** Must be 'enso' for fee actions */
+  protocol: "enso";
   /** Action type */
   action: "fee";
-  /** Protocol to interact with */
-  protocol: string;
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    /** Token address to apply the fee to */
+    token: Address;
+    /** Amount to apply the fee to (with full decimals) */
+    amount: ActionOutputReference<Quantity>;
+    /** Fee percentage in basis points (1 bps = 0.01%, 100 bps = 1%) */
+    bps: Quantity;
+    /** Address to receive the fee */
+    receiver: Address;
+  };
 };
 
 /**
- * Enso fee action.
+ *  Enso fee action.
  */
 export type EnsoFeeAction = {
+  /** Must be 'enso' for ensofee actions */
+  protocol: "enso";
   /** Action type */
   action: "ensofee";
-  /** Protocol to interact with */
-  protocol: string;
   /** Action arguments */
-  args: Record<string, any>;
+  args: {
+    /** Token address to apply the fee to */
+    token: Address;
+    /** Amount to apply the fee to (with full decimals) */
+    amount: ActionOutputReference<Quantity>;
+    /** Fee percentage in basis points (1 bps = 0.01%, 100 bps = 1%) */
+    bps: Quantity;
+  };
 };
 
 /**
- * Deposit tokens to a protocol.
+ *  Deposit tokens to a protocol.
  */
 export type DepositAction = {
   /** Protocol to deposit to */
@@ -225,21 +284,23 @@ export type DepositAction = {
   action: "deposit";
   /** Action arguments */
   args: {
-    /** Input token(s) */
+    /** Input token(s) - can be single address or array for multiple tokens */
     tokenIn: Address | Address[];
-    /** Output token(s) (optional) */
-    tokenOut?: Address;
-    /** Amount to deposit */
-    amountIn: AmountInArgument | AmountInArgument[];
-    /** Primary contract address */
+    /** Output token(s) - can be single address or array for multiple tokens */
+    tokenOut?: Address | Address[];
+    /** Amount to deposit - can be single value or array for multiple tokens */
+    amountIn:
+      | ActionOutputReference<Quantity>
+      | ActionOutputReference<Quantity>[];
+    /** Address of the protocol contract to interact with */
     primaryAddress: Address;
-    /** Optional recipient address */
+    /** Address to receive the output tokens if not the caller */
     receiver?: Address;
   };
 };
 
 /**
- * Redeem tokens from a protocol.
+ *  Redeem tokens from a protocol.
  */
 export type RedeemAction = {
   /** Protocol to redeem from */
@@ -248,15 +309,15 @@ export type RedeemAction = {
   action: "redeem";
   /** Action arguments */
   args: {
-    /** Input token address (optional) */
+    /** Input token address (shares/tokens to redeem) */
     tokenIn?: Address;
-    /** Output token */
+    /** Output token(s) - can be single address or array for multiple tokens */
     tokenOut: Address | Address[];
-    /** Amount to redeem */
-    amountIn: AmountInArgument;
-    /** Primary contract address */
+    /** Amount to redeem in wei (with full decimals) */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Address of the contract to interact with */
     primaryAddress: Address;
-    /** Optional recipient address */
+    /** Address to receive the output tokens if not the caller */
     receiver?: Address;
   };
 };
@@ -268,25 +329,25 @@ export type BridgeAction = {
   /** Action type */
   action: "bridge";
   /** Protocol to use for bridging */
-  protocol: string;
+  protocol: "stargate";
   /** Action arguments */
   args: {
-    /** Amount to bridge */
-    amountIn: AmountInArgument;
     /** Input token address */
     tokenIn: Address;
-    /** Primary contract address */
+    /** Amount to bridge */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Primary contract address (bridging protocol) */
     primaryAddress: Address;
     /** Destination chain ID */
     destinationChainId: number;
     /** Receiver address on destination chain */
     receiver: Address;
-    /** Optional callback data to execute on the destination chain */
-    callbackData?: string;
+    /** Optional callback data to execute on the destination chain. The callback bundle MUST start with a balance action */
+    callback?: BundleAction[];
     /** Optional callback execution gas costs */
     callbackGasLimit?: string;
     /** Optional fee to pay in native asset */
-    bridgeFee?: Quantity;
+    bridgeFee?: string;
   };
 };
 
@@ -300,16 +361,16 @@ export type DepositCLMMAction = {
   action: "depositclmm";
   /** Action arguments */
   args: {
-    /** Amount of tokens to deposit */
-    amountIn: [AmountInArgument, AmountInArgument];
     /** Input token addresses */
-    tokenIn: [Address, Address];
+    tokenIn: Address[];
     /** Output token address */
     tokenOut: Address;
+    /** Amount of tokens to deposit */
+    amountIn: ActionOutputReference<Quantity>[];
     /** Ticks for the deposit */
-    ticks: Quantity;
+    ticks: Quantity[];
     /** Fee for the pool to deposit into */
-    fee: [Quantity, Quantity];
+    poolFee: Quantity;
     /** Optional receiver address */
     receiver?: Address;
   };
@@ -328,9 +389,9 @@ export type RedeemCLMMAction = {
     /** Input token address to redeem */
     tokenIn: Address;
     /** Output token addresses to receive */
-    tokenOut: [Address, Address];
+    tokenOut: Address[];
     /** Amount of liquidity to redeem */
-    liquidity: AmountInArgument;
+    liquidity: ActionOutputReference<Quantity>;
     /** Token ID of the NFT position */
     tokenId: string;
     /** Optional receiver address */
@@ -353,7 +414,7 @@ export type TokenizedSingleDepositAction = {
     /** Output token address (required) */
     tokenOut: Address;
     /** Amount to deposit */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -376,7 +437,7 @@ export type TokenizedMultiDepositAction = {
     /** Output token address (required) */
     tokenOut: Address;
     /** Amounts to deposit */
-    amountIn: AmountInArgument[];
+    amountIn: ActionOutputReference<Quantity>[];
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -394,12 +455,12 @@ export type TokenizedSingleRedeemAction = {
   action: "tokenizedsingleredeem";
   /** Action arguments */
   args: {
-    /** Input token address (optional) */
-    tokenIn?: Address;
+    /** Input token address */
+    tokenIn: Address;
     /** Output token address */
     tokenOut: Address;
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -417,12 +478,12 @@ export type TokenizedMultiRedeemAction = {
   action: "tokenizedmultiredeem";
   /** Action arguments */
   args: {
-    /** Input token address (optional) */
-    tokenIn?: Address;
+    /** Input token address */
+    tokenIn: Address;
     /** Output token addresses */
     tokenOut: Address[];
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -431,7 +492,7 @@ export type TokenizedMultiRedeemAction = {
 };
 
 /**
- * Transfer tokens to another address.
+ *  Transfer tokens to another address.
  */
 export type TransferAction = {
   /** Protocol to use for transfer */
@@ -442,8 +503,8 @@ export type TransferAction = {
   args: {
     /** Token to transfer */
     token: Address;
-    /** Amount to transfer */
-    amount: AmountInArgument;
+    /** Amount to transfer in wei (with full decimals) */
+    amount: ActionOutputReference<Quantity>;
     /** Address to transfer to */
     receiver: Address;
     /** Optional ERC721 or ERC1155 token ID */
@@ -468,7 +529,7 @@ export type TransferFromAction = {
     /** Address to transfer to */
     receiver: Address;
     /** Amount to transfer */
-    amount: AmountInArgument;
+    amount: ActionOutputReference<Quantity>;
     /** Optional ERC721 or ERC1155 token ID */
     id?: string;
   };
@@ -489,7 +550,7 @@ export type SingleDepositAction = {
     /** Output token address (optional) */
     tokenOut?: Address;
     /** Amount to deposit */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -512,7 +573,7 @@ export type MultiDepositAction = {
     /** Output token address (optional) */
     tokenOut?: Address;
     /** Amounts to deposit */
-    amountIn: AmountInArgument[];
+    amountIn: ActionOutputReference<Quantity>[];
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -535,7 +596,7 @@ export type SingleRedeemAction = {
     /** Output token address */
     tokenOut: Address;
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -558,7 +619,7 @@ export type MultiRedeemAction = {
     /** Output token addresses */
     tokenOut: Address[];
     /** Amount to redeem */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -581,7 +642,7 @@ export type MultiOutSingleDepositAction = {
     /** Output token addresses */
     tokenOut: Address[];
     /** Amount to deposit */
-    amountIn: AmountInArgument;
+    amountIn: ActionOutputReference<Quantity>;
     /** Primary contract address */
     primaryAddress: Address;
     /** Optional receiver address */
@@ -590,7 +651,7 @@ export type MultiOutSingleDepositAction = {
 };
 
 /**
- * Swap tokens action.
+ *  Swap tokens action.
  */
 export type SwapAction = {
   /** Protocol for the swap */
@@ -603,14 +664,16 @@ export type SwapAction = {
     tokenIn: Address;
     /** Output token address */
     tokenOut: Address;
-    /** Amount to deposit */
-    amountIn: AmountInArgument;
-    /** Primary contract address */
+    /** Amount to swap in wei (with full decimals) */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Address of the router or pool contract */
     primaryAddress?: Address;
-    /** Receiver address */
+    /** Address to receive the output tokens */
     receiver: Address;
-    /** Optional slippage in basis points */
+    /** Slippage tolerance in basis points (100 = 1%) */
     slippage?: Quantity;
+    /** Optional pool fee in basis points when using specific pools */
+    poolFee?: Quantity;
   };
 };
 
@@ -624,20 +687,20 @@ export type PermitTransferFromAction = {
   action: "permittransferfrom";
   /** Action arguments */
   args: {
-    /** Token(s) to approve */
+    /** Token(s) to transfer */
     token: Address | Address[];
-    /** Amount(s) to approve */
-    amount: Quantity | Quantity[];
+    /** Amount(s) to transfer */
+    amount: ActionOutputReference<Quantity> | ActionOutputReference<Quantity>[];
     /** Address to transfer from */
     sender: Address;
     /** Address to transfer to */
     receiver: Address;
-    /** Permit nonce */
-    nonce: string;
-    /** Permit deadline */
-    deadline: string;
-    /** Permit signature */
-    signature: string;
+    /** Nonce value to prevent signature replay */
+    nonce: Quantity;
+    /** Timestamp after which the signature is invalid */
+    deadline: Quantity;
+    /** The EIP-2612 permit signature */
+    signature: BytesArg;
   };
 };
 

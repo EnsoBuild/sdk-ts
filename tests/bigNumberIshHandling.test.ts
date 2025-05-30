@@ -45,7 +45,7 @@ describe("BigNumberIsh Handling", () => {
       tokenAddress: "0xToken" as Address,
       chainId: 1,
       amount: "1000000000000000000000000", // Very large string number
-      routingStrategy: "router",
+      // routingStrategy: "router",
     };
 
     await client.getApprovalData(approveParams);
@@ -62,7 +62,7 @@ describe("BigNumberIsh Handling", () => {
       tokenAddress: "0xToken" as Address,
       chainId: 1,
       amount: safeNumber,
-      routingStrategy: "router",
+      // routingStrategy: "router",
     };
 
     await client.getApprovalData(approveParams);
@@ -80,7 +80,6 @@ describe("BigNumberIsh Handling", () => {
       tokenAddress: "0xToken" as Address,
       chainId: 1,
       amount: largeNumber,
-      routingStrategy: "router",
     };
 
     await client.getApprovalData(approveParams);
@@ -106,7 +105,6 @@ describe("BigNumberIsh Handling", () => {
       tokenAddress: "0xToken" as Address,
       chainId: 1,
       amount: "1000000000000000000", // String format
-      routingStrategy: "router",
     });
 
     // Test with number
@@ -115,7 +113,6 @@ describe("BigNumberIsh Handling", () => {
       tokenAddress: "0xToken" as Address,
       chainId: 1,
       amount: 1000000000, // Number format
-      routingStrategy: "router",
     });
 
     // Verify all request results
@@ -255,7 +252,6 @@ describe("BigNumberIsh Handling", () => {
       tokenAddress: "0xToken" as Address,
       chainId: 1,
       amount: "1000000000000000000",
-      routingStrategy: "router",
     });
 
     // Test with number amounts

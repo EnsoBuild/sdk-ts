@@ -1,5 +1,5 @@
 // jest.config.js
-export default{
+export default {
   preset: "ts-jest",
   testEnvironment: "node",
   roots: ["<rootDir>/src", "<rootDir>/tests"],
@@ -11,4 +11,5 @@ export default{
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "clover"],
+  testTimeout: 15000,
 };

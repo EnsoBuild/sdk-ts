@@ -25,6 +25,8 @@ export type Address = `0x${string}`;
 
 export type Quantity = string | number;
 
+export type BytesArg = `0x${string}`;
+
 /**
  * Can be a single address or an array of addresses.
  */
@@ -161,8 +163,6 @@ export type ApproveParams = {
   chainId: number;
   /** Amount of tokens to approve in wei */
   amount: Quantity;
-  /** Routing strategy to use. Use the same routing strategy you used to create the transaction */
-  routingStrategy: RoutingStrategy;
 };
 
 /**
@@ -409,18 +409,6 @@ export type ProtocolData = {
   /** Supported chains for this protocol */
   chains: Network[] | null;
 };
-
-/**
- * Represents an amount input that can either be a fixed value or reference to another call's output.
- */
-export type AmountInArgument =
-  | string
-  | {
-      /** Index of the call whose output should be used */
-      useOutputOfCallAt: number;
-      /** Optional specific index within the output */
-      index?: number;
-    };
 
 /**
  * Parameters for bundle creation.

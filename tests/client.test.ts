@@ -100,7 +100,6 @@ describe("EnsoClient", () => {
       tokenAddress: "0xToken" as Address,
       chainId: 1,
       amount: 1000000,
-      routingStrategy: "router",
     };
 
     it("should call the correct endpoint with correct params", async () => {
@@ -109,7 +108,10 @@ describe("EnsoClient", () => {
       const result = await client.getApprovalData(approveParams);
 
       expect(mock.history.get[0].url).toBe("/wallet/approve");
-      expect(mock.history.get[0].params).toEqual(approveParams);
+      expect(mock.history.get[0].params).toEqual({
+        ...approveParams,
+        routingStrategy: "router",
+      });
       expect(result).toEqual(mockApproveData);
     });
 
@@ -118,10 +120,9 @@ describe("EnsoClient", () => {
 
       await client.getApprovalData({
         ...approveParams,
-        routingStrategy: "delegate",
       });
 
-      expect(mock.history.get[0].params.routingStrategy).toBe("delegate");
+      expect(mock.history.get[0].params.routingStrategy).toBe("router");
     });
 
     it("should handle API errors gracefully", async () => {
@@ -320,7 +321,6 @@ describe("EnsoClient", () => {
         tokenAddress: "0xToken",
         chainId: 1,
         amount: 1000000,
-        routingStrategy: "router",
       });
 
       const route = await client.getRouteData({
@@ -355,7 +355,6 @@ describe("EnsoClient", () => {
           tokenAddress: "0xToken",
           chainId: 1,
           amount: 1000000,
-          routingStrategy: "router",
         }),
       ).rejects.toThrow();
     });
@@ -369,7 +368,6 @@ describe("EnsoClient", () => {
           tokenAddress: "0xToken",
           chainId: 1,
           amount: 1000000,
-          routingStrategy: "router",
         }),
       ).rejects.toThrow();
     });
@@ -383,7 +381,6 @@ describe("EnsoClient", () => {
         tokenAddress: "0xToken" as Address,
         chainId: 1,
         amount: largeAmount,
-        routingStrategy: "router",
       };
 
       mock.onGet("/wallet/approve").reply(200, mockApproveData);
