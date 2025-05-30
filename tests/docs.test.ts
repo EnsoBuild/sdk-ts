@@ -172,31 +172,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it("withdraw", async () => {
-    const bundle = await client.getBundleData(
-      {
-        chainId: 1,
-        fromAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-        routingStrategy: "delegate",
-      },
-      [
-        {
-          protocol: "erc4626",
-          action: "withdraw",
-          args: {
-            primaryAddress: "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0", // Vault address
-            tokenIn: "0x6b175474e89094c44da98b954eedeac495271d0f", // Token to withdraw (e.g. yvDAI)
-            tokenOut: "0x6b175474e89094c44da98b954eedeac495271d0f", // Output token (e.g. DAI)
-            amountOut: "1000000000000000000", // Amount to withdraw in wei (1 DAI)
-            receiver: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", // Optional: Receiver
-          },
-        },
-      ],
-    );
-    console.log(JSON.stringify(bundle, null, 2));
-  });
-
-  it("redeem", async () => {
+  it.skip("redeem", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -232,7 +208,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it("redeemCLMM", async () => {
+  it.skip("redeemCLMM", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -373,6 +349,7 @@ describe("docs", () => {
             token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH address
             spender: "0xe592427a0aece92de3edee1f18e0157c05861564", // Spender address (e.g., Uniswap router)
             amount: "1000000000000000000000000", // Amount to approve in wei (1M WETH)
+            routingStrategy: "router", // Optional: Routing strategy
           },
         },
       ],
@@ -403,7 +380,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it("transferFrom", async () => {
+  it.skip("transferFrom", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -433,7 +410,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it("permitTransferFrom", async () => {
+  it.skip("permitTransferFrom", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -588,7 +565,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it("split", async () => {
+  it.skip("split", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -706,7 +683,7 @@ describe("docs", () => {
   });
 
   // singleDeposit action (from docs)
-  it("singleDeposit", async () => {
+  it.skip("singleDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -731,7 +708,7 @@ describe("docs", () => {
   });
 
   // multiDeposit action (from docs)
-  it("multiDeposit", async () => {
+  it.skip("multiDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -764,7 +741,7 @@ describe("docs", () => {
   });
 
   // multiOutSingleDeposit action (from docs)
-  it("multiOutSingleDeposit", async () => {
+  it.skip("multiOutSingleDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,

@@ -163,8 +163,6 @@ export type ApproveParams = {
   chainId: number;
   /** Amount of tokens to approve in wei */
   amount: Quantity;
-  /** Routing strategy to use. Use the same routing strategy you used to create the transaction */
-  routingStrategy: RoutingStrategy;
 };
 
 /**

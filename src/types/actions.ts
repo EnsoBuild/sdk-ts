@@ -59,7 +59,7 @@ export type BalanceAction = {
  */
 export type ApproveAction = {
   /** Protocol to approve for */
-  protocol: "erc20"; 
+  protocol: "erc20";
   /** Action type */
   action: "approve";
   /** Action arguments */
@@ -70,6 +70,8 @@ export type ApproveAction = {
     spender: Address;
     /** Amount to approve in wei (with full decimals) */
     amount: ActionOutputReference<Quantity>;
+    /** Routing strategy must be router */
+    routingStrategy?: "router";
   };
 };
 
@@ -127,29 +129,6 @@ export type RepayAction = {
     amountIn: ActionOutputReference<Quantity>;
     /** Address of the lending pool contract */
     primaryAddress: Address;
-  };
-};
-
-/**
- * Withdraw tokens from a DeFi position.
- */
-export type WithdrawAction = {
-  /** Protocol to withdraw from */
-  protocol: string;
-  /** Action type */
-  action: "withdraw";
-  /** Action arguments */
-  args: {
-    /** Address of the protocol contract to interact with */
-    primaryAddress: Address;
-    /** Address of the token to withdraw from (often a share or receipt token) */
-    tokenIn: Address;
-    /** Address of the underlying token to receive */
-    tokenOut: Address;
-    /** Amount of tokenOut to withdraw in wei (with full decimals) */
-    amountOut: ActionOutputReference<Quantity>;
-    /** Address to receive the withdrawn tokens if not the caller */
-    receiver?: Address;
   };
 };
 
@@ -759,5 +738,4 @@ export type BundleAction =
   | MinAmountOutAction
   | SlippageAction
   | FeeAction
-  | EnsoFeeAction
-  | WithdrawAction;
+  | EnsoFeeAction;

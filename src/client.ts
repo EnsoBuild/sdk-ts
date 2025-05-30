@@ -1,37 +1,31 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import {
-  Address,
-  ApproveParams,
+  ActionData,
   ApproveData,
-  RouteParams,
-  RouteData,
+  ApproveParams,
   BalanceParams,
-  WalletBalance,
-  TokenParams,
-  TokenData,
+  BundleAction,
+  BundleData,
+  BundleParams,
+  ConnectedNetwork,
+  IporShortcutData,
+  IporShortcutInputData,
+  MultiPriceParams,
+  NetworkParams,
+  NonTokenizedParams,
+  PaginatedNonTokenizedPositionData,
+  PaginatedTokenData,
   PriceData,
   PriceParams,
-  MultiPriceParams,
-  ProtocolParams,
-  ProtocolData,
-  BundleParams,
-  BundleData,
-  BundleAction,
-  IporShortcutInputData,
-  IporShortcutData,
-  StandardData,
-  StandardAction,
-  ActionData,
-  NonTokenizedPositionData,
-  Network,
-  ConnectedNetwork,
   Project,
+  ProtocolData,
+  ProtocolParams,
+  RouteData,
   RouteNonTokenizedParams,
-  NetworkParams,
-  PaginatedTokenData,
-  PaginatedNonTokenizedPositionData,
-  NonTokenizedParams,
-  RoutingStrategy,
+  RouteParams,
+  StandardData,
+  TokenParams,
+  WalletBalance,
 } from "./types";
 
 const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
@@ -68,7 +62,7 @@ export class EnsoClient {
       baseURL,
       headers: {
         Authorization: `Bearer ${apiKey}`,
-      },
+      }
     });
   }
 
@@ -107,9 +101,9 @@ export class EnsoClient {
   }
 
   /**
-   * Gets approval data to spend a token from the wallet.
+   * Gets approval data to spend a token from an EOA wallet.
    *
-   * Returns a transaction that approves your Enso wallet to spend the given amount of specified tokens.
+   * Returns a transaction that approves your EOA wallet to spend the given amount of specified tokens.
    *
    * @param {ApproveParams} params - Parameters for the approval request
    * @returns {Promise<ApproveData>} Approval transaction data
@@ -129,7 +123,7 @@ export class EnsoClient {
     return this.request<ApproveData>({
       url,
       method: "GET",
-      params,
+      params: { ...params, routingStrategy: "router" },
     });
   }
 
