@@ -1,7 +1,7 @@
 import { EnsoClient } from "../src/index";
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
-import { Address, BundleAction } from "../src/types";
+import { Address, BundleAction } from "../src/types/types";
 
 // Mock server for integration tests
 const server = setupServer(

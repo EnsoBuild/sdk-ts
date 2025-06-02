@@ -1,6 +1,6 @@
 // src/types/actions.ts - Updated to match OpenAPI specification
 
-import { Address, BytesArg, Quantity } from "../types";
+import { Address, BytesArg, Quantity } from "./types";
 
 /**
  * Route action using Enso's routing engine.

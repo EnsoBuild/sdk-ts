@@ -27,7 +27,7 @@ import {
   TokenData,
   TokenParams,
   WalletBalance
-} from "./types";
+} from "./types/types";
 
 export type {
   ActionData, Address, ApproveData, ApproveParams, BalanceParams, BundleAction, BundleData, BundleParams, ConnectedNetwork, IporShortcutData, IporShortcutInputData, MultiPriceParams, Network, NonTokenizedPositionData, PriceData,
