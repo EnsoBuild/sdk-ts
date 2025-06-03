@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { NonTokenizedControllerTokens200Response } from './api';
+import { NonTokenizedControllerTokens200Response } from '@ensobuild/shortcuts-sdk';
 
 const instance: NonTokenizedControllerTokens200Response = {
     meta,

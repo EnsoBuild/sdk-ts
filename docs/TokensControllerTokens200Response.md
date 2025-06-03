@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { TokensControllerTokens200Response } from './api';
+import { TokensControllerTokens200Response } from '@ensobuild/shortcuts-sdk';
 
 const instance: TokensControllerTokens200Response = {
     meta,

@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Hop } from './api';
+import { Hop } from '@ensobuild/shortcuts-sdk';
 
 const instance: Hop = {
     tokenIn,

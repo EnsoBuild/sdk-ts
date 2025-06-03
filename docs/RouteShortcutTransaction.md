@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { RouteShortcutTransaction } from './api';
+import { RouteShortcutTransaction } from '@ensobuild/shortcuts-sdk';
 
 const instance: RouteShortcutTransaction = {
     gas,

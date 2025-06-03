@@ -24,7 +24,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { PositionModel } from './api';
+import { PositionModel } from '@ensobuild/shortcuts-sdk';
 
 const instance: PositionModel = {
     address,

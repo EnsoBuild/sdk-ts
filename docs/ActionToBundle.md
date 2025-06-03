@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ActionToBundle } from './api';
+import { ActionToBundle } from '@ensobuild/shortcuts-sdk';
 
 const instance: ActionToBundle = {
     protocol,

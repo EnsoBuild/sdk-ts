@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { TokenModel } from './api';
+import { TokenModel } from '@ensobuild/shortcuts-sdk';
 
 const instance: TokenModel = {
     address,

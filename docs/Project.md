@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Project } from './api';
+import { Project } from '@ensobuild/shortcuts-sdk';
 
 const instance: Project = {
     id,

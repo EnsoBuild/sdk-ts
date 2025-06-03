@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ProtocolModel } from './api';
+import { ProtocolModel } from '@ensobuild/shortcuts-sdk';
 
 const instance: ProtocolModel = {
     project,

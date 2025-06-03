@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { NonTokenizedModel } from './api';
+import { NonTokenizedModel } from '@ensobuild/shortcuts-sdk';
 
 const instance: NonTokenizedModel = {
     chainId,

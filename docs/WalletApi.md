@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost:3000*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**walletControllerCreateApproveTransaction**](#walletcontrollercreateapprovetransaction) | **GET** /api/v1/wallet/approve | Returns transaction that approves your EnsoWallet to spend tokens|
-|[**walletControllerWalletBalances**](#walletcontrollerwalletbalances) | **GET** /api/v1/wallet/balances | Returns all balances for a given wallet|
+|[**createApproveTransaction**](#createapprovetransaction) | **GET** /api/v1/wallet/approve | Returns transaction that approves your EnsoWallet to spend tokens|
+|[**walletBalances**](#walletbalances) | **GET** /api/v1/wallet/balances | Returns all balances for a given wallet|
 
-# **walletControllerCreateApproveTransaction**
-> WalletApproveTransaction walletControllerCreateApproveTransaction()
+# **createApproveTransaction**
+> WalletApproveTransaction createApproveTransaction()
 
 
 ### Example
@@ -17,7 +17,7 @@ All URIs are relative to *http://localhost:3000*
 import {
     WalletApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new WalletApi(configuration);
@@ -28,7 +28,7 @@ let amount: string; //Amount of tokens to approve in wei (default to '1000000000
 let chainId: number; //Chain ID of the network to execute the transaction on (optional) (default to 1)
 let routingStrategy: 'ensowallet' | 'router' | 'delegate' | 'router-legacy' | 'delegate-legacy'; //Routing strategy to use (optional) (default to undefined)
 
-const { status, data } = await apiInstance.walletControllerCreateApproveTransaction(
+const { status, data } = await apiInstance.createApproveTransaction(
     fromAddress,
     tokenAddress,
     amount,
@@ -69,8 +69,8 @@ const { status, data } = await apiInstance.walletControllerCreateApproveTransact
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **walletControllerWalletBalances**
-> Array<WalletBalance> walletControllerWalletBalances()
+# **walletBalances**
+> Array<WalletBalance> walletBalances()
 
 
 ### Example
@@ -79,7 +79,7 @@ const { status, data } = await apiInstance.walletControllerCreateApproveTransact
 import {
     WalletApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new WalletApi(configuration);
@@ -88,7 +88,7 @@ let eoaAddress: string; //Address of the eoa with which to associate the ensoWal
 let useEoa: boolean; //If true returns balances for the provided eoaAddress, instead of the associated ensoWallet (default to false)
 let chainId: number; //Chain ID of the network to execute the transaction on (optional) (default to 1)
 
-const { status, data } = await apiInstance.walletControllerWalletBalances(
+const { status, data } = await apiInstance.walletBalances(
     eoaAddress,
     useEoa,
     chainId

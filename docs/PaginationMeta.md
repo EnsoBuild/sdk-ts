@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { PaginationMeta } from './api';
+import { PaginationMeta } from '@ensobuild/shortcuts-sdk';
 
 const instance: PaginationMeta = {
     total,

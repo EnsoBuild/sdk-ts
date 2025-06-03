@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { BundleShortcutTransaction } from './api';
+import { BundleShortcutTransaction } from '@ensobuild/shortcuts-sdk';
 
 const instance: BundleShortcutTransaction = {
     bundle,

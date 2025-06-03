@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Price } from './api';
+import { Price } from '@ensobuild/shortcuts-sdk';
 
 const instance: Price = {
     decimals,

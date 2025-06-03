@@ -4,14 +4,14 @@ All URIs are relative to *http://localhost:3000*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**bundleControllerBundleShortcutTransaction**](#bundlecontrollerbundleshortcuttransaction) | **POST** /api/v1/shortcuts/bundle | Bundle a list of actions into a single tx|
-|[**iporControllerIporShortcutTransaction**](#iporcontrolleriporshortcuttransaction) | **POST** /api/v1/shortcuts/static/ipor | Get transaction for IPOR shortcut|
-|[**nontokenizedControllerRouteNontokenizedShorcutTransaction**](#nontokenizedcontrollerroutenontokenizedshorcuttransaction) | **GET** /api/v1/shortcuts/route/nontokenized | Best route from a token to nontokenized position|
-|[**routerControllerPostRouteShortcutTransaction**](#routercontrollerpostrouteshortcuttransaction) | **POST** /api/v1/shortcuts/route | Best route from a token to another|
-|[**routerControllerRouteShortcutTransaction**](#routercontrollerrouteshortcuttransaction) | **GET** /api/v1/shortcuts/route | Best route from a token to another|
+|[**bundleShortcutTransaction**](#bundleshortcuttransaction) | **POST** /api/v1/shortcuts/bundle | Bundle a list of actions into a single tx|
+|[**iporShortcutTransaction**](#iporshortcuttransaction) | **POST** /api/v1/shortcuts/static/ipor | Get transaction for IPOR shortcut|
+|[**postRouteShortcutTransaction**](#postrouteshortcuttransaction) | **POST** /api/v1/shortcuts/route | Best route from a token to another|
+|[**routeNontokenizedShorcutTransaction**](#routenontokenizedshorcuttransaction) | **GET** /api/v1/shortcuts/route/nontokenized | Best route from a token to nontokenized position|
+|[**routeShortcutTransaction**](#routeshortcuttransaction) | **GET** /api/v1/shortcuts/route | Best route from a token to another|
 
-# **bundleControllerBundleShortcutTransaction**
-> BundleShortcutTransaction bundleControllerBundleShortcutTransaction(actionToBundle)
+# **bundleShortcutTransaction**
+> BundleShortcutTransaction bundleShortcutTransaction(actionToBundle)
 
 
 ### Example
@@ -20,7 +20,7 @@ All URIs are relative to *http://localhost:3000*
 import {
     ShortcutsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new ShortcutsApi(configuration);
@@ -34,7 +34,7 @@ let receiver: string; //Ethereum address of the receiver of the tokenOut (option
 let spender: string; //Ethereum address of the spender of the tokenIn (optional) (default to undefined)
 let ignoreAggregators: Array<string>; //A list of swap aggregators to be ignored from consideration (optional) (default to undefined)
 
-const { status, data } = await apiInstance.bundleControllerBundleShortcutTransaction(
+const { status, data } = await apiInstance.bundleShortcutTransaction(
     fromAddress,
     actionToBundle,
     chainId,
@@ -81,8 +81,8 @@ const { status, data } = await apiInstance.bundleControllerBundleShortcutTransac
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **iporControllerIporShortcutTransaction**
-> IporShortcutTransaction iporControllerIporShortcutTransaction(iporShortcutInput)
+# **iporShortcutTransaction**
+> IporShortcutTransaction iporShortcutTransaction(iporShortcutInput)
 
 
 ### Example
@@ -92,7 +92,7 @@ import {
     ShortcutsApi,
     Configuration,
     IporShortcutInput
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new ShortcutsApi(configuration);
@@ -101,7 +101,7 @@ let fromAddress: string; //Ethereum address of the wallet to send the transactio
 let iporShortcutInput: IporShortcutInput; //
 let chainId: number; //Chain ID of the network to execute the transaction on (optional) (default to 1)
 
-const { status, data } = await apiInstance.iporControllerIporShortcutTransaction(
+const { status, data } = await apiInstance.iporShortcutTransaction(
     fromAddress,
     iporShortcutInput,
     chainId
@@ -138,8 +138,60 @@ const { status, data } = await apiInstance.iporControllerIporShortcutTransaction
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **nontokenizedControllerRouteNontokenizedShorcutTransaction**
-> RouteShortcutTransaction nontokenizedControllerRouteNontokenizedShorcutTransaction()
+# **postRouteShortcutTransaction**
+> RouteShortcutTransaction postRouteShortcutTransaction(routeShortcutVariableInputs)
+
+
+### Example
+
+```typescript
+import {
+    ShortcutsApi,
+    Configuration,
+    RouteShortcutVariableInputs
+} from '@ensobuild/shortcuts-sdk';
+
+const configuration = new Configuration();
+const apiInstance = new ShortcutsApi(configuration);
+
+let routeShortcutVariableInputs: RouteShortcutVariableInputs; //
+
+const { status, data } = await apiInstance.postRouteShortcutTransaction(
+    routeShortcutVariableInputs
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **routeShortcutVariableInputs** | **RouteShortcutVariableInputs**|  | |
+
+
+### Return type
+
+**RouteShortcutTransaction**
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** |  |  -  |
+|**400** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **routeNontokenizedShorcutTransaction**
+> RouteShortcutTransaction routeNontokenizedShorcutTransaction()
 
 
 ### Example
@@ -148,7 +200,7 @@ const { status, data } = await apiInstance.iporControllerIporShortcutTransaction
 import {
     ShortcutsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new ShortcutsApi(configuration);
@@ -166,7 +218,7 @@ let fee: Array<string>; //Fee in basis points (1/10000) for each amountIn value.
 let feeReceiver: string; //The Ethereum address that will receive the collected fee. Required if fee is provided (optional) (default to undefined)
 let spender: string; //Ethereum address of the spender of the tokenIn (optional) (default to undefined)
 
-const { status, data } = await apiInstance.nontokenizedControllerRouteNontokenizedShorcutTransaction(
+const { status, data } = await apiInstance.routeNontokenizedShorcutTransaction(
     fromAddress,
     tokenIn,
     positionOut,
@@ -222,60 +274,8 @@ const { status, data } = await apiInstance.nontokenizedControllerRouteNontokeniz
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **routerControllerPostRouteShortcutTransaction**
-> RouteShortcutTransaction routerControllerPostRouteShortcutTransaction(routeShortcutVariableInputs)
-
-
-### Example
-
-```typescript
-import {
-    ShortcutsApi,
-    Configuration,
-    RouteShortcutVariableInputs
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new ShortcutsApi(configuration);
-
-let routeShortcutVariableInputs: RouteShortcutVariableInputs; //
-
-const { status, data } = await apiInstance.routerControllerPostRouteShortcutTransaction(
-    routeShortcutVariableInputs
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **routeShortcutVariableInputs** | **RouteShortcutVariableInputs**|  | |
-
-
-### Return type
-
-**RouteShortcutTransaction**
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** |  |  -  |
-|**400** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **routerControllerRouteShortcutTransaction**
-> RouteShortcutTransaction routerControllerRouteShortcutTransaction()
+# **routeShortcutTransaction**
+> RouteShortcutTransaction routeShortcutTransaction()
 
 
 ### Example
@@ -284,7 +284,7 @@ const { status, data } = await apiInstance.routerControllerPostRouteShortcutTran
 import {
     ShortcutsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new ShortcutsApi(configuration);
@@ -307,7 +307,7 @@ let ignoreStandards: Array<string>; //A list of standards to be ignored from con
 let referralCode: string; //Referral code that will be included in an on-chain event. (optional) (default to undefined)
 let destinationChainId: number; //Chain ID of the network to bridge to and receive tokenOut (optional) (default to undefined)
 
-const { status, data } = await apiInstance.routerControllerRouteShortcutTransaction(
+const { status, data } = await apiInstance.routeShortcutTransaction(
     fromAddress,
     amountIn,
     tokenIn,

@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ConnectedNetwork } from './api';
+import { ConnectedNetwork } from '@ensobuild/shortcuts-sdk';
 
 const instance: ConnectedNetwork = {
     id,

@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { WalletApproveTransaction } from './api';
+import { WalletApproveTransaction } from '@ensobuild/shortcuts-sdk';
 
 const instance: WalletApproveTransaction = {
     tx,

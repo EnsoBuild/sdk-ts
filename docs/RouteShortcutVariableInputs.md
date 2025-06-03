@@ -27,7 +27,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { RouteShortcutVariableInputs } from './api';
+import { RouteShortcutVariableInputs } from '@ensobuild/shortcuts-sdk';
 
 const instance: RouteShortcutVariableInputs = {
     chainId,

@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { IporShortcutInput } from './api';
+import { IporShortcutInput } from '@ensobuild/shortcuts-sdk';
 
 const instance: IporShortcutInput = {
     isRouter,

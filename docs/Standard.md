@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Standard } from './api';
+import { Standard } from '@ensobuild/shortcuts-sdk';
 
 const instance: Standard = {
     protocol,

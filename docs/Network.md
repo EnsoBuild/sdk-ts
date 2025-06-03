@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Network } from './api';
+import { Network } from '@ensobuild/shortcuts-sdk';
 
 const instance: Network = {
     id,

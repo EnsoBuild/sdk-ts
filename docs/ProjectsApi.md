@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost:3000*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**projectsControllerGetStandardsByProject**](#projectscontrollergetstandardsbyproject) | **GET** /api/v1/projects/{project}/protocols | Returns protocols available by project|
-|[**projectsControllerStandards**](#projectscontrollerstandards) | **GET** /api/v1/projects | Returns the overarching projects or platforms associated with the available projects|
+|[**getStandardsByProject**](#getstandardsbyproject) | **GET** /api/v1/projects/{project}/protocols | Returns protocols available by project|
+|[**projects**](#projects) | **GET** /api/v1/projects | Returns the overarching projects or platforms associated with the available projects|
 
-# **projectsControllerGetStandardsByProject**
-> Array<ProtocolModel> projectsControllerGetStandardsByProject()
+# **getStandardsByProject**
+> Array<ProtocolModel> getStandardsByProject()
 
 
 ### Example
@@ -17,14 +17,14 @@ All URIs are relative to *http://localhost:3000*
 import {
     ProjectsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new ProjectsApi(configuration);
 
 let project: string; //The overarching project or platform (default to undefined)
 
-const { status, data } = await apiInstance.projectsControllerGetStandardsByProject(
+const { status, data } = await apiInstance.getStandardsByProject(
     project
 );
 ```
@@ -57,8 +57,8 @@ const { status, data } = await apiInstance.projectsControllerGetStandardsByProje
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **projectsControllerStandards**
-> Array<Project> projectsControllerStandards()
+# **projects**
+> Array<Project> projects()
 
 
 ### Example
@@ -67,12 +67,12 @@ const { status, data } = await apiInstance.projectsControllerGetStandardsByProje
 import {
     ProjectsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new ProjectsApi(configuration);
 
-const { status, data } = await apiInstance.projectsControllerStandards();
+const { status, data } = await apiInstance.projects();
 ```
 
 ### Parameters

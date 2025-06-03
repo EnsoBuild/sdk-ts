@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { IporShortcutTransaction } from './api';
+import { IporShortcutTransaction } from '@ensobuild/shortcuts-sdk';
 
 const instance: IporShortcutTransaction = {
     createdAt,

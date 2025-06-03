@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { PaginatedResult } from './api';
+import { PaginatedResult } from '@ensobuild/shortcuts-sdk';
 
 const instance: PaginatedResult = {
     meta,

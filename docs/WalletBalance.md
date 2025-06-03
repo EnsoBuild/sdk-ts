@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { WalletBalance } from './api';
+import { WalletBalance } from '@ensobuild/shortcuts-sdk';
 
 const instance: WalletBalance = {
     token,

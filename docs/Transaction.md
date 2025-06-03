@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Transaction } from './api';
+import { Transaction } from '@ensobuild/shortcuts-sdk';
 
 const instance: Transaction = {
     data,

@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { StandardAction } from './api';
+import { StandardAction } from '@ensobuild/shortcuts-sdk';
 
 const instance: StandardAction = {
     action,

@@ -4,13 +4,13 @@ All URIs are relative to *http://localhost:3000*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**actionsControllerFindAll**](#actionscontrollerfindall) | **GET** /api/v1/actions | Returns actions available to use in bundle shortcuts|
-|[**actionsControllerGetActionsBySlug**](#actionscontrollergetactionsbyslug) | **GET** /api/v1/actions/{slug} | Returns actions available to use in bundle shortcuts for a given protocol|
-|[**standardsControllerGetProtocolBySlug**](#standardscontrollergetprotocolbyslug) | **GET** /api/v1/standards/{slug} | Returns a standard by slug|
-|[**standardsControllerStandards**](#standardscontrollerstandards) | **GET** /api/v1/standards | Returns standards and methods available to use in bundle shortcuts|
+|[**findAllActions**](#findallactions) | **GET** /api/v1/actions | Returns actions available to use in bundle shortcuts|
+|[**getActionsBySlug**](#getactionsbyslug) | **GET** /api/v1/actions/{slug} | Returns actions available to use in bundle shortcuts for a given protocol|
+|[**getProtocolBySlug**](#getprotocolbyslug) | **GET** /api/v1/standards/{slug} | Returns a standard by slug|
+|[**standards**](#standards) | **GET** /api/v1/standards | Returns standards and methods available to use in bundle shortcuts|
 
-# **actionsControllerFindAll**
-> Array<Action> actionsControllerFindAll()
+# **findAllActions**
+> Array<Action> findAllActions()
 
 
 ### Example
@@ -19,12 +19,12 @@ All URIs are relative to *http://localhost:3000*
 import {
     StandardsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new StandardsApi(configuration);
 
-const { status, data } = await apiInstance.actionsControllerFindAll();
+const { status, data } = await apiInstance.findAllActions();
 ```
 
 ### Parameters
@@ -52,8 +52,8 @@ This endpoint does not have any parameters.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **actionsControllerGetActionsBySlug**
-> Array<Action> actionsControllerGetActionsBySlug()
+# **getActionsBySlug**
+> Array<Action> getActionsBySlug()
 
 
 ### Example
@@ -62,14 +62,14 @@ This endpoint does not have any parameters.
 import {
     StandardsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new StandardsApi(configuration);
 
 let slug: string; // (default to undefined)
 
-const { status, data } = await apiInstance.actionsControllerGetActionsBySlug(
+const { status, data } = await apiInstance.getActionsBySlug(
     slug
 );
 ```
@@ -102,8 +102,8 @@ const { status, data } = await apiInstance.actionsControllerGetActionsBySlug(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **standardsControllerGetProtocolBySlug**
-> Array<ProtocolModel> standardsControllerGetProtocolBySlug()
+# **getProtocolBySlug**
+> Array<ProtocolModel> getProtocolBySlug()
 
 
 ### Example
@@ -112,14 +112,14 @@ const { status, data } = await apiInstance.actionsControllerGetActionsBySlug(
 import {
     StandardsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new StandardsApi(configuration);
 
 let slug: string; //The protocol slug (default to undefined)
 
-const { status, data } = await apiInstance.standardsControllerGetProtocolBySlug(
+const { status, data } = await apiInstance.getProtocolBySlug(
     slug
 );
 ```
@@ -152,8 +152,8 @@ const { status, data } = await apiInstance.standardsControllerGetProtocolBySlug(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **standardsControllerStandards**
-> Array<Standard> standardsControllerStandards()
+# **standards**
+> Array<Standard> standards()
 
 
 ### Example
@@ -162,12 +162,12 @@ const { status, data } = await apiInstance.standardsControllerGetProtocolBySlug(
 import {
     StandardsApi,
     Configuration
-} from './api';
+} from '@ensobuild/shortcuts-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new StandardsApi(configuration);
 
-const { status, data } = await apiInstance.standardsControllerStandards();
+const { status, data } = await apiInstance.standards();
 ```
 
 ### Parameters
