@@ -3,7 +3,7 @@
 /**
  * @fileoverview Type definitions for the Enso Finance API SDK
  */
-import { BundleAction } from "./types/actions";
+import { BundleAction } from "./actions";
 export type { BundleAction };
 
 /**
@@ -61,6 +61,8 @@ export type RouteParams = {
   spender?: Address;
   /** Chain ID of the network to execute the transaction on */
   chainId: number;
+  /** Chain ID of the destination network for cross-chain bridging */
+  destinationChainId?: number;
   /** Amount of tokenIn to swap in wei */
   amountIn: Quantity[];
   /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
@@ -428,6 +430,8 @@ export type BundleParams = {
   ignoreAggregators?: string[];
   /** Referral code that will be included in an on-chain event */
   referralCode?: string;
+  /** A list of standards to be ignored from consideration */
+  ignoreStandards?: string[] | null;
 };
 
 /**
@@ -444,6 +448,7 @@ export type BundleData = {
   tx: Transaction;
   /** Amounts out for each action */
   amountsOut: Record<Address, Quantity>;
+  route?: Hop[]; 
 };
 
 /**
@@ -562,6 +567,7 @@ export interface IporShortcutData {
   logs: string[];
   /** Tenderly simulation URL */
   simulationURL: string;
+  route?: Hop[];
 }
 
 /**
@@ -590,6 +596,8 @@ export interface NonTokenizedParams {
   protocolSlug?: string;
   /** Chain ID of the network of the nontokenized position */
   chainId?: number;
+  /** Chain ID of the destination network for cross-chain bridging */
+  destinationChainId?: number;
   /** Ethereum addresses of the nontokenized positions */
   address?: Address[];
   /** Ethereum addresses for contract interaction of nontokenized position */

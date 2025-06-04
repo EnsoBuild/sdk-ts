@@ -1,6 +1,6 @@
 // src/types/actions.ts - Updated to match OpenAPI specification
 
-import { Address, BytesArg, Quantity } from "../types";
+import { Address, BytesArg, Quantity } from "./types";
 
 /**
  * Route action using Enso's routing engine.
@@ -129,6 +129,8 @@ export type RepayAction = {
     amountIn: ActionOutputReference<Quantity>;
     /** Address of the lending pool contract */
     primaryAddress: Address;
+    /** The address of the user whose debt is being repaid" */
+    onBehalfOf?: Address;
   };
 };
 

@@ -20,7 +20,7 @@ import {
   RouteParams,
   StandardData,
   TokenParams,
-} from "../src/types";
+} from "../src/types/types";
 
 // Mock data fixtures
 const mockRouteData = {

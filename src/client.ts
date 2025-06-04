@@ -26,7 +26,7 @@ import {
   StandardData,
   TokenParams,
   WalletBalance,
-} from "./types";
+} from "./types/types";
 
 const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
 /**
@@ -62,7 +62,7 @@ export class EnsoClient {
       baseURL,
       headers: {
         Authorization: `Bearer ${apiKey}`,
-      }
+      },
     });
   }
 
@@ -581,6 +581,15 @@ export class EnsoClient {
     const url = `/volume/${chainId}`;
 
     return this.request<unknown>({
+      method: "GET",
+      url,
+    });
+  }
+
+  public async getAccountId(): Promise<string> {
+    const url = `/account/accountId`;
+
+    return this.request<string>({
       method: "GET",
       url,
     });
