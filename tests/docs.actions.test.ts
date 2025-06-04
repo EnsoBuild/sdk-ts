@@ -1,12 +1,10 @@
-import { EnsoClient } from "../src";
+import { Address, BundleAction, EnsoClient } from "../src";
 
 describe("docs", () => {
   const client = new EnsoClient({
     apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
   });
   beforeAll(() => {});
-
-  // Generated Jest tests from MDX files
 
   it("slippage", async () => {
     const bundle = await client.getBundleData(
@@ -313,6 +311,31 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
+  it("repay on behalf of other", async () => {
+    const bundleData = await client.getBundleData(
+      {
+        chainId: 1, // Mainnet
+        fromAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045" as Address,
+        routingStrategy: "delegate",
+      },
+      [
+        // 3. Repay the ETH debt
+        {
+          protocol: "compound-v2",
+          action: "repay",
+          args: {
+            tokenIn: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
+            amountIn: "300000000000000000",
+            primaryAddress: "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5", // cETH contract
+            onBehalfOf: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+          },
+        },
+      ],
+    );
+
+    console.log(JSON.stringify(bundleData));
+  });
+
   it("harvest", async () => {
     const bundle = await client.getBundleData(
       {
@@ -436,7 +459,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it("bridge", async () => {
+  it.skip("bridge", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,

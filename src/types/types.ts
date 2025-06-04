@@ -431,7 +431,7 @@ export type BundleParams = {
   /** Referral code that will be included in an on-chain event */
   referralCode?: string;
   /** A list of standards to be ignored from consideration */
-  ignoreStandards: string[] | null;
+  ignoreStandards?: string[] | null;
 };
 
 /**
@@ -596,6 +596,8 @@ export interface NonTokenizedParams {
   protocolSlug?: string;
   /** Chain ID of the network of the nontokenized position */
   chainId?: number;
+  /** Chain ID of the destination network for cross-chain bridging */
+  destinationChainId?: number;
   /** Ethereum addresses of the nontokenized positions */
   address?: Address[];
   /** Ethereum addresses for contract interaction of nontokenized position */

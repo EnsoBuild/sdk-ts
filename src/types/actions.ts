@@ -129,6 +129,8 @@ export type RepayAction = {
     amountIn: ActionOutputReference<Quantity>;
     /** Address of the lending pool contract */
     primaryAddress: Address;
+    /** The address of the user whose debt is being repaid" */
+    onBehalfOf?: Address;
   };
 };
 
