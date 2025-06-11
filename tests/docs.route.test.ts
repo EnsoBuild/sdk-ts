@@ -16,6 +16,29 @@ describe("docs route tests", () => {
 
   const testWallet = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045" as Address;
 
+  it("Routes multitoken deposits", async () => {
+    const routeData = await client.getRouteData({
+      chainId: 1,
+      fromAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+      receiver: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", // Optional: Receiver
+      routingStrategy: "delegate",
+      tokenIn: [
+        "0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+        "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
+      ],
+      tokenOut: [
+        "0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490", // 3Crv LP token
+      ],
+      amountIn: [
+        "10000000000000000000", // 10 DAI (18 decimals)
+        "10000000", // 10 USDC (6 decimals)
+        "10000000", // 10 USDT (6 decimals)
+      ],
+    });
+    console.log(JSON.stringify(routeData, null, 2));
+  });
+
   it("routes tokens crosschain", async () => {
     const route = await client.getRouteData({
       fromAddress: testWallet,
