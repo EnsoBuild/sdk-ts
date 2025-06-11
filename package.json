@@ -1,6 +1,7 @@
 {
   "name": "@ensofinance/sdk",
-  "version": "1.1.5",
+  "version": "1.1.4",
+  "license": "MIT",
   "description": "SDK for interacting with the Enso API",
   "author": "Enso Finance",
   "homepage": "https://www.enso.build/",
