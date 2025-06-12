@@ -1,6 +1,6 @@
-import { Address, BundleAction, EnsoClient } from "../src";
+import { Address, EnsoClient } from "../src";
 
-describe("docs", () => {
+describe("actions", () => {
   const client = new EnsoClient({
     apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
   });
@@ -170,7 +170,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it.skip("redeem", async () => {
+  it("redeem", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -206,7 +206,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it.skip("redeemCLMM", async () => {
+  it("redeemCLMM", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -403,7 +403,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it.skip("transferFrom", async () => {
+  it("transferFrom", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -433,7 +433,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it.skip("permitTransferFrom", async () => {
+  it("permitTransferFrom", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -459,7 +459,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it.skip("bridge", async () => {
+  it("bridge", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -588,11 +588,11 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it.skip("split", async () => {
+  it("split", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
-        fromAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+        fromAddress: "0x93621DCA56fE26Cdee86e4F6B18E116e9758Ff11",
         routingStrategy: "delegate",
       },
       [
@@ -600,14 +600,14 @@ describe("docs", () => {
           protocol: "enso",
           action: "balance",
           args: {
-            token: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+            token: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
           },
         },
         {
           protocol: "enso",
           action: "split",
           args: {
-            tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+            tokenIn: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT
             tokenOut: [
               "0x6b175474e89094c44da98b954eedeac495271d0f", // USDC
               "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
@@ -620,7 +620,7 @@ describe("docs", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  it.skip("merge", async () => {
+  it("merge", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -704,7 +704,7 @@ describe("docs", () => {
   });
 
   // singleDeposit action (from docs)
-  it.skip("singleDeposit", async () => {
+  it("singleDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -729,7 +729,7 @@ describe("docs", () => {
   });
 
   // multiDeposit action (from docs)
-  it.skip("multiDeposit", async () => {
+  it("multiDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -762,7 +762,7 @@ describe("docs", () => {
   });
 
   // multiOutSingleDeposit action (from docs)
-  it.skip("multiOutSingleDeposit", async () => {
+  it("multiOutSingleDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,

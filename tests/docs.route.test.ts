@@ -72,7 +72,7 @@ describe("docs route tests", () => {
     console.log(route);
   });
 
-  it.skip("routes tokens crosschain and outputs the route", async () => {
+  it("routes tokens crosschain and outputs the route", async () => {
     const route = await client.getRouteData({
       fromAddress: testWallet,
       receiver: testWallet,
