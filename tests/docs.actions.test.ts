@@ -703,8 +703,8 @@ describe("actions", () => {
     console.log(JSON.stringify(bundle, null, 2));
   });
 
-  // singleDeposit action (from docs)
-  it("singleDeposit", async () => {
+  // singleDeposit action (from docs) - no protocol supports it ATM
+  it.skip("singleDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,
@@ -713,7 +713,7 @@ describe("actions", () => {
       },
       [
         {
-          protocol: "yearn",
+          protocol: "yearn-v2",
           action: "singledeposit",
           args: {
             tokenIn: "0x6B175474E89094C44Da98b954EedeAC495271d0F", // DAI address
