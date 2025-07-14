@@ -704,7 +704,7 @@ describe("actions", () => {
   });
 
   // singleDeposit action (from docs) - no protocol supports it ATM
-  it.skip("singleDeposit", async () => {
+  it("singleDeposit", async () => {
     const bundle = await client.getBundleData(
       {
         chainId: 1,

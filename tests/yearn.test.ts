@@ -690,7 +690,7 @@ describe("YEARN Berachain Routes", () => {
       });
     }, 45000);
 
-    it.skip("should execute Route 8: bcUSDCe-HONEY-STABLE → yHONEY unwrap", async () => {
+    it("should execute Route 8: bcUSDCe-HONEY-STABLE → yHONEY unwrap", async () => {
       const lpAmount = "1000000000000000000"; // 1 LP token
 
       /**
@@ -1277,7 +1277,7 @@ describe("Yearn Katana Routes", () => {
       });
     }, 45000);
 
-    it.skip("should execute Route 13: YFI → WOOFY → yvWOOFY governance yield", async () => {
+    it("should execute Route 13: YFI → WOOFY → yvWOOFY governance yield", async () => {
       const govAmount = "1000000000000000000"; // 1 YFI
 
       const routeParams: RouteParams = {
@@ -1333,7 +1333,7 @@ describe("Yearn Katana Routes", () => {
       });
     }, 45000);
 
-    it.skip("should execute Route 15: KAT rewards → yvvbUSDC compound strategy", async () => {
+    it("should execute Route 15: KAT rewards → yvvbUSDC compound strategy", async () => {
       const rewardAmount = "10000000000000000000000"; // 10000 KAT
 
       const routeParams: RouteParams = {
