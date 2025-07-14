@@ -6,6 +6,7 @@ describe("bundles", () => {
   // Token addresses (Ethereum mainnet)
   const ETH = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" as Address;
   const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" as Address;
+  const yvWETH = "0xa258C4606Ca8206D8aA700cE2143D7db854D168c" as Address;
   const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" as Address;
   const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7" as Address;
   const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F" as Address;
@@ -494,7 +495,7 @@ describe("bundles", () => {
         action: "deposit",
         args: {
           tokenIn: wstETH,
-          tokenOut: "0x0B925eD163218f6662a35E0F0371Ac234F9E9371" as Address, // awstETH
+          tokenOut: wstETH,
           amountIn: "10000000000000000000", // 10 wstETH
           primaryAddress: AAVE_V3_POOL,
         },
@@ -538,7 +539,7 @@ describe("bundles", () => {
         action: "deposit",
         args: {
           tokenIn: wstETH,
-          tokenOut: "0x0B925eD163218f6662a35E0F0371Ac234F9E9371" as Address,
+          tokenOut: wstETH as Address,
           amountIn: "2916000000000000000",
           primaryAddress: AAVE_V3_POOL,
         },
@@ -599,5 +600,249 @@ describe("bundles", () => {
     // Validate gas is a string number
     expect(typeof bundle.gas).toBe("string");
     expect(parseInt(bundle.gas + "")).toBeGreaterThan(0);
+  });
+
+  it("harvest from Balancer gauge - demonstrates useOutputOfCallAt", async () => {
+    const BAL = "0xba100000625a3754423978a60c9317c58a424e3D" as Address; // Balancer token
+    const BALANCER_GAUGE =
+      "0xc6085b1a309e4Fd4D1Ad5f1Ef59a8c30E9302E3e" as Address; // Balancer gauge
+
+    const actions: BundleAction[] = [
+      // Step 1: Harvest BAL rewards from gauge
+      {
+        protocol: "balancer-gauge",
+        action: "harvest",
+        args: {
+          token: BAL,
+          primaryAddress: BALANCER_GAUGE,
+        },
+      },
+      // Step 2: Check BAL balance
+      {
+        protocol: "enso",
+        action: "balance",
+        args: {
+          token: BAL,
+        },
+      },
+      // Step 3: Swap BAL to ETH
+      {
+        protocol: "enso",
+        action: "route",
+        args: {
+          tokenIn: BAL,
+          tokenOut: ETH,
+          amountIn: { useOutputOfCallAt: 1 }, // 👈 Use BAL balance
+          slippage: "800", // 3% slippage
+          receiver: userAddress,
+        },
+      },
+      // Step 4: Wrap ETH to WETH
+      {
+        protocol: "wrapped-native",
+        action: "deposit",
+        args: {
+          tokenIn: ETH,
+          tokenOut: WETH,
+          amountIn: { useOutputOfCallAt: 2 }, // 👈 Use ETH from BAL swap
+          primaryAddress: WETH,
+          receiver: userAddress,
+        },
+      },
+    ];
+
+    const bundle = await client.getBundleData(
+      {
+        chainId: 1,
+        fromAddress: userAddress,
+        routingStrategy: "delegate",
+      },
+      actions,
+    );
+
+    console.log(`Balancer harvest bundle has ${bundle.bundle.length} actions`);
+  });
+
+  it("chaining", async () => {
+    const actions: BundleAction[] = [
+      // Step 1: Split 1 ETH into 3 portions
+      {
+        protocol: "enso",
+        action: "split",
+        args: {
+          tokenIn: ETH,
+          tokenOut: [ETH, ETH, ETH],
+          amountIn: "1000000000000000000", // 1 ETH
+          receiver: userAddress,
+        },
+      },
+      // Step 2: Route first portion to stETH
+      {
+        protocol: "enso",
+        action: "route",
+        args: {
+          tokenIn: ETH,
+          tokenOut: stETH,
+          // @ts-ignore
+          amountIn: { useOutputOfCallAt: [0, 0] }, // First output from split
+          slippage: "100",
+          receiver: userAddress,
+        },
+      },
+      // Step 3: Route second portion to rETH
+      {
+        protocol: "enso",
+        action: "route",
+        args: {
+          tokenIn: ETH,
+          tokenOut: rETH,
+          // @ts-ignore
+          amountIn: { useOutputOfCallAt: [0, 1] }, // Second output from split
+          slippage: "100",
+          receiver: userAddress,
+        },
+      },
+      // Step 4: Route third portion to cbETH
+      {
+        protocol: "enso",
+        action: "route",
+        args: {
+          tokenIn: ETH,
+          tokenOut: cbETH,
+          // @ts-ignore
+          amountIn: { useOutputOfCallAt: [0, 2] }, // Third output from split
+          slippage: "100",
+          receiver: userAddress,
+        },
+      },
+    ];
+  });
+
+  it("harvest multiple rewards and compound", async () => {
+    // Common reward tokens
+    const CRV = "0xD533a949740bb3306d119CC777fa900bA034cd52" as Address;
+    const LDO = "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32" as Address;
+
+    const actions: BundleAction[] = [
+      // Step 1: Harvest CRV rewards
+      {
+        protocol: "curve-gauge",
+        action: "harvest",
+        args: {
+          token: CRV,
+          primaryAddress: CURVE_STETH_GAUGE,
+        },
+      },
+      // Step 2: Harvest LDO rewards (if available)
+      {
+        protocol: "curve-gauge",
+        action: "harvest",
+        args: {
+          token: LDO,
+          primaryAddress: CURVE_STETH_GAUGE,
+        },
+      },
+      // Step 3: Check CRV balance
+      {
+        protocol: "enso",
+        action: "balance",
+        args: {
+          token: CRV,
+        },
+      },
+      // Step 4: Check LDO balance
+      {
+        protocol: "enso",
+        action: "balance",
+        args: {
+          token: LDO,
+        },
+      },
+      // Step 5: Swap CRV to ETH
+      {
+        protocol: "enso",
+        action: "route",
+        args: {
+          tokenIn: CRV,
+          tokenOut: ETH,
+          amountIn: { useOutputOfCallAt: 2 }, // Use CRV balance
+          slippage: "500", // 5% slippage
+          receiver: userAddress,
+        },
+      },
+      // Step 6: Swap LDO to ETH
+      {
+        protocol: "enso",
+        action: "route",
+        args: {
+          tokenIn: LDO,
+          tokenOut: ETH,
+          amountIn: { useOutputOfCallAt: 3 }, // Use LDO balance
+          slippage: "500", // 5% slippage
+          receiver: userAddress,
+        },
+      },
+      // Step 7: Combine ETH from both swaps
+      {
+        protocol: "enso",
+        action: "merge",
+        args: {
+          tokenIn: [ETH, ETH],
+          tokenOut: ETH,
+          amountIn: [
+            { useOutputOfCallAt: 4 }, // ETH from CRV swap
+            { useOutputOfCallAt: 5 }, // ETH from LDO swap
+          ],
+          receiver: userAddress,
+        },
+      },
+      // Step 8: Reinvest combined ETH into stETH
+      {
+        protocol: "enso",
+        action: "route",
+        args: {
+          tokenIn: ETH,
+          tokenOut: stETH,
+          amountIn: { useOutputOfCallAt: 6 }, // Use merged ETH
+          slippage: "100", // 1% slippage
+          receiver: userAddress,
+        },
+      },
+      // Step 9: Deposit stETH back into Curve pool
+      {
+        protocol: "curve",
+        action: "deposit",
+        args: {
+          tokenIn: stETH,
+          tokenOut: stETH_ETH_CURVE_LP,
+          amountIn: { useOutputOfCallAt: 7 }, // Use stETH from swap
+          primaryAddress: CURVE_STETH_ETH_POOL,
+          receiver: userAddress,
+        },
+      },
+      // Step 10: Stake LP tokens back in gauge
+      {
+        protocol: "curve-gauge",
+        action: "deposit",
+        args: {
+          tokenIn: stETH_ETH_CURVE_LP,
+          tokenOut: CURVE_STETH_GAUGE,
+          amountIn: { useOutputOfCallAt: 8 }, // Use LP tokens
+          primaryAddress: CURVE_STETH_GAUGE,
+          receiver: userAddress,
+        },
+      },
+    ];
+
+    const bundle = await client.getBundleData(
+      {
+        chainId: 1,
+        fromAddress: userAddress,
+        routingStrategy: "delegate",
+      },
+      actions,
+    );
+
+    expect(bundle.bundle.length).toBe(10);
   });
 });

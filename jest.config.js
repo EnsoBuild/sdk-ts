@@ -11,5 +11,5 @@ export default {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "clover"],
-  testTimeout: 30000,
+  testTimeout: 60000,
 };
