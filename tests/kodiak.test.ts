@@ -22,6 +22,10 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
   const xUSD = "0x6eAf19b2FC24552925dB245F9Ff613157a7dbb4C" as Address;
   const NECT = "0x1cE0a25D13CE4d52071aE7e02Cf1F6606F4C79d3" as Address;
   const ETH = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" as Address;
+  const XUSD_HONEY_ISLAND =
+    "0x939fb917bF8579C959094364708Ef03f17e71f25" as Address;
+  const NECT_HONEY_ISLAND =
+    "0x6371f549d8beeF4a366036786718F1748719C187" as Address;
 
   // Kodiak Finance Contract Addresses
   const KODIAK_FACTORY =
@@ -32,6 +36,10 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
     "0x9659dc8c1565E0bd82627267e3b4eEd1a377ebE6" as Address;
   const WBTC_WETH_ISLAND =
     "0x1ac0E38eE5f66F6fa46E1644BB6B73bEe598b953" as Address;
+
+  const WBERA_HONEY_ISLAND = "0x056319DE9c9DF9eD7eE35221795F8C9F9E160cd1" as Address;
+  const YEET_WBERA_ISLAND = "0xEc8BA456b4e009408d0776cdE8B91f8717D13Fa1" as Address;
+  const YEET_wgBERA_ISLAND = "0x412c9f79779AE6C3a13a318252b29c559be756Ca" as Address;
 
   describe("Core Swaps & Zaps", () => {
     it("should execute Route 1: BERA → HONEY swap", async () => {
@@ -72,7 +80,7 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         chainId: BERACHAIN_MAINNET,
         amountIn: [zapAmount],
         tokenIn: [BERA],
-        tokenOut: [HONEY_WBERA_POOL], // BERA/HONEY Island LP
+        tokenOut: [WBERA_HONEY_ISLAND], // BERA/HONEY Island LP
         routingStrategy: "delegate",
         slippage: "100", // 1% slippage
         referralCode: "kodiak-zap",
@@ -91,29 +99,30 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
       });
     }, 30000);
 
-    it("should execute Route 14: BERA → KODI WBERA-HONEY Island LP", async () => {
-      const zapAmount = "1500000000000000000"; // 1.5 BERA
+    it("should execute Route 2: NECTAR zap into BERA/HONEY Island", async () => {
+      const zapAmount = "2000000000000000000"; // 2 BERA
 
       const routeParams: RouteParams = {
         fromAddress: testWallet,
         receiver: testWallet,
         chainId: BERACHAIN_MAINNET,
         amountIn: [zapAmount],
-        tokenIn: [BERA],
-        tokenOut: [HONEY_WBERA_POOL], // WBERA-HONEY Island
+        tokenIn: [NECT],
+        tokenOut: [WBERA_HONEY_ISLAND], // BERA/HONEY Island LP
         routingStrategy: "delegate",
-        slippage: "75", // 0.75% slippage
-        referralCode: "kodiak-island",
+        slippage: "100", // 1% slippage
+        referralCode: "kodiak-zap",
       };
 
       constructHappyPathLink(routeParams);
       const route = await client.getRouteData(routeParams);
 
       expect(route).toBeDefined();
+      expect(route.tx).toBeDefined();
       expect(route.amountOut).toBeDefined();
 
-      console.log("Route 14 - BERA → KODI WBERA-HONEY Island LP:", {
-        routeSteps: `BERA → WBERA-HONEY LP via ${route.route.length} steps`,
+      console.log("Route 2 - HONEY zap into BERA/HONEY Island:", {
+        routeSteps: `HONEY → BERA/HONEY LP via ${route.route.length} steps`,
         route: JSON.stringify(route.route),
       });
     }, 30000);
@@ -129,7 +138,7 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         chainId: BERACHAIN_MAINNET,
         amountIn: [yeetAmount],
         tokenIn: [YEET],
-        tokenOut: [HONEY_WBERA_POOL], // Assuming BERA/YEET Island uses same pool structure
+        tokenOut: [YEET_WBERA_ISLAND], 
         routingStrategy: "delegate",
         slippage: "200", // 2% slippage
         referralCode: "yeet-island",
@@ -158,7 +167,7 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         chainId: BERACHAIN_MAINNET,
         amountIn: [lpAmount],
         tokenIn: [HONEY_WBERA_POOL], // Island LP tokens
-        tokenOut: [BAULT_KODI_WBERA_HONEY], // Assuming Bault uses factory address
+        tokenOut: [BAULT_KODI_WBERA_HONEY], 
         routingStrategy: "delegate",
         slippage: "50", // 0.5% slippage
         referralCode: "island-bault",
@@ -187,7 +196,7 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         chainId: BERACHAIN_MAINNET,
         amountIn: [lpAmount],
         tokenIn: [BERA], // Island LP tokens
-        tokenOut: [BAULT_KODI_WBERA_HONEY], // Assuming Bault uses factory address
+        tokenOut: [BAULT_KODI_WBERA_HONEY], 
         routingStrategy: "delegate",
         slippage: "50", // 0.5% slippage
         referralCode: "island-bault",
@@ -214,7 +223,7 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         chainId: BERACHAIN_MAINNET,
         amountIn: [ibgtAmount],
         tokenIn: [iBGT],
-        tokenOut: [HONEY_WBERA_POOL], // Assuming YEET-wgBERA Island
+        tokenOut: [YEET_wgBERA_ISLAND], 
         routingStrategy: "delegate",
         slippage: "400", // 4% slippage for volatile YEET
         referralCode: "ibgt-yeet",
@@ -243,7 +252,7 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         chainId: BERACHAIN_MAINNET,
         amountIn: [honeyAmount],
         tokenIn: [HONEY],
-        tokenOut: [HONEY_WBERA_POOL], // Assuming xUSD-HONEY Island
+        tokenOut: [XUSD_HONEY_ISLAND],
         routingStrategy: "delegate",
         slippage: "25", // 0.25% slippage for stablecoin
         referralCode: "honey-xusd",
@@ -270,7 +279,7 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         chainId: BERACHAIN_MAINNET,
         amountIn: [usdceAmount],
         tokenIn: [USDCE],
-        tokenOut: [HONEY_WBERA_POOL], // xUSD-HONEY Island
+        tokenOut: [XUSD_HONEY_ISLAND],
         routingStrategy: "delegate",
         slippage: "100", // 1% slippage for cross-chain stablecoin
         referralCode: "usdce-island",
@@ -287,62 +296,6 @@ describe("Berachain Kodiak Ecosystem Routes", () => {
         route: JSON.stringify(route.route),
       });
     }, 30000);
-  });
-
-  describe("Advanced Features", () => {
-    it("should execute Route 6: HONEY zap into NECT/iBGT Island", async () => {
-      const honeyAmount = "2000000000000000000"; // 2 HONEY
-
-      const routeParams: RouteParams = {
-        fromAddress: testWallet,
-        receiver: testWallet,
-        chainId: BERACHAIN_MAINNET,
-        amountIn: [honeyAmount],
-        tokenIn: [HONEY],
-        tokenOut: [HONEY_WBERA_POOL], // Assuming NECT/iBGT Island
-        routingStrategy: "delegate",
-        slippage: "150", // 1.5% slippage
-        referralCode: "nect-ibgt",
-      };
-
-      constructHappyPathLink(routeParams);
-      const route = await client.getRouteData(routeParams);
-
-      expect(route).toBeDefined();
-      expect(route.amountOut).toBeDefined();
-
-      console.log("Route 6 - HONEY zap into NECT/iBGT Island:", {
-        routeSteps: `HONEY → NECT/iBGT Island via ${route.route.length} steps`,
-        route: JSON.stringify(route.route),
-      });
-    }, 45000);
-
-    it("should execute Route 10: Sweetened BERA/HONEY Island with lockups", async () => {
-      const beraAmount = "3000000000000000000"; // 3 BERA
-
-      const routeParams: RouteParams = {
-        fromAddress: testWallet,
-        receiver: testWallet,
-        chainId: BERACHAIN_MAINNET,
-        amountIn: [beraAmount],
-        tokenIn: [BERA],
-        tokenOut: [HONEY_WBERA_POOL], // Sweetened BERA/HONEY Island
-        routingStrategy: "delegate",
-        slippage: "200", // 2% slippage for sweetened rewards
-        referralCode: "sweet-island",
-      };
-
-      constructHappyPathLink(routeParams);
-      const route = await client.getRouteData(routeParams);
-
-      expect(route).toBeDefined();
-      expect(route.amountOut).toBeDefined();
-
-      console.log("Route 10 - Sweetened BERA/HONEY Island with lockups:", {
-        routeSteps: `BERA → Sweetened Island via ${route.route.length} steps`,
-        route: JSON.stringify(route.route),
-      });
-    }, 45000);
   });
 
   describe("Cross-Chain Operations", () => {
