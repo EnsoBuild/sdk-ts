@@ -11,105 +11,151 @@ describe("Custom Deposit Function Call", () => {
   const LOOPED_HYPE = "0x5748ae796AE46A4F1348a1693de4b50560485562";
 
   const SENDER = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
-  const ENSO_CONTRACT = "0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf";
+  const ENSO_ROUTER = "0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf";
 
-  it("deposits to LOOPED_HYPE with custom community code and static token amount", async () => {
-    /*
+  describe("Smart Wallet", () => {
+    it("Smart Wallet deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
+      /*
           enso.route(USDT, STAKED_HYPE) | 
           enso.call(HYPE_DEPOSITOR.deposit(STAKED_HYPE, callAt(0), 0, SENDER, "0x1234"))
      */
-    const bundle = await client.getBundleData(
-      {
-        chainId: 999,
-        fromAddress: SENDER,
-        routingStrategy: "delegate",
-        receiver: SENDER,
-      },
-      [
+      const bundle = await client.getBundleData(
         {
-          protocol: "enso",
-          action: "route",
-          args: {
-            tokenIn: USDT,
-            tokenOut: STAKED_HYPE,
-            amountIn: "100000000",
-            receiver: SENDER,
-          },
+          chainId: 999,
+          fromAddress: SENDER,
+          routingStrategy: "delegate",
+          receiver: SENDER,
         },
+        [
+          {
+            protocol: "enso",
+            action: "route",
+            args: {
+              tokenIn: USDT,
+              tokenOut: STAKED_HYPE,
+              amountIn: "100000000",
+              receiver: SENDER,
+            },
+          },
+          {
+            protocol: "erc20",
+            action: "approve",
+            args: {
+              amount: { useOutputOfCallAt: 0 },
+              spender: HYPE_DEPOSITOR,
+              token: STAKED_HYPE,
+            },
+          },
+          {
+            protocol: "enso",
+            action: "call",
+            args: {
+              address: HYPE_DEPOSITOR,
+              args: [
+                STAKED_HYPE,
+                { useOutputOfCallAt: 0 },
+                0,
+                SENDER,
+                "0x1234",
+              ],
+              method: "deposit",
+              abi: "function deposit(address depositAsset, uint256 depositAmount, uint256 minimumMint, address to, bytes communityCode) external returns (uint256 shares)",
+            },
+          },
+        ],
+      );
+      console.log(JSON.stringify(bundle, null, 2));
+    });
+
+    it("Smart Wallet routes to LOOPED_HYPE", async () => {
+      const bundle = await client.getBundleData(
         {
-          protocol: "enso",
-          action: "call",
-          args: {
-            address: HYPE_DEPOSITOR,
-            args: [STAKED_HYPE, "2000000000000000000", 0, SENDER, "0x1234"],
-            method: "deposit",
-            abi: "function deposit(address depositAsset, uint256 depositAmount, uint256 minimumMint, address to, bytes communityCode) external returns (uint256 shares)",
-          },
+          chainId: 999,
+          fromAddress: SENDER,
+          routingStrategy: "delegate",
+          receiver: SENDER,
         },
-      ],
-    );
-    console.log(JSON.stringify(bundle, null, 2));
+        [
+          {
+            protocol: "enso",
+            action: "route",
+            args: {
+              tokenIn: USDT,
+              tokenOut: LOOPED_HYPE,
+              amountIn: "100000000",
+              receiver: SENDER,
+            },
+          },
+        ],
+      );
+      console.log(JSON.stringify(bundle, null, 2));
+    });
   });
 
-  it("deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
-    /*
+  describe("EOA", () => {
+    it("EOA deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
+      /*
+          erc20.approve(USDT, ENSO_ROUTER) |
           enso.route(USDT, STAKED_HYPE) | 
+          erc20.approve(STAKED_HYPE, ENSO_ROUTER) |
           enso.call(HYPE_DEPOSITOR.deposit(STAKED_HYPE, callAt(0), 0, SENDER, "0x1234"))
      */
-    const bundle = await client.getBundleData(
-      {
-        chainId: 999,
-        fromAddress: SENDER,
-        routingStrategy: "delegate",
-        receiver: SENDER,
-      },
-      [
+      const bundle = await client.getBundleData(
         {
-          protocol: "enso",
-          action: "route",
-          args: {
-            tokenIn: USDT,
-            tokenOut: STAKED_HYPE,
-            amountIn: "100000000",
-            receiver: SENDER,
-          },
+          chainId: 999,
+          fromAddress: SENDER,
+          routingStrategy: "router",
+          receiver: SENDER,
         },
-        {
-          protocol: "enso",
-          action: "call",
-          args: {
-            address: HYPE_DEPOSITOR,
-            args: [STAKED_HYPE, { useOutputOfCallAt: 0 }, 0, SENDER, "0x1234"],
-            method: "deposit",
-            abi: "function deposit(address depositAsset, uint256 depositAmount, uint256 minimumMint, address to, bytes communityCode) external returns (uint256 shares)",
+        [
+          {
+            protocol: "erc20",
+            action: "approve",
+            args: {
+              amount: "100000000",
+              spender: ENSO_ROUTER,
+              token: USDT,
+            },
           },
-        },
-      ],
-    );
-    console.log(JSON.stringify(bundle, null, 2));
-  });
-
-  it("routes to LOOPED_HYPE", async () => {
-    const bundle = await client.getBundleData(
-      {
-        chainId: 999,
-        fromAddress: SENDER,
-        routingStrategy: "delegate",
-        receiver: SENDER,
-      },
-      [
-        {
-          protocol: "enso",
-          action: "route",
-          args: {
-            tokenIn: USDT,
-            tokenOut: LOOPED_HYPE,
-            amountIn: "100000000",
-            receiver: SENDER,
+          {
+            protocol: "enso",
+            action: "route",
+            args: {
+              tokenIn: USDT,
+              tokenOut: STAKED_HYPE,
+              amountIn: "100000000",
+              receiver: ENSO_ROUTER,
+            },
           },
-        },
-      ],
-    );
-    console.log(JSON.stringify(bundle, null, 2));
+          {
+            protocol: "erc20",
+            action: "approve",
+            args: {
+              amount: { useOutputOfCallAt: 1 },
+              spender: HYPE_DEPOSITOR,
+              token: STAKED_HYPE,
+              routingStrategy: "router"
+            },
+          },
+          {
+            protocol: "enso",
+            action: "call",
+            args: {
+              address: HYPE_DEPOSITOR,
+              args: [
+                STAKED_HYPE,
+                { useOutputOfCallAt: 1 },
+                0,
+                SENDER,
+                "0x1234",
+              ],
+              method: "deposit",
+              abi: "function deposit(address depositAsset, uint256 depositAmount, uint256 minimumMint, address to, bytes communityCode) external returns (uint256 shares)",
+            },
+          },
+        ],
+      );
+      console.log(JSON.stringify(bundle, null, 2));
+    });
   });
 });
