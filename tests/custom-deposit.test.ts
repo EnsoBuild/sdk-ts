@@ -12,6 +12,7 @@ describe("Custom Deposit Function Call", () => {
 
   const SENDER = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
   const ENSO_ROUTER = "0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf";
+  const ENSO_SHORTCUTS = "0x4Fe93ebC4Ce6Ae4f81601cC7Ce7139023919E003";
 
   describe("Smart Wallet", () => {
     it("Smart Wallet deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
@@ -94,12 +95,6 @@ describe("Custom Deposit Function Call", () => {
 
   describe("EOA", () => {
     it("EOA deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
-      /*
-          erc20.approve(USDT, ENSO_ROUTER) |
-          enso.route(USDT, STAKED_HYPE) | 
-          erc20.approve(STAKED_HYPE, ENSO_ROUTER) |
-          enso.call(HYPE_DEPOSITOR.deposit(STAKED_HYPE, callAt(0), 0, SENDER, "0x1234"))
-     */
       const bundle = await client.getBundleData(
         {
           chainId: 999,
@@ -124,7 +119,7 @@ describe("Custom Deposit Function Call", () => {
               tokenIn: USDT,
               tokenOut: STAKED_HYPE,
               amountIn: "100000000",
-              receiver: ENSO_ROUTER,
+              receiver: ENSO_SHORTCUTS,
             },
           },
           {
@@ -134,7 +129,6 @@ describe("Custom Deposit Function Call", () => {
               amount: { useOutputOfCallAt: 1 },
               spender: HYPE_DEPOSITOR,
               token: STAKED_HYPE,
-              routingStrategy: "router"
             },
           },
           {
