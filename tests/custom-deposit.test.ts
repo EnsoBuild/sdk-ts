@@ -34,7 +34,6 @@ describe("Custom Deposit Function Call", () => {
               tokenIn: USDT,
               tokenOut: STAKED_HYPE,
               amountIn: "100000000",
-              receiver: SENDER,
             },
           },
           {
@@ -109,7 +108,6 @@ describe("Custom Deposit Function Call", () => {
               tokenIn: USDT,
               tokenOut: STAKED_HYPE,
               amountIn: "100000000",
-              receiver: ENSO_SHORTCUTS,
             },
           },
           {
@@ -125,6 +123,8 @@ describe("Custom Deposit Function Call", () => {
             protocol: "enso",
             action: "call",
             args: {
+              tokenIn: STAKED_HYPE,
+              tokenOut: LOOPED_HYPE,
               address: HYPE_DEPOSITOR,
               args: [
                 STAKED_HYPE,
