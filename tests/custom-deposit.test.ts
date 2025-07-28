@@ -13,6 +13,8 @@ describe("Custom Deposit Function Call", () => {
   const SENDER = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
   const ENSO_SHORTCUTS = "0x4Fe93ebC4Ce6Ae4f81601cC7Ce7139023919E003";
 
+  const USDT_AMOUNT = "100000000";
+
   describe("Smart Wallet", () => {
     it("Smart Wallet deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
       /*
@@ -33,7 +35,7 @@ describe("Custom Deposit Function Call", () => {
             args: {
               tokenIn: USDT,
               tokenOut: STAKED_HYPE,
-              amountIn: "100000000",
+              amountIn: USDT_AMOUNT,
             },
           },
           {
@@ -81,7 +83,7 @@ describe("Custom Deposit Function Call", () => {
             args: {
               tokenIn: USDT,
               tokenOut: LOOPED_HYPE,
-              amountIn: "100000000",
+              amountIn: USDT_AMOUNT,
               receiver: SENDER,
             },
           },
@@ -93,6 +95,13 @@ describe("Custom Deposit Function Call", () => {
 
   describe("EOA", () => {
     it("EOA deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
+      const approval = await client.getApprovalData({
+        amount: USDT_AMOUNT,
+        chainId: 999,
+        fromAddress: SENDER, 
+        tokenAddress: USDT
+      });
+      
       const bundle = await client.getBundleData(
         {
           chainId: 999,
@@ -107,7 +116,7 @@ describe("Custom Deposit Function Call", () => {
             args: {
               tokenIn: USDT,
               tokenOut: STAKED_HYPE,
-              amountIn: "100000000",
+              amountIn: USDT_AMOUNT,
             },
           },
           {
