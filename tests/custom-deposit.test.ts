@@ -11,7 +11,6 @@ describe("Custom Deposit Function Call", () => {
   const LOOPED_HYPE = "0x5748ae796AE46A4F1348a1693de4b50560485562";
 
   const SENDER = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
-  const ENSO_ROUTER = "0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf";
   const ENSO_SHORTCUTS = "0x4Fe93ebC4Ce6Ae4f81601cC7Ce7139023919E003";
 
   describe("Smart Wallet", () => {
@@ -104,15 +103,6 @@ describe("Custom Deposit Function Call", () => {
         },
         [
           {
-            protocol: "erc20",
-            action: "approve",
-            args: {
-              amount: "100000000",
-              spender: ENSO_ROUTER,
-              token: USDT,
-            },
-          },
-          {
             protocol: "enso",
             action: "route",
             args: {
@@ -126,7 +116,7 @@ describe("Custom Deposit Function Call", () => {
             protocol: "erc20",
             action: "approve",
             args: {
-              amount: { useOutputOfCallAt: 1 },
+              amount: { useOutputOfCallAt: 0 },
               spender: HYPE_DEPOSITOR,
               token: STAKED_HYPE,
             },
@@ -138,7 +128,7 @@ describe("Custom Deposit Function Call", () => {
               address: HYPE_DEPOSITOR,
               args: [
                 STAKED_HYPE,
-                { useOutputOfCallAt: 1 },
+                { useOutputOfCallAt: 0 },
                 0,
                 SENDER,
                 "0x1234",
