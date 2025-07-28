@@ -99,7 +99,7 @@ describe("Custom Deposit Function Call", () => {
         amount: USDT_AMOUNT,
         chainId: 999,
         fromAddress: SENDER, 
-        tokenAddress: USDT
+        tokenAddress: USDT,
       });
       
       const bundle = await client.getBundleData(
@@ -148,7 +148,8 @@ describe("Custom Deposit Function Call", () => {
           },
         ],
       );
-      console.log(JSON.stringify(bundle, null, 2));
+      console.log("Approval", {gas: approval.gas, tx: approval.tx})
+      console.log("Bundle", JSON.stringify(bundle, null, 2));
     });
   });
 });
