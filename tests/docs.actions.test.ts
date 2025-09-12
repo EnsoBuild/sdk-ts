@@ -1,4 +1,5 @@
 import { Address, EnsoClient } from "../src";
+import { signEoa } from "./utils";
 
 describe("actions", () => {
   const client = new EnsoClient({
@@ -167,6 +168,68 @@ describe("actions", () => {
         },
       ],
     );
+    console.log(JSON.stringify(bundle, null, 2));
+  });
+
+  it("depositCLMM - Uni V3", async () => {
+    const chainId = 42161; // Arbitrum chain ID
+    const uniswapManager = "0xC36442b4a4522E871399CD717aBDD847Ab11FE88"; // Uniswap V3 Manager address
+    const inputAmountAave = "10000000000000000000"; // AAVE (18 decimals)
+    const addressWeth = "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"; // WETH
+    const addressAave = "0xba5DdD1f9d7F570dc94a51479a000E3BCE967196"; // AAVE
+    const sender = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
+    const ensoClient = new EnsoClient({
+      apiKey: "",
+    });
+
+    const bundle = await ensoClient.getBundleData(
+      {
+        //arbitrum
+        chainId,
+        fromAddress: sender,
+        // spender: uniswapManager, // Uniswap V3 Router
+        routingStrategy: "router",
+      },
+      [
+        {
+          protocol: "enso",
+          action: "split",
+          args: {
+            tokenIn: addressAave,
+            tokenOut: [addressWeth, addressAave],
+            amountIn: inputAmountAave,
+          },
+        },
+        {
+          protocol: "uniswap-v3",
+          action: "depositclmm",
+          args: {
+            tokenOut: uniswapManager, // NonfungiblePositionManager
+            ticks: [25320, 25980], //12.577046024031885000 - 13.435092252975010000
+            tokenIn: [
+              addressWeth, // WETH
+              addressAave, // AAVE
+            ],
+            poolFee: "3000", // 0.3% fee tier
+            amountIn: [
+              { useOutputOfCallAt: 0, index: 0 },
+              { useOutputOfCallAt: 0, index: 1 },
+            ],
+          },
+        },
+      ],
+    );
+
+    const approvalData = await client.getApprovalData({
+      amount: inputAmountAave,
+      chainId,
+      fromAddress: sender,
+      tokenAddress: addressAave,
+    });
+
+    await signEoa(approvalData.tx, approvalData.gas);
+    await signEoa(bundle.tx, bundle.gas);
+
     console.log(JSON.stringify(bundle, null, 2));
   });
 

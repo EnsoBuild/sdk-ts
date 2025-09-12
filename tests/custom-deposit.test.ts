@@ -1,4 +1,5 @@
 import { Address, EnsoClient } from "../src";
+import { signEoa, signSmartWallet } from "./utils";
 
 describe("Custom Deposit Function Call", () => {
   const client = new EnsoClient({
@@ -17,10 +18,6 @@ describe("Custom Deposit Function Call", () => {
 
   describe("Smart Wallet", () => {
     it("Smart Wallet deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
-      /*
-          enso.route(USDT, STAKED_HYPE) | 
-          enso.call(HYPE_DEPOSITOR.deposit(STAKED_HYPE, callAt(0), 0, SENDER, "0x1234"))
-     */
       const bundle = await client.getBundleData(
         {
           chainId: 999,
@@ -38,6 +35,7 @@ describe("Custom Deposit Function Call", () => {
               amountIn: USDT_AMOUNT,
             },
           },
+          // without `route` we must manually approve the spender of tokens - the HypeDepositor contract
           {
             protocol: "erc20",
             action: "approve",
@@ -65,6 +63,7 @@ describe("Custom Deposit Function Call", () => {
           },
         ],
       );
+      await signSmartWallet(bundle.tx, bundle.gas);
       console.log(JSON.stringify(bundle, null, 2));
     });
 
@@ -95,6 +94,7 @@ describe("Custom Deposit Function Call", () => {
 
   describe("EOA", () => {
     it("EOA deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
+      // Approve Enso router to use USDT 
       const approval = await client.getApprovalData({
         amount: USDT_AMOUNT,
         chainId: 999,
@@ -148,6 +148,10 @@ describe("Custom Deposit Function Call", () => {
           },
         ],
       );
+      
+      await signEoa(approval.tx, approval.gas);
+      await signEoa(bundle.tx, bundle.gas);
+
       console.log("Approval", {gas: approval.gas, tx: approval.tx})
       console.log("Bundle", JSON.stringify(bundle, null, 2));
     });

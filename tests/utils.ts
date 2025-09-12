@@ -1,4 +1,5 @@
 import { RouteParams } from "../src";
+import { Quantity, Transaction } from "../src/types/types";
 
 export function constructHappyPathLink(params: RouteParams): string {
   const baseUrl = "https://happypath.enso.build/";
@@ -66,4 +67,8 @@ export function constructHappyPathLink(params: RouteParams): string {
   const url = `${baseUrl}?${urlParams.toString()}`;
   console.log(expect.getState().currentTestName, url);
   return url;
+}
+
+export async function signEoa(tx: Transaction, gas: Quantity){
+
 }
