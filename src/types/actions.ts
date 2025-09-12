@@ -148,10 +148,12 @@ export type CallAction = {
     address: Address;
     /** Method to call */
     method: string;
-    /** ABI of the method */
+    /** Flattened function signature (e.g. "function collect((uint256 tokenId, address recipient, uint128 amount0Max, uint128 amount1Max) params) external payable returns (uint256 amount0, uint256 amount1)") */
     abi: string;
     /** Arguments for the method */
     args: any[];
+    /** Optional value to send with the transaction in wei */
+    value?: ActionOutputReference<Quantity>;
   };
 };
 
@@ -344,7 +346,9 @@ export type BridgeAction = {
     destinationChainId: number;
     /** Receiver address on destination chain */
     receiver: Address;
-    /** Optional callback data to execute on the destination chain. The callback bundle MUST start with a balance action */
+    /** 
+     * Optional callback actions bundle to execute on the destination chain.
+     * The callback bundle MUST start with a balance action */
     callback?: BundleAction[];
     /** Optional callback execution gas costs */
     callbackGasLimit?: string;
@@ -709,6 +713,9 @@ export type PermitTransferFromAction = {
 /**
  * Union type of all possible bundle actions.
  */
+/**
+ * Union type of all possible bundle actions.
+ */
 export type BundleAction =
   | DepositAction
   | DepositCLMMAction
@@ -719,7 +726,9 @@ export type BundleAction =
   | RedeemAction
   | ApproveAction
   | BorrowAction
+  | BorrowWithPositionIdAction
   | SingleDepositAction
+  | SingleDepositWithPositionIdAction
   | MultiDepositAction
   | TokenizedSingleDepositAction
   | TokenizedMultiDepositAction
@@ -727,11 +736,13 @@ export type BundleAction =
   | HarvestAction
   | PermitTransferFromAction
   | SingleRedeemAction
+  | SingleRedeemWithPositionIdAction
   | MultiRedeemAction
   | TokenizedSingleRedeemAction
   | TokenizedMultiRedeemAction
   | RedeemCLMMAction
   | RepayAction
+  | RepayWithPositionIdAction
   | SwapAction
   | TransferFromAction
   | CallAction
@@ -741,3 +752,99 @@ export type BundleAction =
   | SlippageAction
   | FeeAction
   | EnsoFeeAction;
+
+/**
+ * Borrow tokens with position ID support.
+ */
+export type BorrowWithPositionIdAction = {
+  /** Protocol to borrow from */
+  protocol: string;
+  /** Action type */
+  action: "borrowwithpositionid";
+  /** Action arguments */
+  args: {
+    /** Collateral token address(es) */
+    collateral: Address | Address[];
+    /** Token to borrow */
+    tokenOut: Address;
+    /** Amount to borrow in wei (with full decimals) */
+    amountOut: ActionOutputReference<Quantity>;
+    /** Address of the lending pool contract */
+    primaryAddress: Address;
+    /** Position ID for the borrow position */
+    positionId: string;
+  };
+};
+
+/**
+ * Single deposit with position ID support.
+ */
+export type SingleDepositWithPositionIdAction = {
+  /** Protocol to deposit to */
+  protocol: string;
+  /** Action type */
+  action: "singledepositwithpositionid";
+  /** Action arguments */
+  args: {
+    /** Input token address */
+    tokenIn: Address;
+    /** Output token address (optional) */
+    tokenOut?: Address;
+    /** Amount to deposit */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Primary contract address */
+    primaryAddress: Address;
+    /** Position ID for the deposit */
+    positionId: string;
+    /** Optional receiver address */
+    receiver?: Address;
+  };
+};
+
+/**
+ * Single redeem with position ID support.
+ */
+export type SingleRedeemWithPositionIdAction = {
+  /** Protocol to redeem from */
+  protocol: string;
+  /** Action type */
+  action: "singleredeemwithpositionid";
+  /** Action arguments */
+  args: {
+    /** Input token address (optional) */
+    tokenIn?: Address;
+    /** Output token address */
+    tokenOut: Address;
+    /** Amount to redeem */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Primary contract address */
+    primaryAddress: Address;
+    /** Position ID for the redeem */
+    positionId: string;
+    /** Optional receiver address */
+    receiver?: Address;
+  };
+};
+
+/**
+ * Repay with position ID support.
+ */
+export type RepayWithPositionIdAction = {
+  /** Protocol to repay to */
+  protocol: string;
+  /** Action type */
+  action: "repaywithpositionid";
+  /** Action arguments */
+  args: {
+    /** Token to repay with */
+    tokenIn: Address;
+    /** Amount to repay in wei (with full decimals) */
+    amountIn: ActionOutputReference<Quantity>;
+    /** Address of the lending pool contract */
+    primaryAddress: Address;
+    /** Position ID for the repay */
+    positionId: string;
+    /** The address of the user whose debt is being repaid */
+    onBehalfOf?: Address;
+  };
+};
