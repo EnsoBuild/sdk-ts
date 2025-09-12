@@ -331,7 +331,7 @@ export class EnsoClient {
    * );
    */
   public async getBundleData(
-    params: BundleParams,
+    params: BundleParams & { skipQuote?: boolean },
     actions: BundleAction[],
   ): Promise<BundleData> {
     const url = "/shortcuts/bundle";
@@ -592,6 +592,45 @@ export class EnsoClient {
     return this.request<string>({
       method: "GET",
       url,
+    });
+  }
+
+  /**
+   * Gets LayerZero pool address for a token.
+   *
+   * Returns the LayerZero Stargate pool address for a given token address and chain ID.
+   * Returns null if no pool exists for the token on that chain.
+   *
+   * @param {Object} params - Parameters for the pool lookup
+   * @param {number} params.chainId - Chain ID
+   * @param {string} params.token - Token address
+   * @returns {Promise<{poolAddress: string | null, chainId: number, token: string}>} Pool lookup result
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const poolInfo = await client.getLayerZeroPool({
+   *   chainId: 1,
+   *   token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+   * });
+   */
+  public async getLayerZeroPool(params: {
+    chainId: number;
+    token: string;
+  }): Promise<{
+    poolAddress: string | null;
+    chainId: number;
+    token: string;
+  }> {
+    const url = "/layerzero/pool";
+
+    return this.request<{
+      poolAddress: string | null;
+      chainId: number;
+      token: string;
+    }>({
+      method: "GET",
+      url,
+      params,
     });
   }
 }

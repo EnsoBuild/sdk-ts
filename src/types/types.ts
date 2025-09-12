@@ -87,6 +87,8 @@ export type RouteParams = {
   toEoa?: boolean;
   /** Referral code that will be included in an on-chain event */
   referralCode?: string;
+  /** Ethereum address of the receiver of any dust tokens */
+  refundReceiver?: Address;
 };
 
 /**
@@ -131,6 +133,10 @@ export type Hop = {
   args: Record<string, any>;
   /** Chain ID of the network */
   chainId: number;
+  /** Source chain ID for cross-chain operations */
+  sourceChainId?: number;
+  /** Destination chain ID for cross-chain operations */
+  destinationChainId?: number;
 };
 
 /**
@@ -151,6 +157,8 @@ export type RouteData = {
   tx: Transaction;
   /** Collected fee amounts for each amountIn input */
   feeAmount: Quantity[];
+  /** Enso fee amounts */
+  ensoFeeAmount: Quantity[];
 };
 
 /**
@@ -432,6 +440,8 @@ export type BundleParams = {
   referralCode?: string;
   /** A list of standards to be ignored from consideration */
   ignoreStandards?: string[] | null;
+  /** Ethereum address of the receiver of any dust tokens */
+  refundReceiver?: Address;
 };
 
 /**
@@ -448,7 +458,12 @@ export type BundleData = {
   tx: Transaction;
   /** Amounts out for each action */
   amountsOut: Record<Address, Quantity>;
-  route?: Hop[]; 
+  /** The route the shortcut will use */
+  route?: Hop[];
+  /** Price impact in basis points, null if USD price not found */
+  priceImpact: number | null;
+  /** Fee amount object */
+  feeAmount: Record<string, any>;
 };
 
 /**
