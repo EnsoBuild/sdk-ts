@@ -146,6 +146,8 @@ export type CallAction = {
   protocol: string;
   /** Action arguments */
   args: {
+    tokenIn?: Address;
+    tokenOut?: Address;
     /** Contract address to call */
     address: Address;
     /** Method to call */
