@@ -128,6 +128,14 @@ export type RepayAction = {
   };
 };
 
+export type ContractCallArg =
+  | string
+  | Address
+  | Quantity
+  | boolean
+  | Array<ContractCallArg>
+  | ActionOutputReference<Quantity>;
+
 /**
  * Call arbitrary contract method.
  */
@@ -145,7 +153,7 @@ export type CallAction = {
     /** Flattened function signature (e.g. "function collect((uint256 tokenId, address recipient, uint128 amount0Max, uint128 amount1Max) params) external payable returns (uint256 amount0, uint256 amount1)") */
     abi: string;
     /** Arguments for the method */
-    args: any[];
+    args: ContractCallArg[];
     /** Optional value to send with the transaction in wei */
     value?: ActionOutputReference<Quantity>;
   };
@@ -340,10 +348,12 @@ export type BridgeAction = {
     destinationChainId: number;
     /** Receiver address on destination chain */
     receiver: Address;
-    /** 
+    /**
      * Optional callback actions bundle to execute on the destination chain.
      * The callback bundle MUST start with a balance action */
     callback?: BundleAction[];
+    /** Additional value passed to the callback (in addition to bridge token) */
+    callbackValue?: string;
     /** Optional callback execution gas costs */
     callbackGasLimit?: string;
     /** Optional fee to pay in native asset */
@@ -373,6 +383,10 @@ export type DepositCLMMAction = {
     poolFee: Quantity;
     /** Optional receiver address */
     receiver?: Address;
+    /** The minimum gap between valid price points for adding liquidity */
+    tickSpacing?: Quantity;
+    /**  The hook address */
+    hook?: Address;
   };
 };
 
@@ -674,6 +688,8 @@ export type SwapAction = {
     slippage?: Quantity;
     /** Optional pool fee in basis points when using specific pools */
     poolFee?: Quantity;
+    /** The ID to identify the liquidity pool */
+    poolId?: BytesArg;
   };
 };
 
