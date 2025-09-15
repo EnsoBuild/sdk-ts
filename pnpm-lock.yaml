@@ -11,9 +11,6 @@ importers:
       axios:
         specifier: '>=1.8.2'
         version: 1.9.0
-      viem:
-        specifier: ^2.37.6
-        version: 2.37.6(typescript@5.7.3)
     devDependencies:
       '@types/jest':
         specifier: ^29.5.14
@@ -39,6 +36,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.7.3
+      viem:
+        specifier: ^2.37.6
+        version: 2.37.6(typescript@5.7.3)
 
 packages:
 
