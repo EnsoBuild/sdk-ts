@@ -151,6 +151,8 @@ export type RouteData = {
   tx: Transaction;
   /** Collected fee amounts for each amountIn input */
   feeAmount: Quantity[];
+  /** Guaranteed minimum output after slippage */
+  minAmountOut: Quantity;
 };
 
 /**
