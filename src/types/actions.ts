@@ -30,6 +30,12 @@ export type RouteAction = {
     minAmountOut?: Quantity;
     /** The fee in basis points */
     fee?: Quantity;
+    /** Fee receiver */
+    feeReceiver?: Address;
+    /** A list of aggregators to be ignored from consideration */
+    ignoreAggregators?: string[];
+    /** A list of standards to be ignored from consideration */
+    ignoreStandards?: string[];
   };
 };
 
