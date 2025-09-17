@@ -729,49 +729,6 @@ export type PermitTransferFromAction = {
 };
 
 /**
- * Union type of all possible bundle actions.
- */
-/**
- * Union type of all possible bundle actions.
- */
-export type BundleAction =
-  | DepositAction
-  | DepositCLMMAction
-  | RouteAction
-  | BridgeAction
-  | BalanceAction
-  | TransferAction
-  | RedeemAction
-  | ApproveAction
-  | BorrowAction
-  | BorrowWithPositionIdAction
-  | SingleDepositAction
-  | SingleDepositWithPositionIdAction
-  | MultiDepositAction
-  | TokenizedSingleDepositAction
-  | TokenizedMultiDepositAction
-  | MultiOutSingleDepositAction
-  | HarvestAction
-  | PermitTransferFromAction
-  | SingleRedeemAction
-  | SingleRedeemWithPositionIdAction
-  | MultiRedeemAction
-  | TokenizedSingleRedeemAction
-  | TokenizedMultiRedeemAction
-  | RedeemCLMMAction
-  | RepayAction
-  | RepayWithPositionIdAction
-  | SwapAction
-  | TransferFromAction
-  | CallAction
-  | SplitAction
-  | MergeAction
-  | MinAmountOutAction
-  | SlippageAction
-  | FeeAction
-  | EnsoFeeAction;
-
-/**
  * Borrow tokens with position ID support.
  */
 export type BorrowWithPositionIdAction = {
@@ -866,3 +823,43 @@ export type RepayWithPositionIdAction = {
     onBehalfOf?: Address;
   };
 };
+
+/**
+ * Union type of all possible bundle actions.
+ */
+export type BundleAction =
+  | DepositAction
+  | DepositCLMMAction
+  | RouteAction
+  | BridgeAction
+  | BalanceAction
+  | TransferAction
+  | RedeemAction
+  | ApproveAction
+  | BorrowAction
+  | BorrowWithPositionIdAction
+  | SingleDepositAction
+  | SingleDepositWithPositionIdAction
+  | MultiDepositAction
+  | TokenizedSingleDepositAction
+  | TokenizedMultiDepositAction
+  | MultiOutSingleDepositAction
+  | HarvestAction
+  | PermitTransferFromAction
+  | SingleRedeemAction
+  | SingleRedeemWithPositionIdAction
+  | MultiRedeemAction
+  | TokenizedSingleRedeemAction
+  | TokenizedMultiRedeemAction
+  | RedeemCLMMAction
+  | RepayAction
+  | RepayWithPositionIdAction
+  | SwapAction
+  | TransferFromAction
+  | CallAction
+  | SplitAction
+  | MergeAction
+  | MinAmountOutAction
+  | SlippageAction
+  | FeeAction
+  | EnsoFeeAction;

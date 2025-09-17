@@ -10,6 +10,8 @@ import {
   ConnectedNetwork,
   IporShortcutData,
   IporShortcutInputData,
+  LayerZeroPoolData,
+  LayerZeroPoolParams,
   MultiPriceParams,
   NetworkParams,
   NonTokenizedParams,
@@ -613,21 +615,12 @@ export class EnsoClient {
    *   token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
    * });
    */
-  public async getLayerZeroPool(params: {
-    chainId: number;
-    token: string;
-  }): Promise<{
-    poolAddress: string | null;
-    chainId: number;
-    token: string;
-  }> {
+  public async getLayerZeroPool(
+    params: LayerZeroPoolParams,
+  ): Promise<LayerZeroPoolData> {
     const url = "/layerzero/pool";
 
-    return this.request<{
-      poolAddress: string | null;
-      chainId: number;
-      token: string;
-    }>({
+    return this.request<LayerZeroPoolData>({
       method: "GET",
       url,
       params,

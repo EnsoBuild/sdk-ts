@@ -257,6 +257,8 @@ export interface TokenParams {
   cursor?: number;
   /** Whether to include token metadata (symbol, name and logos) */
   includeMetadata?: boolean;
+  /** Whether to include the underlying tokens */
+  includeUnderlying?: boolean;
   /** Names of the tokens */
   name?: string[];
   /** Symbols of the tokens */
@@ -698,3 +700,23 @@ interface PaginatedResult {
   /** Metadata for pagination */
   meta: PaginationMeta;
 }
+
+export type LayerZeroPoolParams = {
+  chainId: number;
+  token: string;
+  destinationChainId?: string;
+  destinationToken?: string;
+};
+
+export type LayerZeroPoolData = {
+  pool: string;
+  chainId: number;
+  destinationChainId: number;
+  token: string;
+  decimals: number;
+  destinationData: {
+    pool: string;
+    token: string;
+    decimals: number;
+  };
+}[];

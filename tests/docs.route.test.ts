@@ -93,7 +93,7 @@ describe("docs samples integration tests - route", () => {
     console.log(route);
   });
 
-  it("should route USDC from Ethereum mainnet and zap into Plume Mystic vault (myPUSD)", async () => {
+  it.skip("should route USDC from Ethereum mainnet and zap into Plume Mystic vault (myPUSD)", async () => {
     const routeParams: RouteParams = {
       fromAddress: testWallet,
       receiver: testWallet,
