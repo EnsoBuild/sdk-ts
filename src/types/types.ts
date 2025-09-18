@@ -703,20 +703,20 @@ interface PaginatedResult {
 
 export type LayerZeroPoolParams = {
   chainId: number;
-  token: string;
-  destinationChainId?: string;
-  destinationToken?: string;
+  token: Address;
+  destinationChainId?: number;
+  destinationToken?: Address;
 };
 
 export type LayerZeroPoolData = {
-  pool: string;
+  pool: Address;
   chainId: number;
   destinationChainId: number;
-  token: string;
+  token: Address;
   decimals: number;
   destinationData: {
-    pool: string;
-    token: string;
+    pool: Address;
+    token: Address;
     decimals: number;
   };
 }[];
