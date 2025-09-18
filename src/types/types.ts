@@ -702,9 +702,9 @@ interface PaginatedResult {
 }
 
 export type LayerZeroPoolParams = {
-  chainId: number;
+  chainId: number | string;
   token: Address;
-  destinationChainId?: number;
+  destinationChainId?: number | string;
   destinationToken?: Address;
 };
 
