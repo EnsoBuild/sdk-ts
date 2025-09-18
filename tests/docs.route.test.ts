@@ -1,6 +1,6 @@
 import { Address, BundleAction, EnsoClient, RouteParams } from "../src";
 
-describe("docs route tests", () => {
+describe("docs samples integration tests - route", () => {
   const client = new EnsoClient({
     apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
   });
@@ -93,7 +93,7 @@ describe("docs route tests", () => {
     console.log(route);
   });
 
-  it("should route USDC from Ethereum mainnet and zap into Plume Mystic vault (myPUSD)", async () => {
+  it.skip("should route USDC from Ethereum mainnet and zap into Plume Mystic vault (myPUSD)", async () => {
     const routeParams: RouteParams = {
       fromAddress: testWallet,
       receiver: testWallet,

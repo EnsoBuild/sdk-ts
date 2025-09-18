@@ -1,6 +1,7 @@
+import { parseUnits, zeroAddress } from "viem";
 import { Address, BundleAction, EnsoClient } from "../src";
 
-describe("docs", () => {
+describe("Docs samples inegration tests - actions", () => {
   const client = new EnsoClient({
     apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
   });
@@ -37,7 +38,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(2);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("route", async () => {
@@ -63,7 +73,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("swap", async () => {
@@ -89,33 +108,144 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
+
   });
 
-  it("call", async () => {
-    const bundle = await client.getBundleData(
-      {
-        chainId: 1,
-        fromAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-        routingStrategy: "delegate",
-      },
-      [
+  describe("call", () => {
+    it("call", async () => {
+      const bundle = await client.getBundleData(
         {
-          protocol: "enso",
-          action: "call",
-          args: {
-            address: "0xD0aF6F692bFa10d6a535A3A321Dc8377F4EeEF12", // Contract address
-            method: "percentMul", // Method name
-            abi: "function percentMul(uint256,uint256) external", // ABI signature
-            args: [
-              "1000000000000000000", // 1 ETH (first argument)
-              "7000", // 70% (second argument)
-            ],
-          },
+          chainId: 1,
+          fromAddress: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+          routingStrategy: "delegate",
         },
-      ],
-    );
-    console.log(JSON.stringify(bundle, null, 2));
+        [
+          {
+            protocol: "enso",
+            action: "call",
+            args: {
+              address: "0xD0aF6F692bFa10d6a535A3A321Dc8377F4EeEF12", // Contract address
+              method: "percentMul", // Method name
+              abi: "function percentMul(uint256,uint256) external", // ABI signature
+              args: [
+                "1000000000000000000", // 1 ETH (first argument)
+                "7000", // 70% (second argument)
+              ],
+            },
+          },
+        ],
+      );
+      expect(bundle).toBeDefined();
+      expect(bundle.bundle).toBeDefined();
+      expect(Array.isArray(bundle.bundle)).toBe(true);
+      expect(bundle.bundle).toHaveLength(1);
+
+      // Transaction validation
+      expect(bundle.tx).toBeDefined();
+      expect(bundle.tx.data).toBeDefined();
+      expect(bundle.tx.to).toBeDefined();
+      expect(bundle.tx.from).toBeDefined();
+    });
+
+    it("call2", async () => {
+      const CONFIG = {
+        desiredTokenOut: "0x6969696969696969696969696969696969696969",
+        borrowerOperations: "0xed35ff90e6593ad71ed15082e24c204c379d3599",
+        trove: "0x94704805a75f9d6a18b7a2338102c63d922f1915",
+        underlying: "0xdE04c469Ad658163e2a5E860a03A86B52f6FA8C8", // BYUSD-HONEY-STABLE
+        mead: "0xedb5180661f56077292c92ab40b1ac57a279a396",
+        debtRepayAmount: parseUnits("500", 18).toString(),
+        collateralWithdrawalAmount: parseUnits("1", 18).toString(),
+        maxFeePercentage: parseUnits("0.005", 18).toString(),
+      } as const;
+
+      async function main() {
+        // NOTE: Using this account that has collateral on block 6861368
+        // If the sender is an account that doesnt have collateral, request will fail
+        const smartWalletAddress = "0x5dE1B7f14De50Ed6e430ea144eED8Bc9d0Bbb30C";
+
+        const bundle: BundleAction[] = [
+          {
+            protocol: "enso",
+            action: "call",
+            args: {
+              address: CONFIG.borrowerOperations,
+              method: "adjustTrove",
+              abi:
+                "function adjustTrove(" +
+                "address troveManager, " +
+                "address account, " +
+                "uint256 maxFeePercentage, " +
+                "uint256 collateralDeposit, " +
+                "uint256 collateralWithdrawal, " +
+                "uint256 debtAmount, " +
+                "bool isDebtIncrease, " +
+                "address upperHint, " +
+                "address lowerHint" +
+                ") external",
+              args: [
+                CONFIG.trove,
+                smartWalletAddress,
+                CONFIG.maxFeePercentage,
+                "0",
+                CONFIG.collateralWithdrawalAmount,
+                "0",
+                false,
+                zeroAddress,
+                zeroAddress,
+              ],
+              tokenOut: CONFIG.underlying,
+            },
+          },
+          {
+            protocol: "enso",
+            action: "balance",
+            args: {
+              token: CONFIG.underlying,
+            },
+          },
+          {
+            protocol: "enso",
+            action: "route",
+            args: {
+              tokenIn: CONFIG.underlying,
+              tokenOut: CONFIG.desiredTokenOut,
+              amountIn: { useOutputOfCallAt: 1 },
+            },
+          },
+        ] as any;
+
+        const bundleData = await client.getBundleData(
+          {
+            chainId: 80094,
+            fromAddress: smartWalletAddress,
+            routingStrategy: "delegate",
+          },
+          bundle,
+        );
+        expect(bundle).toBeDefined();
+        expect(bundleData.bundle).toBeDefined();
+        expect(Array.isArray(bundleData.bundle)).toBe(true);
+        expect(bundleData.bundle).toHaveLength(3);
+
+        // Transaction validation
+        expect(bundleData.tx).toBeDefined();
+        expect(bundleData.tx.data).toBeDefined();
+        expect(bundleData.tx.to).toBeDefined();
+        expect(bundleData.tx.from).toBeDefined();
+      }
+    });
   });
 
   it("deposit", async () => {
@@ -139,7 +269,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("depositCLMM", async () => {
@@ -167,7 +306,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it.skip("redeem", async () => {
@@ -203,7 +351,18 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
+ 
   });
 
   it.skip("redeemCLMM", async () => {
@@ -230,7 +389,17 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
   });
 
   it("borrow", async () => {
@@ -264,7 +433,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(2);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("repay", async () => {
@@ -308,7 +486,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(3);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("repay on behalf of other", async () => {
@@ -333,7 +520,16 @@ describe("docs", () => {
       ],
     );
 
-    console.log(JSON.stringify(bundleData));
+    expect(bundleData).toBeDefined();
+    expect(bundleData.bundle).toBeDefined();
+    expect(Array.isArray(bundleData.bundle)).toBe(true);
+    expect(bundleData.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundleData.tx).toBeDefined();
+    expect(bundleData.tx.data).toBeDefined();
+    expect(bundleData.tx.to).toBeDefined();
+    expect(bundleData.tx.from).toBeDefined();
   });
 
   it("harvest", async () => {
@@ -354,7 +550,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("approve", async () => {
@@ -377,7 +582,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("transfer", async () => {
@@ -400,7 +614,17 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
   });
 
   it.skip("transferFrom", async () => {
@@ -430,7 +654,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it.skip("permitTransferFrom", async () => {
@@ -456,7 +689,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it.skip("bridge", async () => {
@@ -562,7 +804,17 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
   });
 
   it("fee", async () => {
@@ -585,7 +837,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it.skip("split", async () => {
@@ -617,7 +878,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it.skip("merge", async () => {
@@ -646,7 +916,17 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
   });
 
   it("balance", async () => {
@@ -666,7 +946,16 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
   });
 
   it("minAmountOut", async () => {
@@ -700,7 +989,17 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(2);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
   });
 
   // singleDeposit action (from docs)
@@ -725,7 +1024,17 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
   });
 
   // multiDeposit action (from docs)
@@ -758,7 +1067,17 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
   });
 
   // multiOutSingleDeposit action (from docs)
@@ -786,6 +1105,184 @@ describe("docs", () => {
         },
       ],
     );
-    console.log(JSON.stringify(bundle, null, 2));
+    expect(bundle).toBeDefined();
+    expect(bundle.bundle).toBeDefined();
+    expect(Array.isArray(bundle.bundle)).toBe(true);
+    expect(bundle.bundle).toHaveLength(1);
+
+    // Transaction validation
+    expect(bundle.tx).toBeDefined();
+    expect(bundle.tx.data).toBeDefined();
+    expect(bundle.tx.to).toBeDefined();
+    expect(bundle.tx.from).toBeDefined();
+
+
+  });
+  describe("Custom Deposit Function Call", () => {
+    const client = new EnsoClient({
+      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+    });
+    const USDT: Address = "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb";
+
+    const STAKED_HYPE: Address = "0xffaa4a3d97fe9107cef8a3f48c069f577ff76cc1";
+    const HYPE_DEPOSITOR: Address =
+      "0x6e358dd1204c3fb1D24e569DF0899f48faBE5337";
+    const LOOPED_HYPE: Address = "0x5748ae796AE46A4F1348a1693de4b50560485562";
+
+    const SENDER: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
+    const ENSO_SHORTCUTS: Address =
+      "0x4Fe93ebC4Ce6Ae4f81601cC7Ce7139023919E003";
+
+    const USDT_AMOUNT = "100000000";
+
+    describe("Smart Wallet", () => {
+      it("Smart Wallet deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
+        const bundle = await client.getBundleData(
+          {
+            chainId: 999,
+            fromAddress: SENDER,
+            routingStrategy: "delegate",
+            receiver: SENDER,
+          },
+          [
+            {
+              protocol: "enso",
+              action: "route",
+              args: {
+                tokenIn: USDT,
+                tokenOut: STAKED_HYPE,
+                amountIn: USDT_AMOUNT,
+              },
+            },
+            // without `route` we must manually approve the spender of tokens - the HypeDepositor contract
+            {
+              protocol: "erc20",
+              action: "approve",
+              args: {
+                amount: { useOutputOfCallAt: 0 },
+                spender: HYPE_DEPOSITOR,
+                token: STAKED_HYPE,
+              },
+            },
+            {
+              protocol: "enso",
+              action: "call",
+              args: {
+                address: HYPE_DEPOSITOR,
+                args: [
+                  STAKED_HYPE,
+                  { useOutputOfCallAt: 0 },
+                  0,
+                  SENDER,
+                  "0x1234",
+                ],
+                method: "deposit",
+                abi: "function deposit(address depositAsset, uint256 depositAmount, uint256 minimumMint, address to, bytes communityCode) external returns (uint256 shares)",
+              },
+            },
+          ],
+        );
+        expect(bundle).toBeDefined();
+        expect(bundle.bundle).toBeDefined();
+        expect(Array.isArray(bundle.bundle)).toBe(true);
+        expect(bundle.bundle).toHaveLength(3);
+
+        // Transaction validation
+        expect(bundle.tx).toBeDefined();
+        expect(bundle.tx.data).toBeDefined();
+        expect(bundle.tx.to).toBeDefined();
+        expect(bundle.tx.from).toBeDefined();
+      });
+
+      it("Smart Wallet routes to LOOPED_HYPE", async () => {
+        const bundle = await client.getBundleData(
+          {
+            chainId: 999,
+            fromAddress: SENDER,
+            routingStrategy: "delegate",
+            receiver: SENDER,
+          },
+          [
+            {
+              protocol: "enso",
+              action: "route",
+              args: {
+                tokenIn: USDT,
+                tokenOut: LOOPED_HYPE,
+                amountIn: USDT_AMOUNT,
+                receiver: SENDER,
+              },
+            },
+          ],
+        );
+        expect(bundle).toBeDefined();
+        expect(bundle.bundle).toBeDefined();
+        expect(Array.isArray(bundle.bundle)).toBe(true);
+        expect(bundle.bundle).toHaveLength(1);
+
+        // Transaction validation
+        expect(bundle.tx).toBeDefined();
+        expect(bundle.tx.data).toBeDefined();
+        expect(bundle.tx.to).toBeDefined();
+        expect(bundle.tx.from).toBeDefined();
+      });
+    });
+
+    describe("EOA", () => {
+      it("EOA deposits to LOOPED_HYPE with custom community code and dynamic token amount", async () => {
+        // Approve Enso router to use USDT
+        const approval = await client.getApprovalData({
+          amount: USDT_AMOUNT,
+          chainId: 999,
+          fromAddress: SENDER,
+          tokenAddress: USDT,
+        });
+
+        const bundle = await client.getBundleData(
+          {
+            chainId: 999,
+            fromAddress: SENDER,
+            routingStrategy: "router",
+            receiver: SENDER,
+          },
+          [
+            {
+              protocol: "enso",
+              action: "route",
+              args: {
+                tokenIn: USDT,
+                tokenOut: STAKED_HYPE,
+                amountIn: USDT_AMOUNT,
+              },
+            },
+            {
+              protocol: "erc20",
+              action: "approve",
+              args: {
+                amount: { useOutputOfCallAt: 0 },
+                spender: HYPE_DEPOSITOR,
+                token: STAKED_HYPE,
+              },
+            },
+            {
+              protocol: "enso",
+              action: "call",
+              args: {
+                address: HYPE_DEPOSITOR,
+                args: [
+                  STAKED_HYPE,
+                  { useOutputOfCallAt: 0 },
+                  0,
+                  SENDER,
+                  "0x1234",
+                ],
+                method: "deposit",
+                abi: "function deposit(address depositAsset, uint256 depositAmount, uint256 minimumMint, address to, bytes communityCode) external returns (uint256 shares)",
+              },
+            },
+          ],
+        );
+      });
+    });
   });
 });
