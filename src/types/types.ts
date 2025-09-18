@@ -87,8 +87,6 @@ export type RouteParams = {
   toEoa?: boolean;
   /** Referral code that will be included in an on-chain event */
   referralCode?: string;
-  /** Ethereum address of the receiver of any dust tokens */
-  refundReceiver?: Address;
 };
 
 /**
@@ -442,8 +440,6 @@ export type BundleParams = {
   referralCode?: string;
   /** A list of standards to be ignored from consideration */
   ignoreStandards?: string[] | null;
-  /** Ethereum address of the receiver of any dust tokens */
-  refundReceiver?: Address;
 };
 
 /**

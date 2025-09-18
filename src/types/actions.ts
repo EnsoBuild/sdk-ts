@@ -360,12 +360,8 @@ export type BridgeAction = {
      * Optional callback actions bundle to execute on the destination chain.
      * The callback bundle MUST start with a balance action */
     callback?: BundleAction[];
-    /** Additional value passed to the callback (in addition to bridge token) */
+    /** Additional native token value passed to the callback (in addition to bridge token) */
     callbackValue?: string;
-    /** Optional callback execution gas costs */
-    callbackGasLimit?: string;
-    /** Optional fee to pay in native asset */
-    bridgeFee?: string;
   };
 };
 
