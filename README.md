@@ -7,7 +7,7 @@
 
 # Enso SDK
 
-The Enso SDK provides a set of tools and methods to interact with the Enso API. It includes functionalities for token approvals, routing, quoting, and balance checking.
+The Enso SDK provides a set of tools and methods to interact with the Enso shortcuts. It includes functionalities for automated swap routing, multichain routing, token approvals, quoting, and balance checking.
 
 ## Introduction
 
@@ -65,7 +65,7 @@ There are 3 routing strategies available depending on your use case:
 
 ### Token Approvals
 
-Get approval data to allow token spending:
+Get approval data to allow token spending when using `router` as `routingStrategy` (not needed when using `delegate`):
 
 ```typescript
 // Example: Approving USDC for spending
@@ -108,41 +108,6 @@ const balances = await ensoClient.getBalances({
 });
 ```
 
-### Token Data
-
-Get paginated information about tokens:
-
-```typescript
-// Example: Get details about wstETH including metadata
-const tokenData = await ensoClient.getTokenData({
-  chainId: 1,
-  address: "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0", // wstETH
-  includeMetadata: true,
-  type: "defi", // Filter by token type - can be "defi" or "base"
-});
-```
-
-### Token Pricing
-
-Get token price data:
-
-```typescript
-// Example: Get current price of WETH
-const priceData = await ensoClient.getPriceData({
-  chainId: 1,
-  address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
-});
-
-// Example: Get prices for multiple tokens
-const multiPriceData = await ensoClient.getMultiplePriceData({
-  chainId: 1,
-  addresses: [
-    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
-    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-  ],
-});
-```
-
 ### Bundled Transactions
 
 Bundle multiple DeFi actions into a single transaction and use results between transactions.
@@ -182,6 +147,18 @@ const bundleData = await ensoClient.getBundleData(
 );
 ```
 
+### Bridging Pool Address
+
+Use `getLayerZeroPool` to get the correct pool information, and use it as `primaryAddress` for the [`bridge` action](https://docs.enso.build/pages/build/reference/actions#bridge).
+
+```ts
+const poolInfo = await client.getLayerZeroPool({
+  chainId: 42161, // Arbitrum
+  destinationChainId: 999, // Zora  
+  token: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9' // USDT
+});
+```
+
 ### Non-Tokenized Positions
 
 Route to a non-tokenized position:
@@ -200,7 +177,43 @@ const nonTokenizedRoute = await ensoClient.getRouteNonTokenized({
 });
 ```
 
-### Protocol Interactions
+
+### Token Data
+
+Get paginated information about tokens:
+
+```typescript
+// Example: Get details about wstETH including metadata
+const tokenData = await ensoClient.getTokenData({
+  chainId: 1,
+  address: "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0", // wstETH
+  includeMetadata: true,
+  type: "defi", // Filter by token type - can be "defi" or "base"
+});
+```
+
+### Token Pricing
+
+Get token price data:
+
+```typescript
+// Example: Get current price of WETH
+const priceData = await ensoClient.getPriceData({
+  chainId: 1,
+  address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+});
+
+// Example: Get prices for multiple tokens
+const multiPriceData = await ensoClient.getMultiplePriceData({
+  chainId: 1,
+  addresses: [
+    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+  ],
+});
+```
+
+### Protocol Support
 
 Get information about supported protocols:
 
