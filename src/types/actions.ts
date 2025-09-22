@@ -1,6 +1,6 @@
 // src/types/actions.ts - Updated to match OpenAPI specification
 
-import { Address, BytesArg, Quantity } from "./types";
+import { Address, BytesArg, HexString, Quantity } from "./types";
 
 /**
  * Route action using Enso's routing engine.
@@ -308,6 +308,8 @@ export type DepositAction = {
       | ActionOutputReference<Quantity>[];
     /** Address of the protocol contract to interact with */
     primaryAddress: Address;
+    /** The PositionId to deposit into (e.g. Morpho Market positions) */
+    positionId?: HexString;
     /** Address to receive the output tokens if not the caller */
     receiver?: Address;
   };

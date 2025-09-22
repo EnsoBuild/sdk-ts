@@ -22,7 +22,7 @@ export type TokenType = "defi" | "base";
  * @example '0x123456789abcdef123456789abcdef1234567890'
  */
 export type Address = `0x${string}`;
-
+export type HexString = `0x${string}`;
 export type Quantity = string | number;
 
 export type BytesArg = `0x${string}`;
