@@ -213,8 +213,8 @@ export type WalletBalance = {
  * Parameters for getting wallet balances.
  */
 export type BalanceParams = {
-  /** Chain ID of the network to execute the transaction on */
-  chainId?: number;
+  /** Chain ID of the network to execute the transaction on or "all"*/
+  chainId: number | "all";
   /** Address of the eoa with which to associate the ensoWallet for balances */
   eoaAddress: Address;
   /** If true returns balances for the provided eoaAddress, instead of the associated ensoWallet */
