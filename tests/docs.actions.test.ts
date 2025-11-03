@@ -67,8 +67,6 @@ describe("Docs samples inegration tests - actions", () => {
             amountIn: "1000000000000000000", // Amount in wei (1 ETH)
             slippage: "300", // 3% slippage tolerance (in basis points)
             receiver: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", // Optional: Receiver address
-            primaryAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // Optional: Primary contract address
-            poolFee: "3000", // Optional: Pool fee in basis points (e.g., 3000 for 0.3%)
           },
         },
       ],
@@ -118,8 +116,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
-
   });
 
   describe("call", () => {
@@ -361,8 +357,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
- 
   });
 
   it.skip("redeemCLMM", async () => {
@@ -399,7 +393,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
   });
 
   it("borrow", async () => {
@@ -624,7 +617,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
   });
 
   it.skip("transferFrom", async () => {
@@ -814,7 +806,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
   });
 
   it("fee", async () => {
@@ -926,7 +917,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
   });
 
   it("balance", async () => {
@@ -999,7 +989,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
   });
 
   // singleDeposit action (from docs)
@@ -1034,7 +1023,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
   });
 
   // multiDeposit action (from docs)
@@ -1077,7 +1065,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
   });
 
   // multiOutSingleDeposit action (from docs)
@@ -1115,8 +1102,6 @@ describe("Docs samples inegration tests - actions", () => {
     expect(bundle.tx.data).toBeDefined();
     expect(bundle.tx.to).toBeDefined();
     expect(bundle.tx.from).toBeDefined();
-
-
   });
   describe("Custom Deposit Function Call", () => {
     const client = new EnsoClient({
