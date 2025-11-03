@@ -338,6 +338,9 @@ export class EnsoClient {
   ): Promise<BundleData> {
     const url = "/shortcuts/bundle";
 
+    // Validate route actions with destinationChainId
+    this.validateRouteActions(actions);
+
     return this.request<BundleData>({
       method: "POST",
       url,
@@ -625,6 +628,31 @@ export class EnsoClient {
       url,
       params,
     });
+  }
+
+  /**
+   * Validates route actions to ensure refundReceiver is set when destinationChainId is provided.
+   * @private
+   * @param {BundleAction[]} actions - Array of actions to validate
+   * @throws {Error} When validation fails
+   */
+  private validateRouteActions(actions: BundleAction[]): void {
+    for (const action of actions) {
+      // Check if this is a route action
+      if (action.protocol === "enso" && action.action === "route") {
+        const routeArgs = action.args as any; // RouteAction args
+
+        // Check if destinationChainId is provided
+        if (routeArgs.destinationChainId) {
+          // Ensure refundReceiver is set when destinationChainId is provided
+          if (!routeArgs.refundReceiver) {
+            throw new Error(
+              "refundReceiver is required when destinationChainId is provided in route actions",
+            );
+          }
+        }
+      }
+    }
   }
 }
 

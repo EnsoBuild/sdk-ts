@@ -18,14 +18,14 @@ export type RouteAction = {
     tokenOut: Address;
     /** Amount to route in wei (with full decimals) */
     amountIn: ActionOutputReference<Quantity>;
+    /** Destination chain ID to perform route-bridge. (refundReceiver is required)*/
+    destinationChainId?: number;
     /** Slippage tolerance in basis points (100 = 1%) */
     slippage?: Quantity;
     /** Address to receive the output tokens if not the caller */
     receiver?: Address;
-    /** Optional address of the router or primary contract to use */
-    primaryAddress?: Address;
-    /** Optional pool fee in basis points when using specific pools */
-    poolFee?: Quantity;
+    /** Address to receive bridged asset if transaction on bridge fails. Required if destinationChainId provided. */
+    refundReceiver?: Address;
     /** The minimum amount out */
     minAmountOut?: Quantity;
     /** The fee in basis points */
