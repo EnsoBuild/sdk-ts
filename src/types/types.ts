@@ -14,7 +14,8 @@ export type RoutingStrategy =
   | "router"
   | "delegate"
   | "router-legacy"
-  | "delegate-legacy";
+  | "delegate-legacy"
+  | "ensowallet-v2";
 
 export type TokenType = "defi" | "base";
 /**
