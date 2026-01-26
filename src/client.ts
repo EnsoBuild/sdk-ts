@@ -30,7 +30,7 @@ import {
   WalletBalance,
 } from "./types/types";
 
-const DEFAULT_BASE_URL = "https://api.enso.finance/api/v1";
+const DEFAULT_BASE_URL = "https://api.enso.build/api/v1";
 /**
  * EnsoClient class for interacting with the Enso Finance API.
  *
