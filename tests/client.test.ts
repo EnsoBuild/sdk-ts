@@ -921,4 +921,189 @@ describe("EnsoClient", () => {
       expect(route).toBeDefined();
     });
   });
+
+  describe("getLayerZeroBridgeStatus", () => {
+    const mockLayerZeroResponse = {
+      layerZeroMessage: {
+        srcEid: 101,
+        dstEid: 110,
+        srcTxHash: "0xsrcTxHash",
+        dstTxHash: "0xdstTxHash",
+        status: "DELIVERED",
+      },
+      sourceChainShortcutExecuted: {
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+        sender: "0xSender",
+        receiver: "0xReceiver",
+        amountIn: "1000000",
+        amountOut: "999000",
+        tokenIn: "0xTokenIn",
+        tokenOut: "0xTokenOut",
+      },
+      destinationChainShortcutExecuted: {
+        chainId: 42161,
+        txHash: "0xdstTxHash",
+        sender: "0xBridgeContract",
+        receiver: "0xReceiver",
+        amountIn: "999000",
+        amountOut: "998000",
+        tokenIn: "0xBridgedToken",
+        tokenOut: "0xFinalToken",
+      },
+    };
+
+    it("should get LayerZero bridge status successfully", async () => {
+      mock.onGet("/layerzero/bridge/check").reply(200, mockLayerZeroResponse);
+
+      const result = await client.getLayerZeroBridgeStatus({
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+      });
+
+      expect(result).toEqual(mockLayerZeroResponse);
+      expect(mock.history.get[0].params).toEqual({
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+      });
+    });
+
+    it("should handle in-flight status", async () => {
+      const inFlightResponse = {
+        layerZeroMessage: {
+          srcEid: 101,
+          dstEid: 110,
+          srcTxHash: "0xsrcTxHash",
+          status: "INFLIGHT",
+        },
+      };
+      mock.onGet("/layerzero/bridge/check").reply(200, inFlightResponse);
+
+      const result = await client.getLayerZeroBridgeStatus({
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+      });
+
+      expect(result.layerZeroMessage.status).toBe("INFLIGHT");
+      expect(result.destinationChainShortcutExecuted).toBeUndefined();
+    });
+
+    it("should handle API errors", async () => {
+      mock.onGet("/layerzero/bridge/check").reply(404, { error: "Not Found" });
+
+      await expect(
+        client.getLayerZeroBridgeStatus({
+          chainId: 1,
+          txHash: "0xinvalidTxHash",
+        }),
+      ).rejects.toThrow("API Error: Request failed with status code 404");
+    });
+  });
+
+  describe("getCcipBridgeStatus", () => {
+    const mockCcipResponse = {
+      ccipMessage: {
+        messageId: "0xmessageId123",
+        srcChainSelector: "5009297550715157269",
+        dstChainSelector: "4949039107694359620",
+        srcTxHash: "0xsrcTxHash",
+        dstTxHash: "0xdstTxHash",
+        status: "SUCCESS",
+      },
+      sourceChainShortcutExecuted: {
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+        sender: "0xSender",
+        receiver: "0xReceiver",
+        amountIn: "1000000",
+        amountOut: "999000",
+        tokenIn: "0xTokenIn",
+        tokenOut: "0xTokenOut",
+      },
+      destinationChainShortcutExecuted: {
+        chainId: 42161,
+        txHash: "0xdstTxHash",
+        sender: "0xCcipRouter",
+        receiver: "0xReceiver",
+        amountIn: "999000",
+        amountOut: "998000",
+        tokenIn: "0xBridgedToken",
+        tokenOut: "0xFinalToken",
+      },
+    };
+
+    it("should get CCIP bridge status successfully", async () => {
+      mock.onGet("/ccip/bridge/check").reply(200, mockCcipResponse);
+
+      const result = await client.getCcipBridgeStatus({
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+      });
+
+      expect(result).toEqual(mockCcipResponse);
+      expect(mock.history.get[0].params).toEqual({
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+      });
+    });
+
+    it("should handle in-flight status", async () => {
+      const inFlightResponse = {
+        ccipMessage: {
+          messageId: "0xmessageId123",
+          srcChainSelector: "5009297550715157269",
+          dstChainSelector: "4949039107694359620",
+          srcTxHash: "0xsrcTxHash",
+          status: "INFLIGHT",
+        },
+      };
+      mock.onGet("/ccip/bridge/check").reply(200, inFlightResponse);
+
+      const result = await client.getCcipBridgeStatus({
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+      });
+
+      expect(result.ccipMessage.status).toBe("INFLIGHT");
+      expect(result.destinationChainShortcutExecuted).toBeUndefined();
+    });
+
+    it("should handle failed status with refund details", async () => {
+      const failedResponse = {
+        ccipMessage: {
+          messageId: "0xmessageId123",
+          srcChainSelector: "5009297550715157269",
+          dstChainSelector: "4949039107694359620",
+          srcTxHash: "0xsrcTxHash",
+          status: "FAILED",
+        },
+        refundDetails: {
+          refundAddress: "0xRefundAddress",
+          refundAmount: "1000000",
+          refundToken: "0xToken",
+        },
+      };
+      mock.onGet("/ccip/bridge/check").reply(200, failedResponse);
+
+      const result = await client.getCcipBridgeStatus({
+        chainId: 1,
+        txHash: "0xsrcTxHash",
+      });
+
+      expect(result.ccipMessage.status).toBe("FAILED");
+      expect(result.refundDetails).toBeDefined();
+      expect(result.refundDetails?.refundAmount).toBe("1000000");
+    });
+
+    it("should handle API errors", async () => {
+      mock.onGet("/ccip/bridge/check").reply(404, { error: "Not Found" });
+
+      await expect(
+        client.getCcipBridgeStatus({
+          chainId: 1,
+          txHash: "0xinvalidTxHash",
+        }),
+      ).rejects.toThrow("API Error: Request failed with status code 404");
+    });
+  });
 });

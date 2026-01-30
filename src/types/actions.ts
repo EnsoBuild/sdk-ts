@@ -289,6 +289,27 @@ export type EnsoFeeAction = {
 };
 
 /**
+ * Paymaster fee action - applies fee for ERC-4337 paymaster operations.
+ */
+export type PaymasterFeeAction = {
+  /** Must be 'enso' for paymasterfee actions */
+  protocol: "enso";
+  /** Action type */
+  action: "paymasterfee";
+  /** Action arguments */
+  args: {
+    /** Token address to apply the fee to */
+    token: Address;
+    /** Amount to apply the fee to (with full decimals) */
+    amount: ActionOutputReference<Quantity>;
+    /** Fee percentage in basis points (1 bps = 0.01%, 100 bps = 1%) */
+    bps: Quantity;
+    /** Paymaster address to receive the fee */
+    paymaster: Address;
+  };
+};
+
+/**
  *  Deposit tokens to a protocol.
  */
 export type DepositAction = {
@@ -760,4 +781,5 @@ export type BundleAction =
   | MinAmountOutAction
   | SlippageAction
   | FeeAction
-  | EnsoFeeAction;
+  | EnsoFeeAction
+  | PaymasterFeeAction;

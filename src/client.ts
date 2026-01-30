@@ -7,9 +7,13 @@ import {
   BundleAction,
   BundleData,
   BundleParams,
+  CcipBridgeCheckParams,
+  CcipBridgeCheckResponse,
   ConnectedNetwork,
   IporShortcutData,
   IporShortcutInputData,
+  LayerZeroBridgeCheckParams,
+  LayerZeroBridgeCheckResponse,
   LayerZeroPoolData,
   LayerZeroPoolParams,
   MultiPriceParams,
@@ -624,6 +628,67 @@ export class EnsoClient {
     const url = "/layerzero/pool";
 
     return this.request<LayerZeroPoolData>({
+      method: "GET",
+      url,
+      params,
+    });
+  }
+
+  /**
+   * Gets LayerZero bridge transaction status.
+   *
+   * Checks the status of a LayerZero bridge transaction including message delivery
+   * and shortcut execution events on both source and destination chains.
+   *
+   * Note: This endpoint is rate limited to 1 request per 10 seconds.
+   *
+   * @param {LayerZeroBridgeCheckParams} params - Parameters for the bridge check
+   * @returns {Promise<LayerZeroBridgeCheckResponse>} Bridge status response
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const status = await client.getLayerZeroBridgeStatus({
+   *   chainId: 1,
+   *   txHash: '0x123...'
+   * });
+   */
+  public async getLayerZeroBridgeStatus(
+    params: LayerZeroBridgeCheckParams,
+  ): Promise<LayerZeroBridgeCheckResponse> {
+    const url = "/layerzero/bridge/check";
+
+    return this.request<LayerZeroBridgeCheckResponse>({
+      method: "GET",
+      url,
+      params,
+    });
+  }
+
+  /**
+   * Gets CCIP bridge transaction status.
+   *
+   * Checks the status of a CCIP (Chainlink Cross-Chain Interoperability Protocol)
+   * bridge transaction including message delivery and shortcut execution events
+   * on both source and destination chains.
+   *
+   * Note: This endpoint is rate limited to 1 request per 10 seconds.
+   *
+   * @param {CcipBridgeCheckParams} params - Parameters for the bridge check
+   * @returns {Promise<CcipBridgeCheckResponse>} Bridge status response
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const status = await client.getCcipBridgeStatus({
+   *   chainId: 1,
+   *   txHash: '0x123...'
+   * });
+   */
+  public async getCcipBridgeStatus(
+    params: CcipBridgeCheckParams,
+  ): Promise<CcipBridgeCheckResponse> {
+    const url = "/ccip/bridge/check";
+
+    return this.request<CcipBridgeCheckResponse>({
       method: "GET",
       url,
       params,

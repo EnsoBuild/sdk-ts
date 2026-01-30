@@ -125,18 +125,48 @@ export type Hop = {
   /** Action performed in this hop */
   action: string;
   /** Primary contract address */
-  primary: Address;
+  primary?: Address;
   /** Internal routes used in this hop */
-  internalRoutes: string[];
+  internalRoutes?: Hop[][];
   /** Arguments for this hop */
-  args: Record<string, any>;
+  args?: Record<string, any>;
   /** Chain ID of the network */
-  chainId: number;
+  chainId?: number;
   /** Source chain ID for cross-chain operations */
   sourceChainId?: number;
   /** Destination chain ID for cross-chain operations */
   destinationChainId?: number;
+  /** Non-tokenized position output addresses */
+  positionOut?: string[];
 };
+
+/**
+ * Estimated latency for a bridge transfer.
+ */
+export interface BridgeLatencyEstimate {
+  /** Source chain ID */
+  fromChainId: number;
+  /** Destination chain ID */
+  toChainId: number;
+  /** Token address being bridged */
+  token: string;
+  /** Estimated transfer time in seconds */
+  estimatedSeconds: number;
+  /** Number of confirmations required on source chain */
+  sendConfirmations?: number;
+  /** Number of confirmations required on destination chain */
+  receiveConfirmations?: number;
+  /** Block time on source chain in seconds */
+  sendBlockTimeSeconds?: number;
+  /** Block time on destination chain in seconds */
+  receiveBlockTimeSeconds?: number;
+  /** Bridge protocol used */
+  bridge?: string;
+  /** Source of the estimate */
+  source?: 'defaults' | 'override' | 'fallback';
+  /** Additional note about the estimate */
+  note?: string;
+}
 
 /**
  * Response data from route calculation.
@@ -147,17 +177,23 @@ export type RouteData = {
   /** Estimated gas used by the transaction */
   gas: Quantity;
   /** Estimated amount received */
-  amountOut: Quantity;
-  /** Price impact in basis points, null if USD price not found */
-  priceImpact: Quantity | null;
+  amountOut: Quantity | Quantity[];
+  /** Price impact, null if USD price not found */
+  priceImpact: number | null;
   /** Block number the transaction was created on */
   createdAt: number;
   /** The tx object to use in ethers */
   tx: Transaction;
   /** Collected fee amounts for each amountIn input */
-  feeAmount: Quantity[];
+  feeAmount?: Quantity[];
+  /** Minimum amount out in wei */
+  minAmountOut?: Quantity | Quantity[];
   /** Enso fee amounts */
-  ensoFeeAmount: Quantity[];
+  ensoFeeAmount?: Quantity[];
+  /** ERC-4337 UserOperation for account abstraction wallets */
+  userOp?: UserOperation;
+  /** Estimated latency for bridge transfers */
+  bridgingEstimates?: BridgeLatencyEstimate[];
 };
 
 /**
@@ -450,19 +486,25 @@ export type BundleData = {
   /** Array of actions in the bundle */
   bundle: BundleAction[];
   /** Gas estimate for the bundle */
-  gas: Quantity;
+  gas?: Quantity;
   /** Block number the transaction was created on */
   createdAt: number;
   /** The tx object to use in ethers */
   tx: Transaction;
   /** Amounts out for each action */
-  amountsOut: Record<Address, Quantity>;
+  amountsOut?: Record<Address, Quantity>;
+  /** Minimum amounts out for each action */
+  minAmountsOut?: Record<Address, Quantity>;
   /** The route the shortcut will use */
-  route?: Hop[];
-  /** Price impact in basis points, null if USD price not found */
-  priceImpact: number | null;
+  route: Hop[];
+  /** Price impact, null if USD price not found */
+  priceImpact?: number | null;
   /** Fee amount object */
-  feeAmount: Record<string, any>;
+  feeAmount?: Record<string, any>;
+  /** ERC-4337 UserOperation for account abstraction wallets */
+  userOp?: UserOperation;
+  /** Estimated latency for bridge transfers */
+  bridgingEstimates?: BridgeLatencyEstimate[];
 };
 
 /**
@@ -717,3 +759,155 @@ export type LayerZeroPoolData = {
     decimals: number;
   };
 }[];
+
+/**
+ * ERC-4337 UserOperation for account abstraction.
+ */
+export interface UserOperation {
+  /** Encoded call data for the operation */
+  callData: HexString;
+  /** Gas limit for the call */
+  callGasLimit: Quantity;
+  /** Gas limit for verification */
+  verificationGasLimit: Quantity;
+  /** Gas consumed before main execution */
+  preVerificationGas: Quantity;
+  /** Maximum fee per gas unit */
+  maxFeePerGas: Quantity;
+  /** Maximum priority fee per gas unit */
+  maxPriorityFeePerGas: Quantity;
+  /** Account nonce */
+  nonce: Quantity;
+  /** Signature for the operation */
+  signature: HexString;
+  /** Sender address (smart account) */
+  sender: Address;
+  /** Factory address for account creation */
+  factory?: Address;
+  /** Factory initialization data */
+  factoryData?: HexString;
+  /** Paymaster address */
+  paymaster?: Address;
+  /** Paymaster-specific data */
+  paymasterData?: HexString;
+  /** Gas limit for paymaster verification */
+  paymasterVerificationGasLimit?: Quantity;
+  /** Gas limit for paymaster post-operation */
+  paymasterPostOpGasLimit?: Quantity;
+}
+
+/**
+ * LayerZero message status.
+ */
+export interface LayerZeroMessage {
+  /** Source endpoint ID */
+  srcEid: number;
+  /** Destination endpoint ID */
+  dstEid: number;
+  /** Source chain transaction hash */
+  srcTxHash: string;
+  /** Destination chain transaction hash (if delivered) */
+  dstTxHash?: string;
+  /** Message status */
+  status: "INFLIGHT" | "DELIVERED" | "FAILED";
+}
+
+/**
+ * Event emitted when a shortcut is executed.
+ */
+export interface ShortcutExecutedEvent {
+  /** Chain ID where the event occurred */
+  chainId: number;
+  /** Transaction hash */
+  txHash: string;
+  /** Sender address */
+  sender: Address;
+  /** Receiver address */
+  receiver: Address;
+  /** Amount of input token */
+  amountIn: Quantity;
+  /** Amount of output token */
+  amountOut: Quantity;
+  /** Input token address */
+  tokenIn: Address;
+  /** Output token address */
+  tokenOut: Address;
+}
+
+/**
+ * Details about a bridge refund.
+ */
+export interface BridgeRefundDetails {
+  /** Address to receive the refund */
+  refundAddress: Address;
+  /** Amount to be refunded */
+  refundAmount: Quantity;
+  /** Token address for the refund */
+  refundToken: Address;
+}
+
+/**
+ * Parameters for checking LayerZero bridge transaction status.
+ */
+export interface LayerZeroBridgeCheckParams {
+  /** Chain ID of the source chain */
+  chainId: number;
+  /** Transaction hash of the bridge transaction */
+  txHash: string;
+}
+
+/**
+ * Response from LayerZero bridge status check.
+ */
+export interface LayerZeroBridgeCheckResponse {
+  /** LayerZero message details */
+  layerZeroMessage: LayerZeroMessage;
+  /** Source chain shortcut execution event */
+  sourceChainShortcutExecuted?: ShortcutExecutedEvent;
+  /** Destination chain shortcut execution event */
+  destinationChainShortcutExecuted?: ShortcutExecutedEvent;
+  /** Refund details if applicable */
+  refundDetails?: BridgeRefundDetails;
+}
+
+/**
+ * CCIP message status.
+ */
+export interface CcipMessage {
+  /** CCIP message ID */
+  messageId: string;
+  /** Source chain selector */
+  srcChainSelector: string;
+  /** Destination chain selector */
+  dstChainSelector: string;
+  /** Source chain transaction hash */
+  srcTxHash: string;
+  /** Destination chain transaction hash (if delivered) */
+  dstTxHash?: string;
+  /** Message status */
+  status: "INFLIGHT" | "SUCCESS" | "FAILED";
+}
+
+/**
+ * Parameters for checking CCIP bridge transaction status.
+ */
+export interface CcipBridgeCheckParams {
+  /** Chain ID of the source chain */
+  chainId: number;
+  /** Transaction hash of the bridge transaction */
+  txHash: string;
+}
+
+/**
+ * Response from CCIP bridge status check.
+ */
+export interface CcipBridgeCheckResponse {
+  /** CCIP message details */
+  ccipMessage: CcipMessage;
+  /** Source chain shortcut execution event */
+  sourceChainShortcutExecuted?: ShortcutExecutedEvent;
+  /** Destination chain shortcut execution event */
+  destinationChainShortcutExecuted?: ShortcutExecutedEvent;
+  /** Refund details if applicable */
+  refundDetails?: BridgeRefundDetails;
+}
