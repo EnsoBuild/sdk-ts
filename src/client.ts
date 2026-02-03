@@ -7,6 +7,8 @@ import {
   BundleAction,
   BundleData,
   BundleParams,
+  CcipRouterData,
+  CcipRouterParams,
   ConnectedNetwork,
   IporShortcutData,
   IporShortcutInputData,
@@ -624,6 +626,47 @@ export class EnsoClient {
     const url = "/layerzero/pool";
 
     return this.request<LayerZeroPoolData>({
+      method: "GET",
+      url,
+      params,
+    });
+  }
+
+  /**
+   * Gets CCIP Router address for a chain.
+   *
+   * Returns the Chainlink CCIP Router address for the specified chain.
+   * Use this address as the `primaryAddress` parameter in CCIP bridge actions.
+   *
+   * @param {Object} params - Parameters for the CCIP router lookup
+   * @param {number} params.chainId - Chain ID to get the router for
+   * @returns {Promise<CcipRouterData>} CCIP Router data including the router address
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const ccipRouter = await client.getCcipRouter({
+   *   chainId: 56 // BNB Chain
+   * });
+   *
+   * // Use in bridge action
+   * const bundle = await client.getBundleData(params, [
+   *   {
+   *     protocol: 'ccip',
+   *     action: 'bridge',
+   *     args: {
+   *       primaryAddress: ccipRouter.router,
+   *       destinationChainId: 8453,
+   *       tokenIn: '0x4aae823a6a0b376De6A78e74eCC5b079d38cBCf7',
+   *       amountIn: '100000000000000',
+   *       receiver: '0x...',
+   *     }
+   *   }
+   * ]);
+   */
+  public async getCcipRouter(params: CcipRouterParams): Promise<CcipRouterData> {
+    const url = "/ccip/router";
+
+    return this.request<CcipRouterData>({
       method: "GET",
       url,
       params,

@@ -921,4 +921,54 @@ describe("EnsoClient", () => {
       expect(route).toBeDefined();
     });
   });
+
+  describe("Bridge Discovery APIs", () => {
+    it("getCcipRouter - should return CCIP router address", async () => {
+      const mockCcipRouter = {
+        router: "0x1234567890abcdef1234567890abcdef12345678" as Address,
+      };
+
+      mock.onGet("/ccip/router").reply(200, mockCcipRouter);
+
+      const result = await client.getCcipRouter({
+        chainId: 56,
+      });
+
+      expect(result).toBeDefined();
+      expect(result.router).toBe(mockCcipRouter.router);
+      expect(typeof result.router).toBe("string");
+      expect(result.router.startsWith("0x")).toBe(true);
+    });
+
+    it("getLayerZeroPool - should return Stargate pool data", async () => {
+      const mockPoolData = [
+        {
+          pool: "0xabcdef1234567890abcdef1234567890abcdef12" as Address,
+          chainId: 80094,
+          destinationChainId: 1,
+          token: "0x549943e04f40284185054145c6E4e9568C1D3241" as Address,
+          decimals: 6,
+          destinationData: {
+            pool: "0x1234567890abcdef1234567890abcdef12345678" as Address,
+            token: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" as Address,
+            decimals: 6,
+          },
+        },
+      ];
+
+      mock.onGet("/layerzero/pool").reply(200, mockPoolData);
+
+      const result = await client.getLayerZeroPool({
+        chainId: 80094,
+        token: "0x549943e04f40284185054145c6E4e9568C1D3241",
+        destinationChainId: "1",
+      });
+
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0].pool).toBeDefined();
+      expect(result[0].pool.startsWith("0x")).toBe(true);
+    });
+  });
 });

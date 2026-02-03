@@ -717,3 +717,19 @@ export type LayerZeroPoolData = {
     decimals: number;
   };
 }[];
+
+/**
+ * Parameters for CCIP Router lookup.
+ */
+export type CcipRouterParams = {
+  /** Chain ID to get the CCIP router for */
+  chainId: number | string;
+};
+
+/**
+ * CCIP Router data returned from the API.
+ */
+export type CcipRouterData = {
+  /** CCIP Router address */
+  router: Address;
+};
