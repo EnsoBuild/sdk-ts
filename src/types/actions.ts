@@ -339,20 +339,49 @@ export type RedeemAction = {
 };
 
 /**
+ * Supported bridge protocols.
+ * - `ccip`: Chainlink CCIP - ERC20 only, up to 30KB callback data, 200k-3M gas limit.
+ *   Note: CCIP waits for source chain finalization before executing callbacks.
+ *   Timing varies by chain (sub-second to hours).
+ *   See: https://docs.chain.link/ccip/ccip-execution-latency#finality-by-blockchain
+ * - `relay`: Relay - supports native tokens, unlimited callback data (placeholder-based)
+ * - `stargate`: LayerZero Stargate - supports native tokens, ~9.5KB callback data limit
+ */
+export type BridgeProtocol = "ccip" | "relay" | "stargate";
+
+/**
  * Bridge tokens across chains.
+ *
+ * Use different protocols based on your needs:
+ * - **CCIP**: Best for ERC20 tokens with larger callback payloads (up to 30KB).
+ *   ⚠️ CCIP waits for source chain finalization - timing varies by chain (sub-second to hours).
+ *   Consider this for time-sensitive swaps with slippage protection on slower chains.
+ *   See: https://docs.chain.link/ccip/ccip-execution-latency#finality-by-blockchain
+ * - **Relay**: Best for flexible bridging with dynamic amounts and native token support.
+ * - **Stargate**: Best for native token bridging and LayerZero ecosystem integration.
  */
 export type BridgeAction = {
   /** Action type */
   action: "bridge";
-  /** Protocol to use for bridging */
-  protocol: "stargate";
+  /**
+   * Protocol to use for bridging.
+   * - `ccip`: Chainlink CCIP (ERC20 only, ~30KB callback limit, waits for finalization)
+   * - `relay`: Relay (native token support, unlimited callback)
+   * - `stargate`: LayerZero Stargate (native token support, ~9.5KB callback limit)
+   */
+  protocol: BridgeProtocol;
   /** Action arguments */
   args: {
     /** Input token address */
     tokenIn: Address;
     /** Amount to bridge */
     amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address (bridging protocol) */
+    /**
+     * Primary contract address for the bridge protocol.
+     * - CCIP: CCIP Router address (from `/ccip/router` API)
+     * - Relay: Token address being bridged
+     * - Stargate: OFT pool address (from `/layerzero/pool` API)
+     */
     primaryAddress: Address;
     /** Destination chain ID */
     destinationChainId: number;
@@ -360,7 +389,9 @@ export type BridgeAction = {
     receiver: Address;
     /**
      * Optional callback actions bundle to execute on the destination chain.
-     * The callback bundle MUST start with a balance action */
+     * The callback bundle MUST start with a balance action.
+     * Note: Callback data limits vary by protocol (CCIP: ~30KB, Stargate: ~9.5KB, Relay: unlimited)
+     */
     callback?: BundleAction[];
     /** Additional native token value passed to the callback (in addition to bridge token) */
     callbackValue?: string;
