@@ -1,9 +1,11 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import {
   ActionData,
   ApproveData,
   ApproveParams,
   BalanceParams,
+  BridgeStatusData,
+  BridgeStatusParams,
   BundleAction,
   BundleData,
   BundleParams,
@@ -663,13 +665,45 @@ export class EnsoClient {
    *   }
    * ]);
    */
-  public async getCcipRouter(params: CcipRouterParams): Promise<CcipRouterData> {
+  public async getCcipRouter(
+    params: CcipRouterParams,
+  ): Promise<CcipRouterData> {
     const url = "/ccip/router";
 
     return this.request<CcipRouterData>({
       method: "GET",
       url,
       params,
+    });
+  }
+
+  /**
+   * Checks the status of a bridge transaction.
+   *
+   * Returns the current status of a cross-chain bridge transaction for the given protocol.
+   * Supports any bridge protocol that has a status endpoint (e.g. layerzero, ccip, relay).
+   *
+   * @param {BridgeStatusParams} params - Parameters for the bridge status check
+   * @returns {Promise<BridgeStatusData>} Bridge transaction status data
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const status = await client.getBridgeStatus({
+   *   bridgeProtocol: 'layerzero',
+   *   chainId: 1,
+   *   txHash: '0x123...'
+   * });
+   */
+  public async getBridgeStatus(
+    params: BridgeStatusParams,
+  ): Promise<BridgeStatusData> {
+    const { bridgeProtocol, ...queryParams } = params;
+    const url = `/${bridgeProtocol}/bridge/check`;
+
+    return this.request<BridgeStatusData>({
+      method: "GET",
+      url,
+      params: queryParams,
     });
   }
 

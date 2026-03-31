@@ -5,6 +5,8 @@ import {
   ApproveData,
   ApproveParams,
   BalanceParams,
+  BridgeStatusData,
+  BridgeStatusParams,
   BundleAction,
   BundleData,
   BundleParams,
@@ -30,7 +32,7 @@ import {
   StandardData,
   TokenData,
   TokenParams,
-  WalletBalance
+  WalletBalance,
 } from "./types/types";
 
 import { BridgeProtocol } from "./types/actions";
@@ -42,6 +44,8 @@ export type {
   ApproveParams,
   BalanceParams,
   BridgeProtocol,
+  BridgeStatusData,
+  BridgeStatusParams,
   BundleAction,
   BundleData,
   BundleParams,
@@ -71,3 +75,4 @@ export type {
 };
 
 export { EnsoClient } from "./client";
+
