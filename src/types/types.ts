@@ -698,6 +698,36 @@ interface PaginatedResult {
   meta: PaginationMeta;
 }
 
+/**
+ * Parameters for checking bridge transaction status.
+ */
+export type BridgeStatusParams = {
+  /** Bridge protocol identifier (e.g. "layerzero", "stargate", "ccip", "relay") */
+  bridgeProtocol: string;
+  /** Chain ID of the source transaction */
+  chainId: number | string;
+  /** Transaction hash on the source chain */
+  txHash: string;
+};
+
+/**
+ * Bridge transaction status response.
+ */
+export type BridgeStatusData = {
+  /** Source chain ID */
+  sourceChainId: number;
+  /** Source transaction hash */
+  sourceTxHash: string;
+  /** Destination chain ID */
+  destinationChainId?: number;
+  /** Destination transaction hash */
+  destinationTxHash?: string;
+  /** Bridge status */
+  status: "pending" | "inflight" | "delivered" | "failed" | "unknown";
+  /** Error message if failed */
+  error?: string;
+};
+
 export type LayerZeroPoolParams = {
   chainId: number | string;
   token: Address;
