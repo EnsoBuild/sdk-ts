@@ -570,7 +570,6 @@ describe("Docs samples inegration tests - actions", () => {
             token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH address
             spender: "0xe592427a0aece92de3edee1f18e0157c05861564", // Spender address (e.g., Uniswap router)
             amount: "1000000000000000000000000", // Amount to approve in wei (1M WETH)
-            routingStrategy: "router", // Optional: Routing strategy
           },
         },
       ],

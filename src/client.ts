@@ -11,6 +11,10 @@ import {
   BundleParams,
   CcipRouterData,
   CcipRouterParams,
+  CctpClaimData,
+  CctpClaimParams,
+  CctpTokenMessengerData,
+  CctpTokenMessengerParams,
   ConnectedNetwork,
   IporShortcutData,
   IporShortcutInputData,
@@ -337,7 +341,7 @@ export class EnsoClient {
    * );
    */
   public async getBundleData(
-    params: BundleParams & { skipQuote?: boolean },
+    params: BundleParams,
     actions: BundleAction[],
   ): Promise<BundleData> {
     const url = "/shortcuts/bundle";
@@ -577,24 +581,6 @@ export class EnsoClient {
     });
   }
 
-  /**
-   * Gets volume data for a chain.
-   *
-   * Returns total USD and transactions volume for the given chainId.
-   *
-   * @param {number} chainId - Chain ID to get volume for
-   * @returns {Promise<unknown>} Volume data
-   * @throws {Error} If the API request fails
-   */
-  public async getVolume(chainId: number): Promise<unknown> {
-    const url = `/volume/${chainId}`;
-
-    return this.request<unknown>({
-      method: "GET",
-      url,
-    });
-  }
-
   public async getAccountId(): Promise<string> {
     const url = `/account/accountId`;
 
@@ -626,6 +612,23 @@ export class EnsoClient {
     params: LayerZeroPoolParams,
   ): Promise<LayerZeroPoolData> {
     const url = "/layerzero/pool";
+
+    return this.request<LayerZeroPoolData>({
+      method: "GET",
+      url,
+      params,
+    });
+  }
+
+  /**
+   * Gets Stargate pool address for a token.
+   *
+   * This is the public Stargate alias for the LayerZero pool lookup API.
+   */
+  public async getStargatePool(
+    params: LayerZeroPoolParams,
+  ): Promise<LayerZeroPoolData> {
+    const url = "/stargate/pool";
 
     return this.request<LayerZeroPoolData>({
       method: "GET",
@@ -678,6 +681,36 @@ export class EnsoClient {
   }
 
   /**
+   * Gets CCTP TokenMessengerV2 address for a chain.
+   */
+  public async getCctpTokenMessenger(
+    params: CctpTokenMessengerParams,
+  ): Promise<CctpTokenMessengerData> {
+    const url = "/cctp/bridge/tokenmessengerv2";
+
+    return this.request<CctpTokenMessengerData>({
+      method: "GET",
+      url,
+      params,
+    });
+  }
+
+  /**
+   * Gets a CCTP claim transaction if a transfer is claimable.
+   */
+  public async getCctpClaimTransaction(
+    params: CctpClaimParams,
+  ): Promise<CctpClaimData> {
+    const url = "/cctp/bridge/claim";
+
+    return this.request<CctpClaimData>({
+      method: "GET",
+      url,
+      params,
+    });
+  }
+
+  /**
    * Checks the status of a bridge transaction.
    *
    * Returns the current status of a cross-chain bridge transaction for the given protocol.
@@ -708,7 +741,7 @@ export class EnsoClient {
   }
 
   /**
-   * Validates route actions to ensure refundReceiver is set when destinationChainId is provided.
+   * Validates route actions to ensure receiver is set when destinationChainId is provided.
    * @private
    * @param {BundleAction[]} actions - Array of actions to validate
    * @throws {Error} When validation fails
@@ -719,12 +752,10 @@ export class EnsoClient {
       if (action.protocol === "enso" && action.action === "route") {
         const routeArgs = action.args as any; // RouteAction args
 
-        // Check if destinationChainId is provided
         if (routeArgs.destinationChainId) {
-          // Ensure refundReceiver is set when destinationChainId is provided
-          if (!routeArgs.refundReceiver) {
+          if (!routeArgs.receiver) {
             throw new Error(
-              "refundReceiver is required when destinationChainId is provided in route actions",
+              "receiver is required when destinationChainId is provided in route actions",
             );
           }
         }
