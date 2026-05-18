@@ -354,18 +354,34 @@ export type PermitTransferFromAction = ProtocolAction<
 
 export type BridgeProtocol = "ccip" | "relay" | "stargate" | "cctp";
 
-type BridgeArgs = {
+type BaseBridgeArgs = {
   tokenIn: Address;
   amountIn: AmountArg;
   primaryAddress: Address;
   destinationChainId: number;
   receiver: Address;
   callback?: BundleAction[];
-  /** Additional native token value passed to the callback. */
-  callbackValue?: string;
 };
 
-export type BridgeAction = ProtocolAction<"bridge", BridgeArgs, BridgeProtocol>;
+type NonCctpBridgeArgs = BaseBridgeArgs & {
+  cctpTransferType?: never;
+  cctpForwardFee?: never;
+};
+
+type CctpBridgeArgs = BaseBridgeArgs & {
+  /** CCTP finality preference. */
+  cctpTransferType?: "fast" | "standard";
+  /** CCTP Forwarding Service fee bracket. */
+  cctpForwardFee?: "low" | "med" | "high";
+};
+
+export type NonCctpBridgeAction = ProtocolAction<
+  "bridge",
+  NonCctpBridgeArgs,
+  Exclude<BridgeProtocol, "cctp">
+>;
+export type CctpBridgeAction = ProtocolAction<"bridge", CctpBridgeArgs, "cctp">;
+export type BridgeAction = NonCctpBridgeAction | CctpBridgeAction;
 
 type FlashloanArgs = WithReceiver & {
   flashloanToken: Address | Address[];
@@ -446,8 +462,8 @@ export type CallAction = EnsoAction<
   {
     address: Address;
     method: string;
-    /** Optional function ABI/signature for encoding the call. */
-    abi?: string;
+    /** Function ABI/signature for encoding the call. */
+    abi: string;
     args: ContractCallArg[];
     tokenIn?: Address;
     tokenOut?: Address;

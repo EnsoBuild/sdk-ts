@@ -45,7 +45,6 @@ describe("BundleAction types", () => {
           primaryAddress: address,
           destinationChainId: 8453,
           receiver: address,
-          callbackValue: "100",
           callback: [
             {
               protocol: "enso",
@@ -53,6 +52,19 @@ describe("BundleAction types", () => {
               args: { token: address },
             },
           ],
+        },
+      },
+      {
+        protocol: "cctp",
+        action: "bridge",
+        args: {
+          tokenIn: address,
+          amountIn: "100",
+          primaryAddress: address,
+          destinationChainId: 8453,
+          receiver: address,
+          cctpTransferType: "standard",
+          cctpForwardFee: "med",
         },
       },
       {
@@ -255,6 +267,7 @@ describe("BundleAction types", () => {
         args: {
           address,
           method: "balanceOf",
+          abi: "function balanceOf(address) view returns (uint256)",
           args: [address],
         },
       },
@@ -353,7 +366,7 @@ describe("BundleAction types", () => {
       },
     ] satisfies BundleAction[];
 
-    expect(actions).toHaveLength(33);
+    expect(actions).toHaveLength(34);
   });
 
   it("rejects invalid cross-chain route and bridge action shapes", () => {
@@ -382,8 +395,23 @@ describe("BundleAction types", () => {
       },
     };
 
+    const stargateBridgeWithCctpOptions: BundleAction = {
+      protocol: "stargate",
+      action: "bridge",
+      args: {
+        tokenIn: address,
+        amountIn: "100",
+        primaryAddress: address,
+        destinationChainId: 8453,
+        receiver: address,
+        // @ts-expect-error CCTP options are only valid for CCTP bridge actions.
+        cctpTransferType: "standard",
+      },
+    };
+
     void routeWithoutReceiver;
     void bridgeWithUnsupportedProtocol;
+    void stargateBridgeWithCctpOptions;
     expect(true).toBe(true);
   });
 });
