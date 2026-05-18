@@ -166,16 +166,32 @@ describe("EnsoClient", () => {
       expect(mock.history.get[0].params.slippage).toBe(300);
     });
 
+    it("should pass refundReceiver and ignoreBridges parameters", async () => {
+      mock.onGet("/shortcuts/route").reply(200, mockRouteData);
+
+      await client.getRouteData({
+        ...routeParams,
+        refundReceiver: "0xRefund" as Address,
+        ignoreBridges: ["stargate", "ccip"],
+      });
+
+      expect(mock.history.get[0].params.refundReceiver).toBe("0xRefund");
+      expect(mock.history.get[0].params.ignoreBridges).toEqual([
+        "stargate",
+        "ccip",
+      ]);
+    });
+
     it("should not include minAmountOut when slippage is provided", async () => {
       mock.onGet("/shortcuts/route").reply(200, mockRouteData);
 
       await client.getRouteData({
         ...routeParams,
         slippage: 300,
-        minAmountOut: ["1000000"],
       });
 
       expect(mock.history.get[0].params.slippage).toBe(300);
+      expect(mock.history.get[0].params.minAmountOut).toBeUndefined();
     });
   });
 
@@ -301,6 +317,75 @@ describe("EnsoClient", () => {
 
       expect(result).toEqual(mockBundleData);
       expect(mock.history.post[0].data).toBe(JSON.stringify(bundleActions));
+    });
+
+    it("should pass public bundle query parameters", async () => {
+      mock.onPost("/shortcuts/bundle").reply(200, mockBundleData);
+
+      await client.getBundleData(
+        {
+          ...bundleParams,
+          refundReceiver: "0xRefund" as Address,
+          skipQuote: true,
+        },
+        bundleActions,
+      );
+
+      expect(mock.history.post[0].params.refundReceiver).toBe("0xRefund");
+      expect(mock.history.post[0].params.skipQuote).toBe(true);
+    });
+
+    it("should allow cross-chain route actions with receiver and no refundReceiver", async () => {
+      const crossChainRouteActions: BundleAction[] = [
+        {
+          protocol: "enso",
+          action: "route",
+          args: {
+            tokenIn: "0xTokenIn" as Address,
+            tokenOut: "0xTokenOut" as Address,
+            amountIn: "1000000",
+            destinationChainId: 8453,
+            receiver: "0xReceiver" as Address,
+          },
+        },
+      ];
+
+      mock.onPost("/shortcuts/bundle").reply(200, mockBundleData);
+
+      await client.getBundleData(bundleParams, crossChainRouteActions);
+
+      expect(mock.history.post[0].data).toBe(
+        JSON.stringify(crossChainRouteActions),
+      );
+    });
+
+    it("should require receiver on cross-chain route actions", async () => {
+      const crossChainRouteActionsWithoutReceiver = [
+        {
+          protocol: "enso",
+          action: "route",
+          args: {
+            tokenIn: "0xTokenIn" as Address,
+            tokenOut: "0xTokenOut" as Address,
+            amountIn: "1000000",
+            destinationChainId: 8453,
+          },
+        },
+      ] as BundleAction[];
+
+      await expect(
+        client.getBundleData(
+          bundleParams,
+          crossChainRouteActionsWithoutReceiver,
+        ),
+      ).rejects.toThrow(
+        "receiver is required when destinationChainId is provided in route actions",
+      );
+    });
+
+    it("should not expose POST route or volume helpers", () => {
+      expect("getRouteDataWithVariables" in client).toBe(false);
+      expect("getVolume" in client).toBe(false);
     });
   });
 
@@ -804,21 +889,6 @@ describe("EnsoClient", () => {
     });
   });
 
-  describe("getVolume", () => {
-    const mockVolume = {
-      totalUsdVolume: "1000000",
-      totalTransactions: 5000,
-    };
-
-    it("should get volume for specific chain", async () => {
-      mock.onGet("/volume/1").reply(200, mockVolume);
-
-      const result = await client.getVolume(1);
-
-      expect(result).toEqual(mockVolume);
-    });
-  });
-
   describe("Error Handling - Additional Methods", () => {
     it("should handle error in getStandards", async () => {
       mock.onGet("/standards").reply(500, { error: "Server Error" });
@@ -969,6 +1039,68 @@ describe("EnsoClient", () => {
       expect(result.length).toBeGreaterThan(0);
       expect(result[0].pool).toBeDefined();
       expect(result[0].pool.startsWith("0x")).toBe(true);
+    });
+
+    it("getStargatePool - should call the Stargate pool alias", async () => {
+      const mockPoolData = [
+        {
+          pool: "0xabcdef1234567890abcdef1234567890abcdef12" as Address,
+          chainId: 80094,
+          destinationChainId: 1,
+          token: "0x549943e04f40284185054145c6E4e9568C1D3241" as Address,
+          decimals: 6,
+          destinationData: {
+            pool: "0x1234567890abcdef1234567890abcdef12345678" as Address,
+            token: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" as Address,
+            decimals: 6,
+          },
+        },
+      ];
+
+      mock.onGet("/stargate/pool").reply(200, mockPoolData);
+
+      const result = await client.getStargatePool({
+        chainId: 80094,
+        token: "0x549943e04f40284185054145c6E4e9568C1D3241",
+      });
+
+      expect(result).toEqual(mockPoolData);
+      expect(mock.history.get[0].url).toBe("/stargate/pool");
+    });
+
+    it("getCctpTokenMessenger - should return token messenger address", async () => {
+      const mockTokenMessenger = {
+        address: "0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d" as Address,
+      };
+
+      mock
+        .onGet("/cctp/bridge/tokenmessengerv2")
+        .reply(200, mockTokenMessenger);
+
+      const result = await client.getCctpTokenMessenger({ chainId: 1 });
+
+      expect(result).toEqual(mockTokenMessenger);
+      expect(mock.history.get[0].params).toEqual({ chainId: 1 });
+    });
+
+    it("getCctpClaimTransaction - should return claim response", async () => {
+      const mockClaim = {
+        claimable: false,
+        reason: "Already claimed",
+      };
+
+      mock.onGet("/cctp/bridge/claim").reply(200, mockClaim);
+
+      const result = await client.getCctpClaimTransaction({
+        chainId: 1,
+        txHash: "0x123",
+      });
+
+      expect(result).toEqual(mockClaim);
+      expect(mock.history.get[0].params).toEqual({
+        chainId: 1,
+        txHash: "0x123",
+      });
     });
   });
 });

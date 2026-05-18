@@ -2,7 +2,12 @@ import { EnsoClient } from "../src";
 
 import { parseUnits } from "viem";
 
-describe("docs samples integration tests - bridging", () => {
+declare const process: { env: Record<string, string | undefined> };
+
+const describeLiveBridging =
+  process.env.RUN_LIVE_BRIDGING_TESTS === "true" ? describe : describe.skip;
+
+describeLiveBridging("docs samples integration tests - bridging", () => {
   it("mintErUsdCrossChainFromBerachain", async () => {
     // Chain IDs
     const BERACHAIN_ID = 80094;

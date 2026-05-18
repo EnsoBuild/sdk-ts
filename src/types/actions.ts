@@ -1,794 +1,625 @@
-// src/types/actions.ts - Updated to match OpenAPI specification
+import { Address, BytesArg, Quantity } from "./types";
 
-import { Address, BytesArg, HexString, Quantity } from "./types";
+export type StrictOutputReference = {
+  /** Index of the previous action whose return value should be used. */
+  useOutputOfCallAt: number;
+  /** Return-value index for actions that return multiple values. */
+  index?: number;
+};
 
-/**
- * Route action using Enso's routing engine.
- */
-export type RouteAction = {
-  /** Must be 'enso' for route actions */
+/** A literal value or a reference to a previous bundle action output. */
+export type ActionOutputReference<T> = T | StrictOutputReference;
+/** Token amount in base units, or a reference to a previous output amount. */
+export type AmountArg = ActionOutputReference<Quantity>;
+/** Extra protocol-specific arguments forwarded by standards metadata. */
+export type ExtraArgs = Record<
+  string,
+  string | ActionOutputReference<Quantity>
+>;
+
+type ProtocolAction<
+  TAction extends string,
+  TArgs,
+  TProtocol extends string = string,
+> = {
+  protocol: TProtocol;
+  action: TAction;
+  args: TArgs;
+};
+
+type EnsoAction<TAction extends string, TArgs> = {
   protocol: "enso";
-  /** Action type */
-  action: "route";
-  /** Action arguments matching OpenAPI spec */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Output token address */
+  action: TAction;
+  args: TArgs;
+};
+
+type WithPositionId = {
+  positionId: BytesArg;
+};
+
+type WithOptionalPositionId = {
+  positionId?: BytesArg;
+};
+
+type WithTokenId = {
+  tokenId: Quantity;
+};
+
+type WithOptionalTokenId = {
+  tokenId?: Quantity;
+};
+
+type WithReceiver = {
+  receiver?: Address;
+};
+
+type WithOnBehalfOf = {
+  onBehalfOf?: Address;
+};
+
+type WithArgs = {
+  args?: ExtraArgs;
+};
+
+type SingleTokenInAmount = {
+  tokenIn: Address;
+  amountIn: AmountArg;
+};
+
+type MultiTokenInAmount = {
+  tokenIn: Address[];
+  amountIn: AmountArg[];
+};
+
+type SingleTokenOutAmount = {
+  tokenOut: Address;
+  amountOut: AmountArg;
+};
+
+type MultiTokenOutAmount = {
+  tokenOut: Address[];
+  amountOut: AmountArg[];
+};
+
+type SingleFlashloanAmount = {
+  flashloanToken: Address;
+  flashloanAmount: AmountArg;
+};
+
+type MultiFlashloanAmount = {
+  flashloanToken: Address[];
+  flashloanAmount: AmountArg[];
+};
+
+type BorrowArgs = WithReceiver &
+  WithOnBehalfOf &
+  WithArgs & {
+    collateral?: Address | Address[];
     tokenOut: Address;
-    /** Amount to route in wei (with full decimals) */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Destination chain ID to perform route-bridge. (refundReceiver is required)*/
-    destinationChainId?: number;
-    /** Slippage tolerance in basis points (100 = 1%) */
-    slippage?: Quantity;
-    /** Address to receive the output tokens if not the caller */
-    receiver?: Address;
-    /** Address to receive bridged asset if transaction on bridge fails. Required if destinationChainId provided. */
-    refundReceiver?: Address;
-    /** The minimum amount out */
-    minAmountOut?: Quantity;
-    /** The fee in basis points */
-    fee?: Quantity;
-    /** Fee receiver */
-    feeReceiver?: Address;
-    /** A list of aggregators to be ignored from consideration */
-    ignoreAggregators?: string[];
-    /** A list of standards to be ignored from consideration */
-    ignoreStandards?: string[];
+    amountOut: AmountArg;
+    primaryAddress: Address;
   };
+
+export type BorrowAction = ProtocolAction<"borrow", BorrowArgs>;
+export type BorrowWithPositionIdAction = ProtocolAction<
+  "borrowwithpositionid",
+  BorrowArgs & WithOptionalPositionId
+>;
+export type NftBorrowAction = ProtocolAction<
+  "nftborrow",
+  BorrowArgs & WithTokenId
+>;
+
+type DepositArgs = WithReceiver &
+  WithOnBehalfOf &
+  WithArgs & {
+    tokenIn: Address | Address[];
+    tokenOut?: Address | Address[];
+    amountIn: AmountArg | AmountArg[];
+    primaryAddress: Address;
+  };
+
+type SingleDepositArgs = Omit<DepositArgs, "tokenIn" | "amountIn"> &
+  SingleTokenInAmount;
+
+type MultiDepositArgs = Omit<DepositArgs, "tokenIn" | "amountIn"> &
+  MultiTokenInAmount;
+
+export type DepositAction = ProtocolAction<"deposit", DepositArgs>;
+export type SingleDepositAction = ProtocolAction<
+  "singledeposit",
+  SingleDepositArgs
+>;
+export type SingleDepositWithPositionIdAction = ProtocolAction<
+  "singledepositwithpositionid",
+  SingleDepositArgs & WithPositionId
+>;
+export type MultiDepositAction = ProtocolAction<
+  "multideposit",
+  MultiDepositArgs
+>;
+export type MultiDepositWithPositionIdAction = ProtocolAction<
+  "multidepositwithpositionid",
+  MultiDepositArgs & WithPositionId
+>;
+export type TokenizedSingleDepositAction = ProtocolAction<
+  "tokenizedsingledeposit",
+  SingleDepositArgs & { tokenOut: Address }
+>;
+export type TokenizedMultiDepositAction = ProtocolAction<
+  "tokenizedmultideposit",
+  MultiDepositArgs & { tokenOut: Address }
+>;
+export type MultiOutSingleDepositAction = ProtocolAction<
+  "multioutsingledeposit",
+  Omit<SingleDepositArgs, "tokenOut"> & { tokenOut: Address[] }
+>;
+export type NftDepositAction = ProtocolAction<
+  "nftdeposit",
+  SingleDepositArgs & WithOptionalTokenId
+>;
+export type NftMultiDepositAction = ProtocolAction<
+  "nftmultideposit",
+  MultiDepositArgs & WithOptionalTokenId
+>;
+
+export type DepositCLMMAction = ProtocolAction<
+  "depositclmm",
+  Omit<NftMultiDepositAction["args"], "tokenOut" | "primaryAddress"> & {
+    tokenOut: Address;
+    primaryAddress?: Address;
+    /** Lower and upper ticks for the concentrated liquidity position. */
+    ticks: [Quantity, Quantity] | Quantity[];
+    poolFee?: Quantity;
+    /** Tick spacing for CLMMs that derive pools from spacing rather than fee. */
+    tickSpacing?: Quantity;
+    /** Hook contract for hook-enabled CLMMs. */
+    hook?: Address;
+  }
+>;
+
+type RedeemArgs = WithReceiver &
+  WithOnBehalfOf &
+  WithArgs & {
+    tokenIn?: Address;
+    tokenOut: Address | Address[];
+    amountIn: AmountArg;
+    primaryAddress: Address;
+  };
+
+type SingleRedeemArgs = Omit<RedeemArgs, "tokenOut"> & {
+  tokenOut: Address;
 };
 
-/**
- * Get balance of a token.
- */
-export type BalanceAction = {
-  /** Must be 'enso' for balance actions */
-  protocol: "enso";
-  /** Action type */
-  action: "balance";
-  /** Action arguments */
-  args: {
-    /** Address of the token to check balance */
-    token: Address;
-  };
+type MultiRedeemArgs = Omit<RedeemArgs, "tokenOut"> & {
+  tokenOut: Address[];
 };
 
-/**
- *  Approve token spending.
- */
-export type ApproveAction = {
-  /** Protocol to approve for */
-  protocol: "erc20";
-  /** Action type */
-  action: "approve";
-  /** Action arguments */
-  args: {
-    /** Token to approve */
+export type RedeemAction = ProtocolAction<"redeem", RedeemArgs>;
+export type SingleRedeemAction = ProtocolAction<
+  "singleredeem",
+  SingleRedeemArgs
+>;
+export type SingleRedeemWithPositionIdAction = ProtocolAction<
+  "singleredeemwithpositionid",
+  SingleRedeemArgs & WithPositionId
+>;
+export type MultiRedeemAction = ProtocolAction<"multiredeem", MultiRedeemArgs>;
+export type TokenizedSingleRedeemAction = ProtocolAction<
+  "tokenizedsingleredeem",
+  SingleRedeemArgs & { tokenIn: Address }
+>;
+export type TokenizedMultiRedeemAction = ProtocolAction<
+  "tokenizedmultiredeem",
+  MultiRedeemArgs & { tokenIn: Address }
+>;
+export type NftRedeemAction = ProtocolAction<
+  "nftredeem",
+  SingleRedeemArgs & WithTokenId
+>;
+export type NftMultiRedeemAction = ProtocolAction<
+  "nftmultiredeem",
+  MultiRedeemArgs & WithTokenId
+>;
+
+export type RedeemCLMMAction = ProtocolAction<
+  "redeemclmm",
+  Omit<
+    NftMultiRedeemAction["args"],
+    "tokenIn" | "amountIn" | "primaryAddress"
+  > & {
+    tokenIn: Address;
+    /** Amount of position liquidity to redeem. Defaults from liquidity in standards that support it. */
+    amountIn?: AmountArg;
+    /** Position manager or pool address. Defaults from tokenIn in standards that support it. */
+    primaryAddress?: Address;
+    /** Liquidity amount to remove from the CLMM position. */
+    liquidity: AmountArg;
+  }
+>;
+
+type RepayArgs = WithOnBehalfOf &
+  WithArgs & {
+    tokenIn: Address;
+    amountIn: AmountArg;
+    primaryAddress: Address;
+  };
+
+export type RepayAction = ProtocolAction<"repay", RepayArgs>;
+export type RepayWithPositionIdAction = ProtocolAction<
+  "repaywithpositionid",
+  RepayArgs & WithOptionalPositionId
+>;
+export type NftRepayAction = ProtocolAction<
+  "nftrepay",
+  RepayArgs & WithTokenId
+>;
+
+type WithdrawArgs = WithReceiver &
+  WithOnBehalfOf &
+  WithArgs & {
+    tokenOut: Address | Address[];
+    amountOut: AmountArg | AmountArg[];
+    primaryAddress: Address;
+  };
+
+type SingleWithdrawArgs = Omit<WithdrawArgs, "tokenOut" | "amountOut"> &
+  SingleTokenOutAmount;
+
+type MultiWithdrawArgs = Omit<WithdrawArgs, "tokenOut" | "amountOut"> &
+  MultiTokenOutAmount;
+
+export type WithdrawAction = ProtocolAction<"withdraw", WithdrawArgs>;
+export type SingleWithdrawAction = ProtocolAction<
+  "singlewithdraw",
+  SingleWithdrawArgs
+>;
+export type SingleWithdrawWithPositionIdAction = ProtocolAction<
+  "singlewithdrawwithpositionid",
+  SingleWithdrawArgs & WithPositionId
+>;
+export type MultiWithdrawAction = ProtocolAction<
+  "multiwithdraw",
+  MultiWithdrawArgs
+>;
+
+export type ApproveAction = ProtocolAction<
+  "approve",
+  {
     token: Address;
-    /** Spender address (protocol or router) */
     spender: Address;
-    /** Amount to approve in wei (with full decimals) */
-    amount: ActionOutputReference<Quantity>;
-    /** Routing strategy must be router */
-    routingStrategy?: "router";
-  };
-};
+    amount: AmountArg;
+  }
+>;
 
-/**
- *  Borrow tokens from a lending protocol.
- */
-export type BorrowAction = {
-  /** Protocol to borrow from */
-  protocol: string;
-  /** Action type */
-  action: "borrow";
-  /** Action arguments */
-  args: {
-    /** Collateral token address(es) */
-    collateral: Address | Address[];
-    /** Token to borrow */
-    tokenOut: Address;
-    /** Amount to borrow in wei (with full decimals) */
-    amountOut: ActionOutputReference<Quantity>;
-    /** Address of the lending pool contract */
-    primaryAddress: Address;
-  };
-};
-
-/**
- * Harvest rewards from a protocol.
- */
-export type HarvestAction = {
-  /** Action type */
-  action: "harvest";
-  /** Protocol to harvest from */
-  protocol: string;
-  /** Action arguments */
-  args: {
-    /** Token to harvest */
+export type HarvestAction = ProtocolAction<
+  "harvest",
+  {
     token: Address;
-    /** Primary contract address */
     primaryAddress: Address;
-  };
+  }
+>;
+
+export type SwapAction = ProtocolAction<
+  "swap",
+  WithReceiver & {
+    tokenIn: Address;
+    tokenOut: Address;
+    amountIn: AmountArg;
+    primaryAddress: Address;
+    slippage?: Quantity;
+    poolFee?: Quantity;
+    tickSpacing?: Quantity;
+    hooks?: Address;
+    poolId?: BytesArg;
+    path?: Address[];
+  }
+>;
+
+export type TransferAction = ProtocolAction<
+  "transfer",
+  {
+    token: Address;
+    amount: AmountArg;
+    receiver: Address;
+    /** ERC721/ERC1155 token ID, when transferring a tokenized position. */
+    id?: Quantity;
+  }
+>;
+
+export type TransferFromAction = ProtocolAction<
+  "transferfrom",
+  {
+    token: Address;
+    amount: AmountArg;
+    receiver: Address;
+    sender: Address;
+    /** ERC721/ERC1155 token ID, when transferring a tokenized position. */
+    id?: Quantity;
+  }
+>;
+
+export type PermitTransferFromAction = ProtocolAction<
+  "permittransferfrom",
+  {
+    token: Address | Address[];
+    amount: AmountArg | AmountArg[];
+    sender: Address;
+    receiver: Address;
+    nonce: Quantity;
+    deadline: Quantity;
+    signature: BytesArg;
+  }
+>;
+
+export type BridgeProtocol = "ccip" | "relay" | "stargate" | "cctp";
+
+type BaseBridgeArgs = {
+  tokenIn: Address;
+  amountIn: AmountArg;
+  primaryAddress: Address;
+  destinationChainId: number;
+  receiver: Address;
+  callback?: BundleAction[];
 };
 
-/**
- *  Repay a loan to a lending protocol.
- */
-export type RepayAction = {
-  /** Protocol to repay to */
-  protocol: string;
-  /** Action type */
-  action: "repay";
-  /** Action arguments */
-  args: {
-    /** Token to repay with */
-    tokenIn: Address;
-    /** Amount to repay in wei (with full decimals) */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Address of the lending pool contract */
-    primaryAddress: Address;
-    /** The address of the user whose debt is being repaid" */
-    onBehalfOf?: Address;
-  };
+type NonCctpBridgeArgs = BaseBridgeArgs & {
+  cctpTransferType?: never;
+  cctpForwardFee?: never;
 };
+
+type CctpBridgeArgs = BaseBridgeArgs & {
+  /** CCTP finality preference. */
+  cctpTransferType?: "fast" | "standard";
+  /** CCTP Forwarding Service fee bracket. */
+  cctpForwardFee?: "low" | "med" | "high";
+};
+
+export type NonCctpBridgeAction = ProtocolAction<
+  "bridge",
+  NonCctpBridgeArgs,
+  Exclude<BridgeProtocol, "cctp">
+>;
+export type CctpBridgeAction = ProtocolAction<"bridge", CctpBridgeArgs, "cctp">;
+export type BridgeAction = NonCctpBridgeAction | CctpBridgeAction;
+
+type FlashloanArgs = WithReceiver & {
+  flashloanToken: Address | Address[];
+  flashloanAmount: AmountArg | AmountArg[];
+  tokenOut?: Address | Address[];
+  primaryAddress?: Address;
+  tokenIn?: Address[];
+  amountIn?: AmountArg[];
+  /** Actions executed with the flashloaned funds before repayment. */
+  callback: BundleAction[];
+};
+
+export type FlashloanAction = ProtocolAction<"flashloan", FlashloanArgs>;
+export type SingleTokenFlashloanAction = ProtocolAction<
+  "singletokenflashloan",
+  Omit<FlashloanArgs, "flashloanToken" | "flashloanAmount"> &
+    SingleFlashloanAmount
+>;
+export type MultiTokenFlashloanAction = ProtocolAction<
+  "multitokenflashloan",
+  Omit<FlashloanArgs, "flashloanToken" | "flashloanAmount"> &
+    MultiFlashloanAmount
+>;
+
+type BaseRouteArgs = WithReceiver & {
+  tokenIn: Address;
+  tokenOut: Address;
+  amountIn: AmountArg;
+  slippage?: Quantity;
+  minAmountOut?: AmountArg | AmountArg[];
+  fee?: Quantity | Quantity[];
+  feeReceiver?: Address;
+  ignoreAggregators?: string[];
+  ignoreStandards?: string[];
+  ignoreBridges?: string[];
+};
+
+type SameChainRouteArgs = BaseRouteArgs & {
+  /** Destination chain ID is omitted for same-chain routes. */
+  destinationChainId?: undefined;
+  /** Optional refund receiver for route dust/refunds. */
+  refundReceiver?: Address;
+};
+
+type CrossChainRouteArgs = BaseRouteArgs & {
+  /** Destination chain ID for cross-chain routes. */
+  destinationChainId: number;
+  /** Destination-chain address that receives the route output. */
+  receiver: Address;
+  /** Optional address that receives refunded assets if a cross-chain route cannot complete. */
+  refundReceiver?: Address;
+};
+
+export type RouteAction = EnsoAction<
+  "route",
+  SameChainRouteArgs | CrossChainRouteArgs
+>;
+
+export type BalanceAction = EnsoAction<
+  "balance",
+  {
+    token: Address;
+    estimate?: AmountArg;
+    account?: Address;
+  }
+>;
 
 export type ContractCallArg =
   | string
   | Address
   | Quantity
   | boolean
-  | Array<ContractCallArg>
+  | ContractCallArg[]
   | ActionOutputReference<Quantity>;
 
-/**
- * Call arbitrary contract method.
- */
-export type CallAction = {
-  /** Action type */
-  action: "call";
-  /** Protocol to interact with */
-  protocol: string;
-  /** Action arguments */
-  args: {
-    tokenIn?: Address;
-    tokenOut?: Address;
-    /** Contract address to call */
+export type CallAction = EnsoAction<
+  "call",
+  {
     address: Address;
-    /** Method to call */
     method: string;
-    /** Flattened function signature (e.g. "function collect((uint256 tokenId, address recipient, uint128 amount0Max, uint128 amount1Max) params) external payable returns (uint256 amount0, uint256 amount1)") */
+    /** Function ABI/signature for encoding the call. */
     abi: string;
-    /** Arguments for the method */
     args: ContractCallArg[];
-    /** Optional value to send with the transaction in wei */
-    value?: ActionOutputReference<Quantity>;
-  };
-};
-
-/**
- * Splits an amount into multiple parts based on specified percentages.
- *
- */
-export type SplitAction = {
-  /** Must be 'enso' for split actions */
-  protocol: "enso";
-  /** Action type */
-  action: "split";
-  /** Action arguments */
-  args: {
-    /** The token to split */
-    tokenIn: Address;
-    tokenOut: Address[];
-    amountIn: ActionOutputReference<Quantity>;
-    receiver?: Address;
-  };
-};
-
-/**
- * Merge multiple token inputs into a single output.
- */
-export type MergeAction = {
-  /** Must be 'enso' for merge actions */
-  protocol: "enso";
-  /** Action type */
-  action: "merge";
-  /** Action arguments */
-  args: {
-    /** Address of token to input */
-    tokenIn: Address[];
-    /** Address of token to receive */
-    tokenOut: Address;
-    /** The amount to send */
-    amountIn: ActionOutputReference<Quantity>[];
-    /** The receiver account */
-    receiver?: Address;
-  };
-};
-
-/**
- * Minimum amount out action - provides slippage protection with `minAmountOut` as threshold.
- */
-export type MinAmountOutAction = {
-  /** Must be 'enso' for minAmountOut actions */
-  protocol: "enso";
-  /** Action type */
-  action: "minamountout";
-  /** Action arguments */
-  args: {
-    /** Expected output amount in wei (with full decimals) */
-    amountOut: StrictOutputReference<Quantity>;
-    /** Minimum acceptable amount */
-    minAmountOut: ActionOutputReference<Quantity>;
-  };
-};
-
-/**
- *  Slippage action.
- */
-export type SlippageAction = {
-  /** Must be 'enso' for slippage actions */
-  protocol: "enso";
-  /** Action type */
-  action: "slippage";
-  /** Action arguments */
-  args: {
-    /** Maximum acceptable slippage in basis points (1 bps = 0.01%, 100 bps = 1%) */
-    bps: Quantity;
-    /** Expected output amount (with full decimals) or a return value from a previous action */
-    amountOut: StrictOutputReference<Quantity>;
-  };
-};
-
-export type ActionOutputReference<T> = T | StrictOutputReference<T>;
-
-export type StrictOutputReference<T> = {
-  useOutputOfCallAt: number;
-  index?: number;
-};
-
-/**
- * Fee action - calculates and deducts a fee from a specified amount.
- */
-export type FeeAction = {
-  /** Must be 'enso' for fee actions */
-  protocol: "enso";
-  /** Action type */
-  action: "fee";
-  /** Action arguments */
-  args: {
-    /** Token address to apply the fee to */
-    token: Address;
-    /** Amount to apply the fee to (with full decimals) */
-    amount: ActionOutputReference<Quantity>;
-    /** Fee percentage in basis points (1 bps = 0.01%, 100 bps = 1%) */
-    bps: Quantity;
-    /** Address to receive the fee */
-    receiver: Address;
-  };
-};
-
-/**
- *  Enso fee action.
- */
-export type EnsoFeeAction = {
-  /** Must be 'enso' for ensofee actions */
-  protocol: "enso";
-  /** Action type */
-  action: "ensofee";
-  /** Action arguments */
-  args: {
-    /** Token address to apply the fee to */
-    token: Address;
-    /** Amount to apply the fee to (with full decimals) */
-    amount: ActionOutputReference<Quantity>;
-    /** Fee percentage in basis points (1 bps = 0.01%, 100 bps = 1%) */
-    bps: Quantity;
-  };
-};
-
-/**
- *  Deposit tokens to a protocol.
- */
-export type DepositAction = {
-  /** Protocol to deposit to */
-  protocol: string;
-  /** Action type */
-  action: "deposit";
-  /** Action arguments */
-  args: {
-    /** Input token(s) - can be single address or array for multiple tokens */
-    tokenIn: Address | Address[];
-    /** Output token(s) - can be single address or array for multiple tokens */
-    tokenOut?: Address | Address[];
-    /** Amount to deposit - can be single value or array for multiple tokens */
-    amountIn:
-      | ActionOutputReference<Quantity>
-      | ActionOutputReference<Quantity>[];
-    /** Address of the protocol contract to interact with */
-    primaryAddress: Address;
-    /** The PositionId to deposit into (e.g. Morpho Market positions) */
-    positionId?: HexString;
-    /** Address to receive the output tokens if not the caller */
-    receiver?: Address;
-  };
-};
-
-/**
- *  Redeem tokens from a protocol.
- */
-export type RedeemAction = {
-  /** Protocol to redeem from */
-  protocol: string;
-  /** Action type */
-  action: "redeem";
-  /** Action arguments */
-  args: {
-    /** Input token address (shares/tokens to redeem) */
     tokenIn?: Address;
-    /** Output token(s) - can be single address or array for multiple tokens */
-    tokenOut: Address | Address[];
-    /** Amount to redeem in wei (with full decimals) */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Address of the contract to interact with */
-    primaryAddress: Address;
-    /** Address to receive the output tokens if not the caller */
-    receiver?: Address;
-  };
-};
-
-/**
- * Supported bridge protocols.
- * - `ccip`: Chainlink CCIP - ERC20 only, up to 30KB callback data, 200k-3M gas limit.
- *   Note: CCIP waits for source chain finalization before executing callbacks.
- *   Timing varies by chain (sub-second to hours).
- *   See: https://docs.chain.link/ccip/ccip-execution-latency#finality-by-blockchain
- * - `relay`: Relay - supports native tokens, unlimited callback data (placeholder-based)
- * - `stargate`: LayerZero Stargate - supports native tokens, ~9.5KB callback data limit
- */
-export type BridgeProtocol = "ccip" | "relay" | "stargate";
-
-/**
- * Bridge tokens across chains.
- *
- * Use different protocols based on your needs:
- * - **CCIP**: Best for ERC20 tokens with larger callback payloads (up to 30KB).
- *   ⚠️ CCIP waits for source chain finalization - timing varies by chain (sub-second to hours).
- *   Consider this for time-sensitive swaps with slippage protection on slower chains.
- *   See: https://docs.chain.link/ccip/ccip-execution-latency#finality-by-blockchain
- * - **Relay**: Best for flexible bridging with dynamic amounts and native token support.
- * - **Stargate**: Best for native token bridging and LayerZero ecosystem integration.
- */
-export type BridgeAction = {
-  /** Action type */
-  action: "bridge";
-  /**
-   * Protocol to use for bridging.
-   * - `ccip`: Chainlink CCIP (ERC20 only, ~30KB callback limit, waits for finalization)
-   * - `relay`: Relay (native token support, unlimited callback)
-   * - `stargate`: LayerZero Stargate (native token support, ~9.5KB callback limit)
-   */
-  protocol: BridgeProtocol;
-  /** Action arguments */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Amount to bridge */
-    amountIn: ActionOutputReference<Quantity>;
-    /**
-     * Primary contract address for the bridge protocol.
-     * - CCIP: CCIP Router address (from `/ccip/router` API)
-     * - Relay: Token address being bridged
-     * - Stargate: OFT pool address (from `/layerzero/pool` API)
-     */
-    primaryAddress: Address;
-    /** Destination chain ID */
-    destinationChainId: number;
-    /** Receiver address on destination chain */
-    receiver: Address;
-    /**
-     * Optional callback actions bundle to execute on the destination chain.
-     * The callback bundle MUST start with a balance action.
-     * Note: Callback data limits vary by protocol (CCIP: ~30KB, Stargate: ~9.5KB, Relay: unlimited)
-     */
-    callback?: BundleAction[];
-    /** Additional native token value passed to the callback (in addition to bridge token) */
-    callbackValue?: string;
-  };
-};
-
-/**
- * Deposit into a Concentrated Liquidity Market Maker (CLMM) position.
- */
-export type DepositCLMMAction = {
-  /** Protocol to deposit to */
-  protocol: string;
-  /** Action type */
-  action: "depositclmm";
-  /** Action arguments */
-  args: {
-    /** Input token addresses */
-    tokenIn: Address[];
-    /** Output token address */
-    tokenOut: Address;
-    /** Amount of tokens to deposit */
-    amountIn: ActionOutputReference<Quantity>[];
-    /** Ticks for the deposit */
-    ticks: Quantity[];
-    /** Fee for the pool to deposit into */
-    poolFee: Quantity;
-    /** Optional receiver address */
-    receiver?: Address;
-    /** The minimum gap between valid price points for adding liquidity */
-    tickSpacing?: Quantity;
-    /**  The hook address */
-    hook?: Address;
-  };
-};
-
-/**
- * Redeem from a CLMM position.
- */
-export type RedeemCLMMAction = {
-  /** Protocol to redeem from */
-  protocol: string;
-  /** Action type */
-  action: "redeemclmm";
-  /** Action arguments */
-  args: {
-    /** Input token address to redeem */
-    tokenIn: Address;
-    /** Output token addresses to receive */
-    tokenOut: Address[];
-    /** Amount of liquidity to redeem */
-    liquidity: ActionOutputReference<Quantity>;
-    /** Token ID of the NFT position */
-    tokenId: string;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
-
-/**
- * Tokenized single deposit action.
- */
-export type TokenizedSingleDepositAction = {
-  /** Protocol to deposit to */
-  protocol: string;
-  /** Action type */
-  action: "tokenizedsingledeposit";
-  /** Action arguments */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Output token address (required) */
-    tokenOut: Address;
-    /** Amount to deposit */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
-
-/**
- * Tokenized multi deposit action.
- */
-export type TokenizedMultiDepositAction = {
-  /** Protocol to deposit to */
-  protocol: string;
-  /** Action type */
-  action: "tokenizedmultideposit";
-  /** Action arguments */
-  args: {
-    /** Input token addresses */
-    tokenIn: Address[];
-    /** Output token address (required) */
-    tokenOut: Address;
-    /** Amounts to deposit */
-    amountIn: ActionOutputReference<Quantity>[];
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
-
-/**
- * Tokenized single redeem action.
- */
-export type TokenizedSingleRedeemAction = {
-  /** Protocol to redeem from */
-  protocol: string;
-  /** Action type */
-  action: "tokenizedsingleredeem";
-  /** Action arguments */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Output token address */
-    tokenOut: Address;
-    /** Amount to redeem */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
-
-/**
- * Tokenized multi redeem action.
- */
-export type TokenizedMultiRedeemAction = {
-  /** Protocol to redeem from */
-  protocol: string;
-  /** Action type */
-  action: "tokenizedmultiredeem";
-  /** Action arguments */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Output token addresses */
-    tokenOut: Address[];
-    /** Amount to redeem */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
-
-/**
- *  Transfer tokens to another address.
- */
-export type TransferAction = {
-  /** Protocol to use for transfer */
-  protocol: string;
-  /** Action type */
-  action: "transfer";
-  /** Action arguments */
-  args: {
-    /** Token to transfer */
-    token: Address;
-    /** Amount to transfer in wei (with full decimals) */
-    amount: ActionOutputReference<Quantity>;
-    /** Address to transfer to */
-    receiver: Address;
-    /** Optional ERC721 or ERC1155 token ID */
-    id?: string;
-  };
-};
-
-/**
- * Transfer tokens from another address.
- */
-export type TransferFromAction = {
-  /** Action type */
-  action: "transferfrom";
-  /** Protocol to use */
-  protocol: string;
-  /** Action arguments */
-  args: {
-    /** Token to transfer */
-    token: Address;
-    /** Address to transfer from */
-    sender: Address;
-    /** Address to transfer to */
-    receiver: Address;
-    /** Amount to transfer */
-    amount: ActionOutputReference<Quantity>;
-    /** Optional ERC721 or ERC1155 token ID */
-    id?: string;
-  };
-};
-
-/**
- * Single deposit action (deprecated, use `deposit` instead).
- */
-export type SingleDepositAction = {
-  /** Protocol to deposit to */
-  protocol: string;
-  /** Action type */
-  action: "singledeposit";
-  /** Action arguments */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Output token address (optional) */
     tokenOut?: Address;
-    /** Amount to deposit */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
+    value?: AmountArg;
+  }
+>;
 
-/**
- * Multi deposit action (deprecated, use `deposit` instead).
- */
-export type MultiDepositAction = {
-  /** Protocol to deposit to */
-  protocol: string;
-  /** Action type */
-  action: "multideposit";
-  /** Action arguments */
-  args: {
-    /** Input token addresses */
+export type SplitAction = EnsoAction<
+  "split",
+  WithReceiver & {
+    tokenIn: Address;
+    tokenOut: Address[];
+    amountIn: AmountArg;
+  }
+>;
+
+export type MergeAction = EnsoAction<
+  "merge",
+  WithReceiver & {
     tokenIn: Address[];
-    /** Output token address (optional) */
-    tokenOut?: Address;
-    /** Amounts to deposit */
-    amountIn: ActionOutputReference<Quantity>[];
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
-
-/**
- * Single redeem action (deprecated, use `redeem` instead).
- */
-export type SingleRedeemAction = {
-  /** Protocol to redeem from */
-  protocol: string;
-  /** Action type */
-  action: "singleredeem";
-  /** Action arguments */
-  args: {
-    /** Input token address (optional) */
-    tokenIn?: Address;
-    /** Output token address */
     tokenOut: Address;
-    /** Amount to redeem */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
+    amountIn: AmountArg[];
+  }
+>;
 
-/**
- * Multi redeem action (deprecated, use `redeem` instead).
- */
-export type MultiRedeemAction = {
-  /** Protocol to redeem from */
-  protocol: string;
-  /** Action type */
-  action: "multiredeem";
-  /** Action arguments */
-  args: {
-    /** Input token address (optional) */
-    tokenIn?: Address;
-    /** Output token addresses */
-    tokenOut: Address[];
-    /** Amount to redeem */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
+export type MinAmountOutAction = EnsoAction<
+  "minamountout",
+  {
+    amountOut: AmountArg;
+    minAmountOut: AmountArg;
+  }
+>;
 
-/**
- * Multi-output single deposit action.
- */
-export type MultiOutSingleDepositAction = {
-  /** Protocol to deposit to */
-  protocol: string;
-  /** Action type */
-  action: "multioutsingledeposit";
-  /** Action arguments */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Output token addresses */
-    tokenOut: Address[];
-    /** Amount to deposit */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Primary contract address */
-    primaryAddress: Address;
-    /** Optional receiver address */
-    receiver?: Address;
-  };
-};
+export type SlippageAction = EnsoAction<
+  "slippage",
+  {
+    bps: Quantity;
+    amountOut: AmountArg;
+  }
+>;
 
-/**
- *  Swap tokens action.
- */
-export type SwapAction = {
-  /** Protocol for the swap */
-  protocol: string;
-  /** Action type */
-  action: "swap";
-  /** Action arguments */
-  args: {
-    /** Input token address */
-    tokenIn: Address;
-    /** Output token address */
-    tokenOut: Address;
-    /** Amount to swap in wei (with full decimals) */
-    amountIn: ActionOutputReference<Quantity>;
-    /** Address of the router or pool contract */
-    primaryAddress?: Address;
-    /** Address to receive the output tokens */
+export type FeeAction = EnsoAction<
+  "fee",
+  {
     receiver: Address;
-    /** Slippage tolerance in basis points (100 = 1%) */
-    slippage?: Quantity;
-    /** Optional pool fee in basis points when using specific pools */
-    poolFee?: Quantity;
-    /** The ID to identify the liquidity pool */
-    poolId?: BytesArg;
-  };
-};
+    token: Address;
+    amount: AmountArg;
+    bps: Quantity;
+  }
+>;
 
-/**
- * Permit and transfer tokens from another address.
- */
-export type PermitTransferFromAction = {
-  /** Protocol to use */
-  protocol: string;
-  /** Action type */
-  action: "permittransferfrom";
-  /** Action arguments */
-  args: {
-    /** Token(s) to transfer */
-    token: Address | Address[];
-    /** Amount(s) to transfer */
-    amount: ActionOutputReference<Quantity> | ActionOutputReference<Quantity>[];
-    /** Address to transfer from */
-    sender: Address;
-    /** Address to transfer to */
-    receiver: Address;
-    /** Nonce value to prevent signature replay */
-    nonce: Quantity;
-    /** Timestamp after which the signature is invalid */
-    deadline: Quantity;
-    /** The EIP-2612 permit signature */
-    signature: BytesArg;
-  };
-};
+export type EnsoFeeAction = EnsoAction<
+  "ensofee",
+  {
+    token: Address;
+    amount: AmountArg;
+    bps: Quantity;
+  }
+>;
 
-/**
- * Union type of all possible bundle actions.
- */
+export type MathAction = EnsoAction<
+  "add" | "sub" | "mul" | "div" | "min" | "max",
+  {
+    amountA: AmountArg;
+    amountB: AmountArg;
+  }
+>;
+
+export type ComparisonAction = EnsoAction<
+  | "isequal"
+  | "islessthan"
+  | "isequalorlessthan"
+  | "isgreaterthan"
+  | "isequalorgreaterthan",
+  {
+    amountA: AmountArg;
+    amountB: AmountArg;
+  }
+>;
+
+export type NotAction = EnsoAction<
+  "not",
+  {
+    condition: boolean | StrictOutputReference;
+  }
+>;
+
+export type CheckAction = EnsoAction<
+  "check",
+  {
+    condition: boolean | StrictOutputReference;
+  }
+>;
+
+export type ToggleAction = EnsoAction<
+  "toggle",
+  {
+    /** Boolean value or previous boolean output selecting between amountA and amountB. */
+    condition: boolean | StrictOutputReference;
+    amountA: AmountArg;
+    amountB: AmountArg;
+  }
+>;
+
 export type BundleAction =
-  | DepositAction
-  | DepositCLMMAction
-  | RouteAction
-  | BridgeAction
-  | BalanceAction
-  | TransferAction
-  | RedeemAction
   | ApproveAction
   | BorrowAction
+  | BorrowWithPositionIdAction
+  | NftBorrowAction
+  | BridgeAction
+  | DepositAction
   | SingleDepositAction
+  | SingleDepositWithPositionIdAction
   | MultiDepositAction
+  | MultiDepositWithPositionIdAction
   | TokenizedSingleDepositAction
   | TokenizedMultiDepositAction
   | MultiOutSingleDepositAction
+  | DepositCLMMAction
+  | NftDepositAction
+  | NftMultiDepositAction
+  | FlashloanAction
+  | SingleTokenFlashloanAction
+  | MultiTokenFlashloanAction
   | HarvestAction
   | PermitTransferFromAction
+  | RedeemAction
   | SingleRedeemAction
+  | SingleRedeemWithPositionIdAction
   | MultiRedeemAction
   | TokenizedSingleRedeemAction
   | TokenizedMultiRedeemAction
   | RedeemCLMMAction
+  | NftRedeemAction
+  | NftMultiRedeemAction
   | RepayAction
+  | RepayWithPositionIdAction
+  | NftRepayAction
   | SwapAction
+  | TransferAction
   | TransferFromAction
+  | WithdrawAction
+  | SingleWithdrawAction
+  | SingleWithdrawWithPositionIdAction
+  | MultiWithdrawAction
+  | RouteAction
+  | BalanceAction
   | CallAction
   | SplitAction
   | MergeAction
   | MinAmountOutAction
   | SlippageAction
   | FeeAction
-  | EnsoFeeAction;
+  | EnsoFeeAction
+  | MathAction
+  | ComparisonAction
+  | NotAction
+  | CheckAction
+  | ToggleAction;

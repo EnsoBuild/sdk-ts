@@ -11,7 +11,7 @@ const server = setupServer(
     const fromAddress = url.searchParams.get("fromAddress");
     const tokenIn = url.searchParams.get("tokenIn[]");
     const tokenOut = url.searchParams.get("tokenOut[]");
-    
+
     // Validate required params
     if (!fromAddress || !tokenIn || !tokenOut) {
       return new HttpResponse(null, { status: 400 });
@@ -106,7 +106,7 @@ describe("EnsoClient Integration Tests", () => {
       fromAddress,
       tokenAddress: tokenIn,
       chainId: 1,
-      amount
+      amount,
     });
 
     expect(approval.spender).toBeDefined();

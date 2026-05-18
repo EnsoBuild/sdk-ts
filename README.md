@@ -55,11 +55,11 @@ const routeData = await ensoClient.getRouteData({
 
 ## Routing Strategies
 
-There are 3 routing strategies available depending on your use case:
+Routing strategies available for public SDK use:
 
 - `router` - Uses a single contract which acts as a universal router
 - `delegate` - Returns calldata in the form of delegateCalls for smart accounts
-- `ensowallet` - Returns calldata for deploying an Enso smart account, and executing all the logic inside of the smart account in the same transaction
+- `ensowallet-v2` - Returns calldata for deploying an Enso smart account, and executing all the logic inside of the smart account in the same transaction
 
 ## Core Features
 
@@ -154,8 +154,29 @@ Use `getLayerZeroPool` to get the correct pool information, and use it as `prima
 ```ts
 const poolInfo = await client.getLayerZeroPool({
   chainId: 42161, // Arbitrum
-  destinationChainId: 999, // Zora  
-  token: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9' // USDT
+  destinationChainId: 999, // HyperEVM
+  token: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", // USDT
+});
+
+const stargatePoolInfo = await client.getStargatePool({
+  chainId: 42161,
+  destinationChainId: 999,
+  token: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+});
+```
+
+### CCTP Helpers
+
+Use CCTP helpers to discover the TokenMessengerV2 contract and fetch a claim transaction when a CCTP transfer is claimable.
+
+```ts
+const tokenMessenger = await client.getCctpTokenMessenger({
+  chainId: 1,
+});
+
+const claim = await client.getCctpClaimTransaction({
+  chainId: 42161,
+  txHash: "0xTransactionHash",
 });
 ```
 
@@ -176,7 +197,6 @@ const nonTokenizedRoute = await ensoClient.getRouteNonTokenized({
   routingStrategy: "delegate",
 });
 ```
-
 
 ### Token Data
 
@@ -294,7 +314,12 @@ For detailed information about all available methods and parameters, see our [AP
 | `getProtocolsByProject`    | Get protocols within a project                    |
 | `getNetworks`              | Get supported networks                            |
 | `getAggregators`           | Get supported aggregators                         |
-| `getVolume`                | Get volume data for a chain                       |
+| `getLayerZeroPool`         | Get LayerZero/Stargate pool data                  |
+| `getStargatePool`          | Get Stargate pool data                            |
+| `getCcipRouter`            | Get CCIP router address                           |
+| `getBridgeStatus`          | Get bridge transaction status                     |
+| `getCctpTokenMessenger`    | Get CCTP TokenMessengerV2 address                 |
+| `getCctpClaimTransaction`  | Get CCTP claim transaction status/data            |
 
 ## Contributing
 

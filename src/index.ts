@@ -12,6 +12,10 @@ import {
   BundleParams,
   CcipRouterData,
   CcipRouterParams,
+  CctpClaimData,
+  CctpClaimParams,
+  CctpTokenMessengerData,
+  CctpTokenMessengerParams,
   ConnectedNetwork,
   IporShortcutData,
   IporShortcutInputData,
@@ -51,6 +55,10 @@ export type {
   BundleParams,
   CcipRouterData,
   CcipRouterParams,
+  CctpClaimData,
+  CctpClaimParams,
+  CctpTokenMessengerData,
+  CctpTokenMessengerParams,
   ConnectedNetwork,
   IporShortcutData,
   IporShortcutInputData,
@@ -74,5 +82,6 @@ export type {
   WalletBalance,
 };
 
-export { EnsoClient } from "./client";
+export type * from "./types/actions";
 
+export { EnsoClient } from "./client";

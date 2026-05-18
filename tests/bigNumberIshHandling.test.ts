@@ -1,7 +1,12 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { EnsoClient } from "../src";
-import { Address, ApproveData, ApproveParams, Transaction } from "../src/types/types";
+import {
+  Address,
+  ApproveData,
+  ApproveParams,
+  Transaction,
+} from "../src/types/types";
 
 describe("BigNumberIsh Handling", () => {
   let client: EnsoClient;
