@@ -154,7 +154,7 @@ Use `getLayerZeroPool` to get the correct pool information, and use it as `prima
 ```ts
 const poolInfo = await client.getLayerZeroPool({
   chainId: 42161, // Arbitrum
-  destinationChainId: 999, // Zora
+  destinationChainId: 999, // HyperEVM
   token: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", // USDT
 });
 
