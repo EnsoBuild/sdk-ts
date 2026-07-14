@@ -21,7 +21,7 @@
     "prepare": "npm run build"
   },
   "repository": {
-    "url": "https://github.com/ensobuild/sdk-ts"
+    "url": "https://github.com/EnsoBuild/sdk-ts"
   },
   "type": "module",
   "exports": {

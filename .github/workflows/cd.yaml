@@ -80,16 +80,24 @@ jobs:
               commit_sha: context.sha,
             });
 
-            return pullRequests.some((pullRequest) =>
-              pullRequest.title.toLowerCase().includes("[minor]"),
-            )
+            const titles = pullRequests.map((pullRequest) =>
+              pullRequest.title.toLowerCase(),
+            );
+
+            if (titles.some((title) => title.includes("[publish-only]"))) {
+              return "none";
+            }
+
+            return titles.some((title) => title.includes("[minor]"))
               ? "minor"
               : "patch";
 
       - name: Bump version
+        if: steps.release.outputs.result != 'none'
         run: npm version ${{ steps.release.outputs.result }}
 
       - name: Push version change
+        if: steps.release.outputs.result != 'none'
         run: |
           git push
           git push --tags
