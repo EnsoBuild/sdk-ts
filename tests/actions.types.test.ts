@@ -1,6 +1,8 @@
 import { Address, BundleAction } from "../src";
 
 const address = "0x0000000000000000000000000000000000000001" as Address;
+const positionId =
+  "0x0000000000000000000000000000000000000000000000000000000000000000" as const;
 
 describe("BundleAction types", () => {
   it("accepts representative standards and Enso action families", () => {
@@ -24,16 +26,6 @@ describe("BundleAction types", () => {
           receiver: address,
           onBehalfOf: address,
           args: { market: "stable" },
-        },
-      },
-      {
-        protocol: "erc721-lending",
-        action: "nftborrow",
-        args: {
-          tokenOut: address,
-          amountOut: { useOutputOfCallAt: 1 },
-          primaryAddress: address,
-          tokenId: "1",
         },
       },
       {
@@ -63,8 +55,10 @@ describe("BundleAction types", () => {
           primaryAddress: address,
           destinationChainId: 8453,
           receiver: address,
-          cctpTransferType: "standard",
-          cctpForwardFee: "med",
+          protocolArgs: {
+            transferType: "standard",
+            forwardFee: "med",
+          },
         },
       },
       {
@@ -90,16 +84,6 @@ describe("BundleAction types", () => {
           ticks: ["-887220", "887220"],
           tickSpacing: "60",
           hook: address,
-        },
-      },
-      {
-        protocol: "erc721-vault",
-        action: "nftdeposit",
-        args: {
-          tokenIn: address,
-          amountIn: "1",
-          primaryAddress: address,
-          tokenId: "1",
         },
       },
       {
@@ -161,36 +145,14 @@ describe("BundleAction types", () => {
         },
       },
       {
-        protocol: "erc721-vault",
-        action: "nftredeem",
-        args: {
-          tokenIn: address,
-          tokenOut: address,
-          amountIn: "1",
-          primaryAddress: address,
-          tokenId: "1",
-        },
-      },
-      {
         protocol: "aave-v3",
-        action: "repaywithpositionid",
+        action: "repay",
         args: {
           tokenIn: address,
           amountIn: "100",
           primaryAddress: address,
           onBehalfOf: address,
-          positionId:
-            "0x0000000000000000000000000000000000000000000000000000000000000000",
-        },
-      },
-      {
-        protocol: "erc721-lending",
-        action: "nftrepay",
-        args: {
-          tokenIn: address,
-          amountIn: "100",
-          primaryAddress: address,
-          tokenId: "1",
+          positionId,
         },
       },
       {
@@ -235,8 +197,7 @@ describe("BundleAction types", () => {
           tokenOut: address,
           amountOut: "100",
           primaryAddress: address,
-          positionId:
-            "0x0000000000000000000000000000000000000000000000000000000000000000",
+          positionId,
         },
       },
       {
@@ -326,7 +287,7 @@ describe("BundleAction types", () => {
         },
       },
       {
-        protocol: "enso",
+        protocol: "math",
         action: "add",
         args: {
           amountA: "1",
@@ -334,7 +295,7 @@ describe("BundleAction types", () => {
         },
       },
       {
-        protocol: "enso",
+        protocol: "helpers",
         action: "isequalorlessthan",
         args: {
           amountA: "1",
@@ -342,21 +303,21 @@ describe("BundleAction types", () => {
         },
       },
       {
-        protocol: "enso",
+        protocol: "helpers",
         action: "not",
         args: {
           condition: { useOutputOfCallAt: 4 },
         },
       },
       {
-        protocol: "enso",
+        protocol: "helpers",
         action: "check",
         args: {
           condition: true,
         },
       },
       {
-        protocol: "enso",
+        protocol: "helpers",
         action: "toggle",
         args: {
           condition: { useOutputOfCallAt: 0 },
@@ -366,10 +327,10 @@ describe("BundleAction types", () => {
       },
     ] satisfies BundleAction[];
 
-    expect(actions).toHaveLength(34);
+    expect(actions).toHaveLength(30);
   });
 
-  it("rejects invalid cross-chain route and bridge action shapes", () => {
+  it("rejects invalid route and helper action shapes", () => {
     const routeWithoutReceiver: BundleAction = {
       protocol: "enso",
       action: "route",
@@ -382,36 +343,23 @@ describe("BundleAction types", () => {
       },
     };
 
-    // @ts-expect-error bridge actions only accept supported bridge protocols.
-    const bridgeWithUnsupportedProtocol: BundleAction = {
-      protocol: "unknown-bridge",
-      action: "bridge",
-      args: {
-        tokenIn: address,
-        amountIn: "100",
-        primaryAddress: address,
-        destinationChainId: 8453,
-        receiver: address,
-      },
+    // @ts-expect-error math actions require the math protocol.
+    const mathWithEnsoProtocol: BundleAction = {
+      protocol: "enso",
+      action: "add",
+      args: { amountA: "1", amountB: "2" },
     };
 
-    const stargateBridgeWithCctpOptions: BundleAction = {
-      protocol: "stargate",
-      action: "bridge",
-      args: {
-        tokenIn: address,
-        amountIn: "100",
-        primaryAddress: address,
-        destinationChainId: 8453,
-        receiver: address,
-        // @ts-expect-error CCTP options are only valid for CCTP bridge actions.
-        cctpTransferType: "standard",
-      },
+    // @ts-expect-error comparison actions require the helpers protocol.
+    const comparisonWithEnsoProtocol: BundleAction = {
+      protocol: "enso",
+      action: "isequal",
+      args: { amountA: "1", amountB: "2" },
     };
 
     void routeWithoutReceiver;
-    void bridgeWithUnsupportedProtocol;
-    void stargateBridgeWithCctpOptions;
+    void mathWithEnsoProtocol;
+    void comparisonWithEnsoProtocol;
     expect(true).toBe(true);
   });
 });

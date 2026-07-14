@@ -50,6 +50,11 @@ export type Transaction = {
   value: Quantity;
 };
 
+export type WalletTransaction = Omit<Transaction, "value"> & {
+  /** Value to send in wei */
+  value?: Quantity;
+};
+
 /**
  * Parameters for getting route data between two tokens.
  */
@@ -143,13 +148,17 @@ export type Hop = {
 };
 
 export type BridgeLatencyEstimate = {
+  fromChainId: number;
+  toChainId: number;
+  token: Address;
+  estimatedSeconds: number;
+  sendConfirmations?: number;
+  receiveConfirmations?: number;
+  sendBlockTimeSeconds?: number;
+  receiveBlockTimeSeconds?: number;
   bridge?: string;
-  protocol?: string;
-  sourceChainId?: number;
-  destinationChainId?: number;
-  estimatedTimeSeconds?: number;
-  estimatedTimeMs?: number;
-  [key: string]: unknown;
+  source?: string;
+  note?: string;
 };
 
 /**
@@ -161,15 +170,17 @@ export type RouteData = {
   /** Estimated gas used by the transaction */
   gas: Quantity;
   /** Estimated amount received */
-  amountOut: Quantity;
+  amountOut: Quantity | Quantity[];
+  /** Block number the quote was simulated against */
+  blockNumber?: number;
   /** Price impact in basis points, null if USD price not found */
-  priceImpact: Quantity | null;
+  priceImpact?: number | null;
   /** Block number the transaction was created on */
   createdAt: number;
   /** The tx object to use in ethers */
   tx: Transaction;
   /** Collected fee amounts for each amountIn input */
-  feeAmount: Quantity[];
+  feeAmount?: Quantity[];
   /** Enso fee amounts */
   ensoFeeAmount?: Quantity[];
   /** Minimum allowable output after slippage */
@@ -207,7 +218,7 @@ export type ApproveData = {
   /** Token address that was approved */
   token: Address;
   /** Transaction data */
-  tx: Transaction;
+  tx: WalletTransaction;
 };
 
 /**
@@ -216,6 +227,8 @@ export type ApproveData = {
 export type WalletBalance = {
   /** The unformatted balance of the token */
   amount: Quantity;
+  /** Chain ID of the network */
+  chainId: number;
   /** The number of decimals the token uses */
   decimals: number;
   /** The address of the token */
@@ -438,7 +451,7 @@ export type ProtocolParams = {
  */
 export type ProtocolData = {
   /** Protocol project (category) */
-  project: string | null;
+  project: string;
   /** Protocol slug identifier */
   slug: string;
   /** Protocol name */
@@ -486,19 +499,27 @@ export type BundleData = {
   /** Array of actions in the bundle */
   bundle: BundleAction[];
   /** Gas estimate for the bundle */
-  gas: Quantity;
+  gas?: Quantity;
   /** Block number the transaction was created on */
   createdAt: number;
   /** The tx object to use in ethers */
   tx: Transaction;
   /** Amounts out for each action */
   amountsOut?: Record<Address, Quantity>;
+  /** Minimum amounts out by token address */
+  minAmountsOut?: Record<Address, Quantity>;
   /** The route the shortcut will use */
   route?: Hop[];
   /** Price impact in basis points, null if USD price not found */
   priceImpact?: number | null;
-  /** Fee amount object */
-  feeAmount?: Record<string, any>;
+  /** Fee amounts by token address */
+  feeAmount?: Record<Address, Quantity>;
+  /** External approvals required before bundle execution */
+  approvals?: WalletTransaction[];
+  /** Estimated bridge durations */
+  bridgingEstimates?: BridgeLatencyEstimate[];
+  /** Unix timestamp in seconds after which the quote may expire */
+  validUntil?: number;
 };
 
 /**
@@ -532,7 +553,7 @@ export interface Project {
   /** Supported chains for the project */
   chains?: number[];
   /** Protocols supported in the project */
-  protocols?: string[];
+  protocols: string[];
 }
 
 /**

@@ -33,16 +33,8 @@ type EnsoAction<TAction extends string, TArgs> = {
   args: TArgs;
 };
 
-type WithPositionId = {
-  positionId: BytesArg;
-};
-
 type WithOptionalPositionId = {
-  positionId?: BytesArg;
-};
-
-type WithTokenId = {
-  tokenId: Quantity;
+  positionId?: string;
 };
 
 type WithOptionalTokenId = {
@@ -71,28 +63,10 @@ type MultiTokenInAmount = {
   amountIn: AmountArg[];
 };
 
-type SingleTokenOutAmount = {
-  tokenOut: Address;
-  amountOut: AmountArg;
-};
-
-type MultiTokenOutAmount = {
-  tokenOut: Address[];
-  amountOut: AmountArg[];
-};
-
-type SingleFlashloanAmount = {
-  flashloanToken: Address;
-  flashloanAmount: AmountArg;
-};
-
-type MultiFlashloanAmount = {
-  flashloanToken: Address[];
-  flashloanAmount: AmountArg[];
-};
-
 type BorrowArgs = WithReceiver &
   WithOnBehalfOf &
+  WithOptionalPositionId &
+  WithOptionalTokenId &
   WithArgs & {
     collateral?: Address | Address[];
     tokenOut: Address;
@@ -101,17 +75,11 @@ type BorrowArgs = WithReceiver &
   };
 
 export type BorrowAction = ProtocolAction<"borrow", BorrowArgs>;
-export type BorrowWithPositionIdAction = ProtocolAction<
-  "borrowwithpositionid",
-  BorrowArgs & WithOptionalPositionId
->;
-export type NftBorrowAction = ProtocolAction<
-  "nftborrow",
-  BorrowArgs & WithTokenId
->;
 
 type DepositArgs = WithReceiver &
   WithOnBehalfOf &
+  WithOptionalPositionId &
+  WithOptionalTokenId &
   WithArgs & {
     tokenIn: Address | Address[];
     tokenOut?: Address | Address[];
@@ -119,10 +87,16 @@ type DepositArgs = WithReceiver &
     primaryAddress: Address;
   };
 
-type SingleDepositArgs = Omit<DepositArgs, "tokenIn" | "amountIn"> &
+type SingleDepositArgs = Omit<
+  DepositArgs,
+  "tokenIn" | "amountIn" | "positionId" | "tokenId"
+> &
   SingleTokenInAmount;
 
-type MultiDepositArgs = Omit<DepositArgs, "tokenIn" | "amountIn"> &
+type MultiDepositArgs = Omit<
+  DepositArgs,
+  "tokenIn" | "amountIn" | "positionId" | "tokenId"
+> &
   MultiTokenInAmount;
 
 export type DepositAction = ProtocolAction<"deposit", DepositArgs>;
@@ -130,17 +104,9 @@ export type SingleDepositAction = ProtocolAction<
   "singledeposit",
   SingleDepositArgs
 >;
-export type SingleDepositWithPositionIdAction = ProtocolAction<
-  "singledepositwithpositionid",
-  SingleDepositArgs & WithPositionId
->;
 export type MultiDepositAction = ProtocolAction<
   "multideposit",
   MultiDepositArgs
->;
-export type MultiDepositWithPositionIdAction = ProtocolAction<
-  "multidepositwithpositionid",
-  MultiDepositArgs & WithPositionId
 >;
 export type TokenizedSingleDepositAction = ProtocolAction<
   "tokenizedsingledeposit",
@@ -154,20 +120,12 @@ export type MultiOutSingleDepositAction = ProtocolAction<
   "multioutsingledeposit",
   Omit<SingleDepositArgs, "tokenOut"> & { tokenOut: Address[] }
 >;
-export type NftDepositAction = ProtocolAction<
-  "nftdeposit",
-  SingleDepositArgs & WithOptionalTokenId
->;
-export type NftMultiDepositAction = ProtocolAction<
-  "nftmultideposit",
-  MultiDepositArgs & WithOptionalTokenId
->;
-
 export type DepositCLMMAction = ProtocolAction<
   "depositclmm",
-  Omit<NftMultiDepositAction["args"], "tokenOut" | "primaryAddress"> & {
+  WithReceiver & {
+    tokenIn: Address[];
     tokenOut: Address;
-    primaryAddress?: Address;
+    amountIn: AmountArg[];
     /** Lower and upper ticks for the concentrated liquidity position. */
     ticks: [Quantity, Quantity] | Quantity[];
     poolFee?: Quantity;
@@ -180,6 +138,8 @@ export type DepositCLMMAction = ProtocolAction<
 
 type RedeemArgs = WithReceiver &
   WithOnBehalfOf &
+  WithOptionalPositionId &
+  WithOptionalTokenId &
   WithArgs & {
     tokenIn?: Address;
     tokenOut: Address | Address[];
@@ -187,11 +147,17 @@ type RedeemArgs = WithReceiver &
     primaryAddress: Address;
   };
 
-type SingleRedeemArgs = Omit<RedeemArgs, "tokenOut"> & {
+type SingleRedeemArgs = Omit<
+  RedeemArgs,
+  "tokenOut" | "positionId" | "tokenId"
+> & {
   tokenOut: Address;
 };
 
-type MultiRedeemArgs = Omit<RedeemArgs, "tokenOut"> & {
+type MultiRedeemArgs = Omit<
+  RedeemArgs,
+  "tokenOut" | "positionId" | "tokenId"
+> & {
   tokenOut: Address[];
 };
 
@@ -199,10 +165,6 @@ export type RedeemAction = ProtocolAction<"redeem", RedeemArgs>;
 export type SingleRedeemAction = ProtocolAction<
   "singleredeem",
   SingleRedeemArgs
->;
-export type SingleRedeemWithPositionIdAction = ProtocolAction<
-  "singleredeemwithpositionid",
-  SingleRedeemArgs & WithPositionId
 >;
 export type MultiRedeemAction = ProtocolAction<"multiredeem", MultiRedeemArgs>;
 export type TokenizedSingleRedeemAction = ProtocolAction<
@@ -213,32 +175,20 @@ export type TokenizedMultiRedeemAction = ProtocolAction<
   "tokenizedmultiredeem",
   MultiRedeemArgs & { tokenIn: Address }
 >;
-export type NftRedeemAction = ProtocolAction<
-  "nftredeem",
-  SingleRedeemArgs & WithTokenId
->;
-export type NftMultiRedeemAction = ProtocolAction<
-  "nftmultiredeem",
-  MultiRedeemArgs & WithTokenId
->;
-
 export type RedeemCLMMAction = ProtocolAction<
   "redeemclmm",
-  Omit<
-    NftMultiRedeemAction["args"],
-    "tokenIn" | "amountIn" | "primaryAddress"
-  > & {
+  WithReceiver & {
     tokenIn: Address;
-    /** Amount of position liquidity to redeem. Defaults from liquidity in standards that support it. */
-    amountIn?: AmountArg;
-    /** Position manager or pool address. Defaults from tokenIn in standards that support it. */
-    primaryAddress?: Address;
+    tokenOut: Address[];
     /** Liquidity amount to remove from the CLMM position. */
     liquidity: AmountArg;
+    tokenId: Quantity;
   }
 >;
 
 type RepayArgs = WithOnBehalfOf &
+  WithOptionalPositionId &
+  WithOptionalTokenId &
   WithArgs & {
     tokenIn: Address;
     amountIn: AmountArg;
@@ -246,50 +196,36 @@ type RepayArgs = WithOnBehalfOf &
   };
 
 export type RepayAction = ProtocolAction<"repay", RepayArgs>;
-export type RepayWithPositionIdAction = ProtocolAction<
-  "repaywithpositionid",
-  RepayArgs & WithOptionalPositionId
->;
-export type NftRepayAction = ProtocolAction<
-  "nftrepay",
-  RepayArgs & WithTokenId
->;
 
 type WithdrawArgs = WithReceiver &
   WithOnBehalfOf &
+  WithOptionalPositionId &
   WithArgs & {
     tokenOut: Address | Address[];
     amountOut: AmountArg | AmountArg[];
     primaryAddress: Address;
   };
 
-type SingleWithdrawArgs = Omit<WithdrawArgs, "tokenOut" | "amountOut"> &
-  SingleTokenOutAmount;
-
-type MultiWithdrawArgs = Omit<WithdrawArgs, "tokenOut" | "amountOut"> &
-  MultiTokenOutAmount;
-
 export type WithdrawAction = ProtocolAction<"withdraw", WithdrawArgs>;
 export type SingleWithdrawAction = ProtocolAction<
   "singlewithdraw",
-  SingleWithdrawArgs
+  WithdrawArgs
 >;
 export type SingleWithdrawWithPositionIdAction = ProtocolAction<
   "singlewithdrawwithpositionid",
-  SingleWithdrawArgs & WithPositionId
+  WithdrawArgs
 >;
-export type MultiWithdrawAction = ProtocolAction<
-  "multiwithdraw",
-  MultiWithdrawArgs
->;
+export type MultiWithdrawAction = ProtocolAction<"multiwithdraw", WithdrawArgs>;
 
 export type ApproveAction = ProtocolAction<
   "approve",
   {
     token: Address;
     spender: Address;
-    amount: AmountArg;
-  }
+    amount?: AmountArg;
+    tokenId?: Quantity;
+  },
+  "erc20" | "erc721"
 >;
 
 export type HarvestAction = ProtocolAction<
@@ -302,28 +238,30 @@ export type HarvestAction = ProtocolAction<
 
 export type SwapAction = ProtocolAction<
   "swap",
-  WithReceiver & {
-    tokenIn: Address;
-    tokenOut: Address;
-    amountIn: AmountArg;
-    primaryAddress: Address;
-    slippage?: Quantity;
-    poolFee?: Quantity;
-    tickSpacing?: Quantity;
-    hooks?: Address;
-    poolId?: BytesArg;
-    path?: Address[];
-  }
+  WithReceiver &
+    WithArgs & {
+      tokenIn: Address;
+      tokenOut: Address;
+      amountIn: AmountArg;
+      primaryAddress: Address;
+      slippage?: Quantity;
+      poolFee?: Quantity;
+      tickSpacing?: Quantity;
+      hooks?: Address;
+      poolId?: BytesArg;
+      salt?: BytesArg;
+      path?: Address[];
+    }
 >;
 
 export type TransferAction = ProtocolAction<
   "transfer",
   {
     token: Address;
-    amount: AmountArg;
+    amount?: AmountArg;
     receiver: Address;
     /** ERC721/ERC1155 token ID, when transferring a tokenized position. */
-    id?: Quantity;
+    tokenId?: Quantity;
   }
 >;
 
@@ -331,11 +269,11 @@ export type TransferFromAction = ProtocolAction<
   "transferfrom",
   {
     token: Address;
-    amount: AmountArg;
+    amount?: AmountArg;
     receiver: Address;
-    sender: Address;
+    sender?: Address;
     /** ERC721/ERC1155 token ID, when transferring a tokenized position. */
-    id?: Quantity;
+    tokenId?: Quantity;
   }
 >;
 
@@ -354,57 +292,36 @@ export type PermitTransferFromAction = ProtocolAction<
 
 export type BridgeProtocol = "ccip" | "relay" | "stargate" | "cctp";
 
-type BaseBridgeArgs = {
-  tokenIn: Address;
-  amountIn: AmountArg;
-  primaryAddress: Address;
-  destinationChainId: number;
-  receiver: Address;
-  callback?: BundleAction[];
-};
-
-type NonCctpBridgeArgs = BaseBridgeArgs & {
-  cctpTransferType?: never;
-  cctpForwardFee?: never;
-};
-
-type CctpBridgeArgs = BaseBridgeArgs & {
-  /** CCTP finality preference. */
-  cctpTransferType?: "fast" | "standard";
-  /** CCTP Forwarding Service fee bracket. */
-  cctpForwardFee?: "low" | "med" | "high";
-};
-
-export type NonCctpBridgeAction = ProtocolAction<
+export type BridgeAction = ProtocolAction<
   "bridge",
-  NonCctpBridgeArgs,
-  Exclude<BridgeProtocol, "cctp">
+  {
+    tokenIn: Address;
+    amountIn: AmountArg;
+    primaryAddress: Address;
+    destinationChainId: number;
+    receiver: Address;
+    callback?: BundleAction[];
+    callbackValue?: Quantity;
+    protocolArgs?: {
+      transferType?: "fast" | "standard";
+      forwardFee?: "low" | "med" | "high";
+      isHyperCoreTransfer?: boolean;
+    };
+  }
 >;
-export type CctpBridgeAction = ProtocolAction<"bridge", CctpBridgeArgs, "cctp">;
-export type BridgeAction = NonCctpBridgeAction | CctpBridgeAction;
 
 type FlashloanArgs = WithReceiver & {
   flashloanToken: Address | Address[];
   flashloanAmount: AmountArg | AmountArg[];
-  tokenOut?: Address | Address[];
+  tokenOut: Address | Address[];
   primaryAddress?: Address;
-  tokenIn?: Address[];
-  amountIn?: AmountArg[];
+  tokenIn?: Address | Address[];
+  amountIn?: AmountArg | AmountArg[];
   /** Actions executed with the flashloaned funds before repayment. */
   callback: BundleAction[];
 };
 
 export type FlashloanAction = ProtocolAction<"flashloan", FlashloanArgs>;
-export type SingleTokenFlashloanAction = ProtocolAction<
-  "singletokenflashloan",
-  Omit<FlashloanArgs, "flashloanToken" | "flashloanAmount"> &
-    SingleFlashloanAmount
->;
-export type MultiTokenFlashloanAction = ProtocolAction<
-  "multitokenflashloan",
-  Omit<FlashloanArgs, "flashloanToken" | "flashloanAmount"> &
-    MultiFlashloanAmount
->;
 
 type BaseRouteArgs = WithReceiver & {
   tokenIn: Address;
@@ -412,7 +329,7 @@ type BaseRouteArgs = WithReceiver & {
   amountIn: AmountArg;
   slippage?: Quantity;
   minAmountOut?: AmountArg | AmountArg[];
-  fee?: Quantity | Quantity[];
+  fee?: AmountArg | AmountArg[];
   feeReceiver?: Address;
   ignoreAggregators?: string[];
   ignoreStandards?: string[];
@@ -457,7 +374,7 @@ export type ContractCallArg =
   | ContractCallArg[]
   | ActionOutputReference<Quantity>;
 
-export type CallAction = EnsoAction<
+export type CallAction = ProtocolAction<
   "call",
   {
     address: Address;
@@ -524,15 +441,16 @@ export type EnsoFeeAction = EnsoAction<
   }
 >;
 
-export type MathAction = EnsoAction<
+export type MathAction = ProtocolAction<
   "add" | "sub" | "mul" | "div" | "min" | "max",
   {
     amountA: AmountArg;
     amountB: AmountArg;
-  }
+  },
+  "math"
 >;
 
-export type ComparisonAction = EnsoAction<
+export type ComparisonAction = ProtocolAction<
   | "isequal"
   | "islessthan"
   | "isequalorlessthan"
@@ -541,83 +459,74 @@ export type ComparisonAction = EnsoAction<
   {
     amountA: AmountArg;
     amountB: AmountArg;
-  }
+  },
+  "helpers"
 >;
 
-export type NotAction = EnsoAction<
+export type NotAction = ProtocolAction<
   "not",
   {
     condition: boolean | StrictOutputReference;
-  }
+  },
+  "helpers"
 >;
 
-export type CheckAction = EnsoAction<
+export type CheckAction = ProtocolAction<
   "check",
   {
     condition: boolean | StrictOutputReference;
-  }
+  },
+  "helpers"
 >;
 
-export type ToggleAction = EnsoAction<
+export type ToggleAction = ProtocolAction<
   "toggle",
   {
     /** Boolean value or previous boolean output selecting between amountA and amountB. */
     condition: boolean | StrictOutputReference;
     amountA: AmountArg;
     amountB: AmountArg;
-  }
+  },
+  "helpers"
 >;
 
 export type BundleAction =
-  | ApproveAction
-  | BorrowAction
-  | BorrowWithPositionIdAction
-  | NftBorrowAction
-  | BridgeAction
-  | DepositAction
-  | SingleDepositAction
-  | SingleDepositWithPositionIdAction
-  | MultiDepositAction
-  | MultiDepositWithPositionIdAction
-  | TokenizedSingleDepositAction
-  | TokenizedMultiDepositAction
-  | MultiOutSingleDepositAction
-  | DepositCLMMAction
-  | NftDepositAction
-  | NftMultiDepositAction
-  | FlashloanAction
-  | SingleTokenFlashloanAction
-  | MultiTokenFlashloanAction
-  | HarvestAction
-  | PermitTransferFromAction
-  | RedeemAction
-  | SingleRedeemAction
-  | SingleRedeemWithPositionIdAction
-  | MultiRedeemAction
-  | TokenizedSingleRedeemAction
-  | TokenizedMultiRedeemAction
-  | RedeemCLMMAction
-  | NftRedeemAction
-  | NftMultiRedeemAction
-  | RepayAction
-  | RepayWithPositionIdAction
-  | NftRepayAction
+  | RouteAction
   | SwapAction
+  | BridgeAction
+  | BalanceAction
+  | ApproveAction
   | TransferAction
   | TransferFromAction
+  | PermitTransferFromAction
+  | DepositAction
+  | RedeemAction
+  | DepositCLMMAction
+  | RedeemCLMMAction
+  | TokenizedSingleDepositAction
+  | TokenizedMultiDepositAction
+  | TokenizedSingleRedeemAction
+  | TokenizedMultiRedeemAction
+  | MultiOutSingleDepositAction
+  | CallAction
+  | FlashloanAction
   | WithdrawAction
   | SingleWithdrawAction
   | SingleWithdrawWithPositionIdAction
   | MultiWithdrawAction
-  | RouteAction
-  | BalanceAction
-  | CallAction
   | SplitAction
   | MergeAction
   | MinAmountOutAction
   | SlippageAction
   | FeeAction
   | EnsoFeeAction
+  | RepayAction
+  | BorrowAction
+  | HarvestAction
+  | SingleDepositAction
+  | MultiDepositAction
+  | SingleRedeemAction
+  | MultiRedeemAction
   | MathAction
   | ComparisonAction
   | NotAction
