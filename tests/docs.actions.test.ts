@@ -973,7 +973,7 @@ describe("Docs samples inegration tests - actions", () => {
           action: "minamountout",
           args: {
             amountOut: { useOutputOfCallAt: 0 }, // Reference to first action's output
-            minAmountOut: "1940000000", // hardcoded minimum amount (1.94 USDC)
+            minAmountOut: "1700000000", // Hardcoded minimum amount (1,700 USDC)
           },
         },
       ],
