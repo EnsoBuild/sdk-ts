@@ -100,7 +100,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
 
     // Gas validation
     expect(bundle.gas).toBeDefined();
-    const gasEstimate = parseInt(bundle.gas.toString());
+    const gasEstimate = parseInt(bundle.gas!.toString());
     expect(gasEstimate).toBeGreaterThan(100000); // Swap needs reasonable gas
 
     // Validate bundle action structure

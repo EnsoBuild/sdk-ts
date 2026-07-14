@@ -601,7 +601,7 @@ describe("Docs samples inegration tests - actions", () => {
             token: "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07", // OMG token address
             receiver: "0x80eba3855878739f4710233a8a19d89bdd2ffb8e", // Recipient address
             amount: "1000000000000000000", // Amount to transfer in wei (1 OMG)
-            id: "1234", // Optional: ID for ERC721 or ERC1155 tokens
+            tokenId: "1234", // Optional: ID for ERC721 or ERC1155 tokens
           },
         },
       ],
