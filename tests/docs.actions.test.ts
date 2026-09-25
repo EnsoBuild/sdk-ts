@@ -1,9 +1,14 @@
 import { parseUnits, zeroAddress } from "viem";
 import { Address, BundleAction, EnsoClient } from "../src";
 
+declare const process: { env: Record<string, string | undefined> };
+
+const apiKey =
+  process.env.ENSO_API_KEY ?? "56b3d1f4-5c59-4fc1-8998-16d001e277bc";
+
 describe("Docs samples inegration tests - actions", () => {
   const client = new EnsoClient({
-    apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+    apiKey,
   });
   beforeAll(() => {});
 
@@ -1104,7 +1109,7 @@ describe("Docs samples inegration tests - actions", () => {
   });
   describe("Custom Deposit Function Call", () => {
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
     const USDT: Address = "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb";
 

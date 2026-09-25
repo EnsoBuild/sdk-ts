@@ -4,6 +4,9 @@ import { parseUnits } from "viem";
 
 declare const process: { env: Record<string, string | undefined> };
 
+const apiKey =
+  process.env.ENSO_API_KEY ?? "56b3d1f4-5c59-4fc1-8998-16d001e277bc";
+
 const describeLiveBridging =
   process.env.RUN_LIVE_BRIDGING_TESTS === "true" ? describe : describe.skip;
 
@@ -28,7 +31,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
     const STARGATE_E_RUSD_BRIDGE = "0xf0e9f6d9ba5d1b3f76e0f82f9dcdb9ebeef4b4da";
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     const bundle = await client.getBundleData(
@@ -132,7 +135,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
       "0x109D6D1799f62216B4a7b0c6e245844AbD4DD281"; // Euler vault for e-rUSD on Berachain (need actual address)
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     const bundle = await client.getBundleData(
@@ -249,7 +252,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
       "0x3000c6bf0aaeb813e252b584c4d9a82f99e7a71d"; // Euler vault for e-rUSD on Berachain (need actual address)
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     const bundle = await client.getBundleData(
@@ -358,7 +361,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
     const NATIVE_TOKEN = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     // Get CCIP Router address for the source chain
@@ -440,7 +443,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
     const SOLVBTC_BNB = "0x4aae823a6a0b376De6A78e74eCC5b079d38cBCf7";
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     // Get CCIP Router address for the source chain
@@ -490,7 +493,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
     const NATIVE_TOKEN = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     const bundle = await client.getBundleData(
@@ -581,7 +584,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
       "0x8888883ACA65976e98E16931b46308E4C588D533";
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     const bundle = await client.getBundleData(
@@ -672,7 +675,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
     const AAVE_V3_PLASMA_POOL = "0x925a2A7214Ed92428B5b1B090F80b25700095e12";
 
     const client = new EnsoClient({
-      apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+      apiKey,
     });
 
     const bundle = await client.getBundleData(
