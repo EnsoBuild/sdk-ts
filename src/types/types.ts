@@ -11,13 +11,20 @@ export type { BundleAction };
  * {@link https://docs.enso.build/pages/build/reference/routing-strategies}
  */
 export type RoutingStrategy =
-  | "router"
-  | "delegate"
-  | "router-legacy"
-  | "delegate-legacy"
-  | "ensowallet-v2";
+  "router" | "delegate" | "router-legacy" | "delegate-legacy" | "ensowallet-v2";
 
 export type TokenType = "defi" | "base";
+
+/**
+ * Controls how the quote is built based on who executes the transaction.
+ */
+export type ExecutionMode = "user" | "backend";
+
+/**
+ * Controls cross-chain route complexity.
+ */
+export type CrosschainRouteMode =
+  "direct" | "source" | "destination" | "sourceOrDestination" | "full";
 /**
  * Ethereum address format - must be a 42-character hexadecimal string starting with '0x'.
  * @example '0x123456789abcdef123456789abcdef1234567890'
@@ -71,6 +78,10 @@ export type RouteParams = {
   chainId: number;
   /** Chain ID of the destination network for cross-chain bridging */
   destinationChainId?: number;
+  /** Controls how the quote is built based on execution mode */
+  executionMode?: ExecutionMode;
+  /** Include source-chain transaction cost estimates in native units and USD */
+  includeTransactionCost?: boolean;
   /** Amount of tokenIn to swap in wei */
   amountIn: Quantity[];
   /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
@@ -87,12 +98,16 @@ export type RouteParams = {
   fee?: Quantity[];
   /** The Ethereum address that will receive the collected fee. Required if fee is provided */
   feeReceiver?: Address;
+  /** Destination-chain fee receiver for cross-chain routes with destination execution */
+  destinationFeeReceiver?: Address;
   /** A list of swap aggregators to be ignored from consideration */
   ignoreAggregators?: string[];
   /** A list of standards to be ignored from consideration */
   ignoreStandards?: string[];
   /** A list of bridges to be ignored from consideration */
   ignoreBridges?: string[];
+  /** Controls cross-chain route complexity */
+  crosschainRouteMode?: CrosschainRouteMode;
   /** Flag that indicates if gained tokenOut should be sent to EOA (deprecated) */
   toEoa?: boolean;
   /** Referral code that will be included in an on-chain event */
@@ -135,16 +150,28 @@ export type Hop = {
   action: string;
   /** Primary contract address */
   primary?: Address;
+  /** Primary contract address */
+  primaryAddress?: Address;
   /** Internal routes used in this hop */
   internalRoutes?: string[] | RouteSegment[][];
   /** Arguments for this hop */
   args?: Record<string, any>;
+  /** Liquidity sources used in this hop */
+  sources?: string[];
+  /** Pool addresses used in this hop */
+  poolAddresses?: Address[];
+  /** Estimated amounts out for split actions, ordered to match tokenOut */
+  estimatedAmountOut?: Quantity[];
   /** Chain ID of the network */
-  chainId: number;
+  chainId?: number;
   /** Source chain ID for cross-chain operations */
   sourceChainId?: number;
   /** Destination chain ID for cross-chain operations */
   destinationChainId?: number;
+  /** Non-tokenized position IDs for deposit actions */
+  positionOut?: string[];
+  /** Off-chain settler for this hop, when it is descriptive metadata rather than an on-chain call */
+  via?: "cctp-forwarder" | (string & {});
 };
 
 export type BridgeLatencyEstimate = {
@@ -159,6 +186,64 @@ export type BridgeLatencyEstimate = {
   bridge?: string;
   source?: string;
   note?: string;
+};
+
+export type BridgeRefundAsset = {
+  protocol: string;
+  chainId: number;
+  /** Bridge principal token that may be refunded */
+  token: Address;
+  /** Address that would receive the bridge principal refund */
+  recipient: Address;
+  symbol?: string;
+};
+
+export type BridgeFee = {
+  protocol: string;
+  component: "bridge" | "intentExecution";
+  /** Chain on which the fee is paid */
+  chainId: number;
+  destinationChainId: number;
+  /** Token used to pay the bridge fee */
+  token: Address;
+  /** Whether amount is a maximum reserved for execution or a quote-time fee breakdown */
+  type: "maximum" | "quoted";
+  /** Whether the fee has already reduced amountOut */
+  deductedFromAmountOut: boolean;
+  /** Bridge fee in the token base unit */
+  amount: Quantity;
+  /** Bridge fee in USD when includeTransactionCost is true and pricing is available */
+  amountUsd?: string | null;
+};
+
+export type ShortcutResponseMetadata = {
+  /** Protocol-specific refund destinations for bridge principal */
+  bridgeRefundAssets: BridgeRefundAsset[];
+  /** Bridge protocol and intent execution fees */
+  bridgeFees?: BridgeFee[];
+  /** USD sum of reported bridge fees when includeTransactionCost is true */
+  bridgeFeeUsd?: string | null;
+};
+
+export type IntentResponse = {
+  address: Address;
+  data: Record<string, unknown>;
+};
+
+/**
+ * Transaction that may need to be executed before the main shortcut transaction.
+ */
+export type PreTransaction = {
+  type: "tokenApproval" | "requiredApproval";
+  tx: Transaction;
+  /** Token whose allowance is being set */
+  token?: Address;
+  /** Account receiving the token allowance */
+  spender?: Address;
+  /** Total allowance required by the shortcut */
+  amount?: Quantity;
+  /** Human-readable explanation for a required approval */
+  description?: string;
 };
 
 /**
@@ -185,6 +270,90 @@ export type RouteData = {
   ensoFeeAmount?: Quantity[];
   /** Minimum allowable output after slippage */
   minAmountOut?: Quantity | Quantity[];
+  /** Estimated bridge durations for cross-chain routes */
+  bridgingEstimates?: BridgeLatencyEstimate[];
+  /** Unix timestamp in seconds after which the quote may expire */
+  validUntil?: number;
+  /** Bridge refund and fee metadata */
+  metadata: ShortcutResponseMetadata;
+  /** Cross-chain intent published by the transaction, when applicable */
+  intent?: IntentResponse;
+  /** Detailed description of the route */
+  detailedRoute?: string[];
+  /** Transactions that may need to be executed before the main transaction */
+  preTransactions?: PreTransaction[];
+  /** Lower-bound source-chain transaction cost in native token base units, when includeTransactionCost is true */
+  transactionCost?: Quantity;
+  /** USD value of transactionCost, when includeTransactionCost is true */
+  transactionCostUsd?: string | null;
+};
+
+/**
+ * Parameters for getting a quote without building a transaction.
+ */
+export type QuoteParams = {
+  /** Chain ID of the network to quote on */
+  chainId: number;
+  /** Ethereum address of the wallet to send the transaction from */
+  fromAddress?: Address;
+  /** Routing strategy to use */
+  routingStrategy?: RoutingStrategy;
+  /** Ethereum address of the token to swap from */
+  tokenIn: Address[];
+  /** Ethereum address of the token to swap to */
+  tokenOut: Address[];
+  /** Amount of tokenIn to swap in wei */
+  amountIn: Quantity[];
+  /** Fee in basis points (1/10000) for each amountIn value */
+  fee?: Quantity[];
+  /** The Ethereum address that will receive the collected fee */
+  feeReceiver?: Address;
+  /** A list of swap aggregators to be ignored from consideration */
+  ignoreAggregators?: string[];
+  /** A list of standards to be ignored from consideration */
+  ignoreStandards?: string[];
+};
+
+/**
+ * Response data from quote calculation.
+ */
+export type QuoteData = {
+  /** Estimated amount received */
+  amountOut: Quantity;
+  /** Price impact in basis points, null if USD price not found */
+  priceImpact?: number | null;
+  /** The route selected for the quote */
+  route: Hop[];
+  /** Collected fee amounts for each amountIn input */
+  feeAmount?: Quantity[];
+  /** Enso fee amounts */
+  ensoFeeAmount?: Quantity[];
+};
+
+/**
+ * Response data from non-tokenized position route calculation.
+ */
+export type NonTokenizedRouteData = {
+  /** Bridge refund and fee metadata */
+  metadata: ShortcutResponseMetadata;
+  /** Block number the transaction was created on */
+  createdAt: number;
+  /** Estimated gas used by the transaction */
+  gas: Quantity;
+  /** Amount deposited into the position */
+  amountDeposited: Quantity | Quantity[];
+  /** Amount out in destination protocol precision (hypercore-spot deposits only) */
+  amountOut?: Quantity;
+  /** Price impact in basis points, null if not available */
+  priceImpact?: number | null;
+  /** The tx object to use in ethers */
+  tx: Transaction;
+  /** The route the shortcut will use */
+  route: Hop[];
+  /** Collected fee amounts for each amountIn input */
+  feeAmount?: Quantity[];
+  /** Enso fee amounts */
+  ensoFeeAmount?: Quantity[];
   /** Estimated bridge durations for cross-chain routes */
   bridgingEstimates?: BridgeLatencyEstimate[];
   /** Unix timestamp in seconds after which the quote may expire */
@@ -344,7 +513,7 @@ export interface Token {
   /** The overarching project or platform associated with the DeFi token */
   project: string | null;
   /** The specific standard integration or version of the DeFi project */
-  protocolSlug: string | null;
+  protocol: string | null;
   /** The defi position APY */
   apy: Quantity | null;
   /** The defi position base APY */
@@ -372,7 +541,7 @@ export type TokenData = Token & {
   /** The overarching project or platform associated with the DeFi token */
   project: string | null;
   /** The specific standard integration or version of the DeFi project */
-  protocolSlug: string | null;
+  protocol: string | null;
   /** Underlying tokens of defi token */
   underlyingTokens: Token[] | null;
   /** Ethereum address for contract interaction of defi token */
@@ -476,6 +645,8 @@ export type BundleParams = {
   fromAddress: Address;
   /** Routing strategy to use */
   routingStrategy: RoutingStrategy;
+  /** Controls how the quote is built based on execution mode */
+  executionMode?: ExecutionMode;
   /** Ethereum address of the receiver of the tokenOut */
   receiver?: Address;
   /** Ethereum address of the spender of the tokenIn */
@@ -514,8 +685,14 @@ export type BundleData = {
   priceImpact?: number | null;
   /** Fee amounts by token address */
   feeAmount?: Record<Address, Quantity>;
-  /** External approvals required before bundle execution */
+  /** @deprecated use `preTransactions` instead */
   approvals?: WalletTransaction[];
+  /** Transactions that may need to be executed before the main transaction */
+  preTransactions?: PreTransaction[];
+  /** Bridge refund and fee metadata */
+  metadata: ShortcutResponseMetadata;
+  /** Cross-chain intent published by the transaction, when applicable */
+  intent?: IntentResponse;
   /** Estimated bridge durations */
   bridgingEstimates?: BridgeLatencyEstimate[];
   /** Unix timestamp in seconds after which the quote may expire */
@@ -604,6 +781,14 @@ export interface ActionData {
   inputs: {
     [key: string]: { type: string; description: string; optional?: boolean };
   };
+  /** Alternative input shapes for this action */
+  variants?: {
+    action: string;
+    inputs: {
+      [key: string]: { type: string; description: string; optional?: boolean };
+    };
+    bundleName?: string;
+  }[];
 }
 
 /**
@@ -635,7 +820,7 @@ export interface IporShortcutData {
   /** The tx object to use in ethers */
   tx: Transaction;
   /** Logs from the simulated transaction */
-  logs: string[];
+  logs: { topics: HexString[]; data: HexString; address: Address }[];
   /** Tenderly simulation URL */
   simulationURL: string;
   route?: Hop[];
@@ -647,12 +832,20 @@ export interface IporShortcutData {
 export interface NonTokenizedPositionData {
   /** Chain ID of the network of the nontokenized position */
   chainId: number;
+  /** The project associated with the nontokenized position */
+  project: string;
   /** The specific standard integration or version of the nontokenized position */
   protocol: string;
   /** Ethereum address of the nontokenized position */
   address: Address;
+  /** Opaque position identifier of the nontokenized position */
+  positionId: string;
   /** Ethereum address of the nontokenized position */
   primaryAddress: Address | null;
+  /** Name of the nontokenized position */
+  name?: string;
+  /** Logos of the nontokenized position */
+  logosUri?: string[];
   /** Underlying tokens of nontokenized position */
   underlyingTokens: Token[] | null;
 }
@@ -673,8 +866,16 @@ export interface NonTokenizedParams {
   address?: Address[];
   /** Ethereum addresses for contract interaction of nontokenized position */
   primaryAddress?: Address[];
+  /** Opaque position identifiers of the nontokenized positions */
+  positionId?: string[];
+  /** Underlying tokens of nontokenized position */
+  underlyingTokens?: Address[];
+  /** Exact composition of underlying tokens of nontokenized position */
+  underlyingTokensExact?: Address[];
   /** Pagination page number. Pages are of length 1000 */
   page?: number;
+  /** Number of items per page, max 1000 */
+  pageSize?: number;
   /** Cursor for pagination. Pages are of length 1000 */
   cursor?: number;
 }
@@ -687,8 +888,10 @@ export interface RouteNonTokenizedParams {
   chainId: number;
   /** Ethereum address of the wallet to send the transaction from */
   fromAddress: Address;
-  /** Routing strategy to use (must be 'delegate') */
-  routingStrategy: "delegate" | "delegate-legacy";
+  /** Routing strategy to use */
+  routingStrategy?: "router" | "delegate" | "delegate-legacy";
+  /** Chain ID of the destination network for cross-chain deposits */
+  destinationChainId?: number;
   /** Input tokens */
   tokenIn: Address[];
   /** Non-tokenized position to receive */
@@ -699,12 +902,22 @@ export interface RouteNonTokenizedParams {
   fee?: Quantity[];
   /** Fee receiver address */
   feeReceiver?: Address;
+  /** Destination-chain fee receiver for cross-chain routes with destination execution */
+  destinationFeeReceiver?: Address;
+  /** A list of swap aggregators to be ignored from consideration */
+  ignoreAggregators?: string[];
+  /** A list of bridges to be ignored from consideration */
+  ignoreBridges?: string[];
+  /** A list of standards to be ignored from consideration */
+  ignoreStandards?: string[];
   /** Amount to send */
   amountIn: Quantity[];
   /** Receiver address */
   receiver: Address;
   /** Spender address */
   spender?: Address;
+  /** Ethereum address that receives dust/refunds from route execution */
+  refundReceiver?: Address;
   /** Referral code that will be included in an on-chain event */
   referralCode?: string;
 }
@@ -726,9 +939,9 @@ export interface PaginationMeta {
   /** Total amount of pages */
   total: number;
   /** Last page number */
-  lastPage: number;
+  lastPage: number | null;
   /** Current page number */
-  currentPage: number;
+  currentPage: number | null;
   /** Amount of elements per page */
   perPage: number;
   /** Previous page */
@@ -736,7 +949,7 @@ export interface PaginationMeta {
   /** Next page */
   next: number | null;
   /** Cursor for pagination */
-  cursor: number;
+  cursor: number | null;
 }
 
 /**
@@ -753,12 +966,7 @@ interface PaginatedResult {
 export type BridgeStatusParams = {
   /** Bridge protocol identifier */
   bridgeProtocol:
-    | "layerzero"
-    | "stargate"
-    | "ccip"
-    | "relay"
-    | "cctp"
-    | (string & {});
+    "layerzero" | "stargate" | "ccip" | "relay" | "cctp" | (string & {});
   /** Chain ID of the source transaction */
   chainId: number | string;
   /** Transaction hash on the source chain */
@@ -778,9 +986,25 @@ export type BridgeStatusData = {
   /** Destination transaction hash */
   destinationTxHash?: string;
   /** Bridge status */
-  status: "pending" | "inflight" | "delivered" | "failed" | "unknown";
+  status:
+    | "pending"
+    | "inflight"
+    | "delivered"
+    | "failed"
+    | "ready_for_manual_execution"
+    | "unknown";
   /** Error message if failed */
   error?: string;
+  /** Keeper's intent execution transaction on the destination chain, once executed */
+  destinationExecutionTxHash?: string;
+  /** Cross-chain intent execution details, when the source transaction published an intent */
+  intent?: unknown;
+  /** Whether this transaction involves multiple sequential bridges */
+  isMultiBridge?: boolean;
+  /** Individual bridge hops for multi-bridge transactions */
+  hops?: unknown[];
+  layerZeroMessage?: unknown;
+  ensoMetadata?: unknown;
   /** Enso shortcut event on the source chain, when found */
   ensoSourceEvent?: unknown;
   /** Enso shortcut event on the destination chain, when found */
@@ -788,8 +1012,15 @@ export type BridgeStatusData = {
   /** Protocol-specific bridge details */
   ccipSendParams?: unknown;
   ccipSendParamsDecoded?: unknown;
+  sourceChainIdFinality?: number;
+  sourceChainEstimatedTimeForFinalitySeconds?: number;
+  readyForManualExecution?: boolean;
   relayRequest?: unknown;
-  cctpTransferType?: "fast" | "standard";
+  refundChainId?: number;
+  refundTxHash?: string;
+  transferType?: "fast" | "standard";
+  delayReason?: string;
+  forward?: unknown;
   depositForBurn?: unknown;
   depositForBurnDecoded?: unknown;
   depositForBurnWithHook?: unknown;
@@ -855,7 +1086,12 @@ export type CctpClaimData = {
   /** Destination chain where receiveMessage should be called */
   destinationChainId?: number;
   /** Ready-to-submit receiveMessage transaction */
-  tx?: Transaction | Record<string, unknown>;
+  tx?: {
+    to: Address;
+    data: HexString;
+    value: Quantity;
+    chainId: number;
+  };
   /** Reason when not claimable */
   reason?: string;
 };

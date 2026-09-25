@@ -544,7 +544,13 @@ describe("EnsoClient", () => {
         from: "0xFrom" as Address,
         value: "0",
       },
-      logs: ["log1", "log2"],
+      logs: [
+        {
+          topics: ["0xtopic"],
+          data: "0xdata",
+          address: "0xLog",
+        },
+      ],
       simulationURL: "https://tenderly.co/simulation",
     };
 
@@ -720,8 +726,10 @@ describe("EnsoClient", () => {
       data: [
         {
           chainId: 1,
+          project: "aave",
           protocol: "aave",
           address: "0xPosition",
+          positionId: "0xPositionId",
           primaryAddress: "0xPrimary",
           underlyingTokens: null,
         },
