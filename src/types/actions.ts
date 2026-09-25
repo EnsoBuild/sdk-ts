@@ -290,7 +290,8 @@ export type PermitTransferFromAction = ProtocolAction<
   }
 >;
 
-export type BridgeProtocol = "ccip" | "relay" | "stargate" | "cctp";
+export type BridgeProtocol =
+  "ccip" | "relay" | "stargate" | "cctp" | "layerzero-teller";
 
 export type BridgeAction = ProtocolAction<
   "bridge",
@@ -317,6 +318,8 @@ type FlashloanArgs = WithReceiver & {
   primaryAddress?: Address;
   tokenIn?: Address | Address[];
   amountIn?: AmountArg | AmountArg[];
+  /** ERC721 token ID(s) for tokenIn. Mutually exclusive with amountIn. */
+  tokenId?: Quantity | Quantity[];
   /** Actions executed with the flashloaned funds before repayment. */
   callback: BundleAction[];
 };
@@ -331,6 +334,8 @@ type BaseRouteArgs = WithReceiver & {
   minAmountOut?: AmountArg | AmountArg[];
   fee?: AmountArg | AmountArg[];
   feeReceiver?: Address;
+  /** Destination-chain fee receiver for cross-chain routes with destination execution. */
+  destinationFeeReceiver?: Address;
   ignoreAggregators?: string[];
   ignoreStandards?: string[];
   ignoreBridges?: string[];

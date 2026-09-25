@@ -23,6 +23,7 @@ import {
   MultiPriceParams,
   NetworkParams,
   NonTokenizedParams,
+  NonTokenizedRouteData,
   PaginatedNonTokenizedPositionData,
   PaginatedTokenData,
   PriceData,
@@ -30,6 +31,8 @@ import {
   Project,
   ProtocolData,
   ProtocolParams,
+  QuoteData,
+  QuoteParams,
   RouteData,
   RouteNonTokenizedParams,
   RouteParams,
@@ -164,6 +167,31 @@ export class EnsoClient {
     const url = "/shortcuts/route";
 
     return this.request<RouteData>({
+      method: "GET",
+      url,
+      params,
+    });
+  }
+
+  /**
+   * Gets a quote for the best route from a token to another without building a transaction.
+   *
+   * @param {QuoteParams} params - Parameters for the quote request
+   * @returns {Promise<QuoteData>} Quote data
+   * @throws {Error} If the API request fails
+   *
+   * @example
+   * const quote = await client.getQuoteData({
+   *   chainId: 1,
+   *   amountIn: ['1000000000'],
+   *   tokenIn: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'], // USDC
+   *   tokenOut: ['0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'], // WETH
+   * });
+   */
+  public async getQuoteData(params: QuoteParams): Promise<QuoteData> {
+    const url = "/shortcuts/quote";
+
+    return this.request<QuoteData>({
       method: "GET",
       url,
       params,
@@ -364,7 +392,7 @@ export class EnsoClient {
    * which may involve several actions that interact with various DeFi protocols.
    *
    * @param {RouteNonTokenizedParams} params - Parameters for the non-tokenized route request
-   * @returns {Promise<RouteData>} Route execution data
+   * @returns {Promise<NonTokenizedRouteData>} Route execution data
    * @throws {Error} If the API request fails
    *
    * @example
@@ -380,10 +408,10 @@ export class EnsoClient {
    */
   public async getRouteNonTokenized(
     params: RouteNonTokenizedParams,
-  ): Promise<RouteData> {
+  ): Promise<NonTokenizedRouteData> {
     const url = "/shortcuts/route/nontokenized";
 
-    return this.request<RouteData>({
+    return this.request<NonTokenizedRouteData>({
       method: "GET",
       url,
       params,
@@ -439,13 +467,13 @@ export class EnsoClient {
    * Returns a standard matching the given `slug`, containing supported actions, exact `inputs`, and a list of chains the standard's supported on.
    *
    * @param {string} slug - The protocol slug
-   * @returns {Promise<StandardData[]>} Array of standard data
+   * @returns {Promise<ProtocolData>} Protocol data for the standard
    * @throws {Error} If the API request fails
    */
-  public async getStandardBySlug(slug: string): Promise<StandardData[]> {
+  public async getStandardBySlug(slug: string): Promise<ProtocolData> {
     const url = `/standards/${slug}`;
 
-    return this.request<StandardData[]>({
+    return this.request<ProtocolData>({
       method: "GET",
       url,
     });

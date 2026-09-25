@@ -34,6 +34,8 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+        env:
+          ENSO_API_KEY: ${{ secrets.ENSO_API_KEY }}
 
       - name: Run linting
         run: pnpm lint || echo "No lint script found"

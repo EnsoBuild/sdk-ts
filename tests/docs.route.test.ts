@@ -1,8 +1,13 @@
 import { Address, BundleAction, EnsoClient, RouteParams } from "../src";
 
+declare const process: { env: Record<string, string | undefined> };
+
+const apiKey =
+  process.env.ENSO_API_KEY ?? "56b3d1f4-5c59-4fc1-8998-16d001e277bc";
+
 describe("docs samples integration tests - route", () => {
   const client = new EnsoClient({
-    apiKey: "56b3d1f4-5c59-4fc1-8998-16d001e277bc",
+    apiKey,
   });
   beforeAll(() => {});
 
