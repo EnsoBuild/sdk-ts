@@ -180,6 +180,32 @@ const claim = await client.getCctpClaimTransaction({
 });
 ```
 
+### Typed NFT positions (opt-in)
+
+`getPositionRoute` uses the standards `action` for minting, top-ups, borrowing,
+repayment and redemption.
+CLMM minting uses a V3 `poolAddress` or V4 key parameters (`args.poolFee`,
+`args.tickSpacing`, optional `args.hook`, currencies from `assetsIn`) plus the chosen
+range. The backend computes the V4 pool ID. Existing NFTs use collection + token ID. Request
+`assetsIn` entries use `AssetInput`: `type` is optional and is resolved and
+validated by the backend. Native currency needs only its sentinel address and
+amount; a known ERC721 needs collection address and `tokenId`, without an amount.
+Explicit type declarations must match authoritative metadata. Unknown untyped
+contracts are rejected; NFT interface probe failure does not imply ERC20.
+Responses expose final `assetsOut` receipts with actual recipients and enum
+categories, plus affected `positions` with verified ERC721 owners/existence and
+CLMM `liquidity.before/after/delta`. Returning an unchanged NFT is custody
+preservation, so it does not create a receipt. Shared `AssetType`,
+`AssetOutputCategory`, `MeasurementCoverage` and `AssetTransferability` enums are
+exported by the SDK. Debt and health-factor reporting is a later milestone.
+
+The existing bundle endpoint accepts its action array and derives NFT funding
+from action declarations. Its typed response fields are additive; legacy
+`amountsOut` and output references remain compatible. Set `includeActionOutputs`
+to `true` for optional per-action receipts and position references. Final receipts
+exclude intermediate outputs spent later. Callback action detail requires an
+appropriate retained-state adapter and fails explicitly when unavailable.
+
 ### Non-Tokenized Positions
 
 Route to a non-tokenized position:

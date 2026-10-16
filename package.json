@@ -46,6 +46,7 @@
     "ts-jest": "^29.4.11",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "viem": "^2.55.2"
+    "viem": "^2.55.2",
+    "@ensofinance/shortcuts-builder": "0.3.20"
   }
 }

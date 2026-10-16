@@ -1,3 +1,25 @@
+import type {
+  AssetKind,
+  AssetAmount,
+  AssetReceipt,
+  PositionResult,
+  ActionResult,
+  TypedExecutionResult,
+} from "@ensofinance/shortcuts-builder/types";
+export type {
+  AssetKind,
+  AssetAmount,
+  AssetReceipt,
+  PositionResult,
+  ActionResult,
+  TypedExecutionResult,
+};
+export {
+  AssetType,
+  AssetOutputCategory,
+  AssetTransferability,
+  MeasurementCoverage,
+} from "@ensofinance/shortcuts-builder/types";
 // src/types.ts - Updated types to match OpenAPI specification
 
 /**
@@ -234,6 +256,8 @@ export type IntentResponse = {
  * Transaction that may need to be executed before the main shortcut transaction.
  */
 export type PreTransaction = {
+  assetType?: AssetKind;
+  tokenId?: string;
   type: "tokenApproval" | "requiredApproval";
   tx: Transaction;
   /** Token whose allowance is being set */
@@ -639,6 +663,7 @@ export type ProtocolData = {
  * Parameters for bundle creation.
  */
 export type BundleParams = {
+  includeActionOutputs?: boolean;
   /** Chain ID of the network to execute the transaction on */
   chainId: number;
   /** Ethereum address of the wallet to send the transaction from */
@@ -667,6 +692,9 @@ export type BundleParams = {
  * Bundle transaction data response.
  */
 export type BundleData = {
+  assetsOut?: AssetReceipt[];
+  positions?: PositionResult[];
+  actionOutputs?: ActionResult[];
   /** Array of actions in the bundle */
   bundle: BundleAction[];
   /** Gas estimate for the bundle */
@@ -1094,4 +1122,43 @@ export type CctpClaimData = {
   };
   /** Reason when not claimable */
   reason?: string;
+};
+
+type OptionalAssetKind<T extends { type: AssetKind }> = T extends unknown
+  ? Omit<T, "type"> & { type?: T["type"] }
+  : never;
+/** The backend resolves omitted types; explicit declarations must match authoritative metadata. */
+export type AssetInput = OptionalAssetKind<AssetAmount>;
+
+/** Opt-in position API. Instances are identified at runtime; catalog positionId is a market key. */
+export type PositionRouteRequest = {
+  includeActionOutputs?: boolean;
+  chainId: number;
+  fromAddress: Address;
+  routingStrategy: "router" | "ensowallet-v2";
+  action:
+    "deposit" | "borrow" | "repay" | "redeem" | "depositclmm" | "redeemclmm";
+  position: {
+    protocol: string;
+    positionId?: string;
+    collection?: Address;
+    tokenId?: string;
+    poolAddress?: Address;
+  };
+  assetsIn: AssetInput[];
+  receiver?: Address;
+  refundReceiver?: Address;
+  tokensOut?: Address[];
+  onBehalfOf?: Address;
+  minAmountsOut?: Record<Address, string>;
+  args?: Record<string, unknown>;
+};
+export type PositionRouteData = {
+  tx: { from: Address; to: Address; data: HexString; value: string };
+  preTransactions: PreTransaction[];
+  assetsOut: AssetReceipt[];
+  positions: PositionResult[];
+  actionOutputs?: ActionResult[];
+  gas: string;
+  blockNumber?: number;
 };

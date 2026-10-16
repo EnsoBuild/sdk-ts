@@ -95,3 +95,22 @@ export type {
 export type * from "./types/actions";
 
 export { EnsoClient } from "./client";
+
+export type {
+  AssetKind,
+  AssetAmount,
+  AssetInput,
+  PositionRouteRequest,
+  PositionRouteData,
+  AssetReceipt,
+  PositionResult,
+  ActionResult,
+  TypedExecutionResult,
+} from "./types/types";
+
+export {
+  AssetType,
+  AssetOutputCategory,
+  AssetTransferability,
+  MeasurementCoverage,
+} from "./types/types";

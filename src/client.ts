@@ -1,3 +1,4 @@
+import type { PositionRouteRequest, PositionRouteData } from "./types/types";
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import {
   ActionData,
@@ -333,6 +334,17 @@ export class EnsoClient {
       method: "GET",
       url,
       params,
+    });
+  }
+
+  /** Build and simulate a scoped position operation with typed assets. */
+  public async getPositionRoute(
+    request: PositionRouteRequest,
+  ): Promise<PositionRouteData> {
+    return this.request<PositionRouteData>({
+      method: "POST",
+      url: "/shortcuts/route/position",
+      data: request,
     });
   }
 
