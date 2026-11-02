@@ -291,7 +291,13 @@ export type PermitTransferFromAction = ProtocolAction<
 >;
 
 export type BridgeProtocol =
-  "ccip" | "relay" | "stargate" | "cctp" | "layerzero-teller";
+  | "ccip"
+  | "relay"
+  | "stargate"
+  | "cctp"
+  | "layerzero-teller"
+  | "arbitrum-native"
+  | "mayan";
 
 export type BridgeAction = ProtocolAction<
   "bridge",

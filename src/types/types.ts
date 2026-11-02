@@ -966,7 +966,14 @@ interface PaginatedResult {
 export type BridgeStatusParams = {
   /** Bridge protocol identifier */
   bridgeProtocol:
-    "layerzero" | "stargate" | "ccip" | "relay" | "cctp" | (string & {});
+    | "layerzero"
+    | "stargate"
+    | "ccip"
+    | "relay"
+    | "cctp"
+    | "arbitrum-native"
+    | "mayan"
+    | (string & {});
   /** Chain ID of the source transaction */
   chainId: number | string;
   /** Transaction hash on the source chain */
@@ -1016,6 +1023,10 @@ export type BridgeStatusData = {
   sourceChainEstimatedTimeForFinalitySeconds?: number;
   readyForManualExecution?: boolean;
   relayRequest?: unknown;
+  /** Mayan Swift order hash */
+  orderHash?: string;
+  /** Order status reported by the Mayan explorer, such as ORDER_SETTLED */
+  mayanStatus?: string;
   refundChainId?: number;
   refundTxHash?: string;
   transferType?: "fast" | "standard";
