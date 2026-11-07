@@ -116,6 +116,8 @@ export type RouteParams = {
   crosschainRouteMode?: CrosschainRouteMode;
   /** Latency/quality trade-off for pathfinding and aggregator querying */
   effort?: RouteEffort;
+  /** Route cross-chain requests through a destination intent address. Set to false to use a bridge callback instead */
+  useIntentAddress?: boolean;
   /** Flag that indicates if gained tokenOut should be sent to EOA (deprecated) */
   toEoa?: boolean;
   /** Referral code that will be included in an on-chain event */
