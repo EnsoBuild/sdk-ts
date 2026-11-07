@@ -184,6 +184,28 @@ export type Hop = {
   via?: "cctp-forwarder" | (string & {});
 };
 
+/**
+ * A single action inside a `detailedRoute` path.
+ */
+export type DetailedRouteStep = {
+  protocol: string;
+  action: string;
+  primaryAddress: Address;
+  tokenIn: Address | Address[];
+  tokenOut: Address | Address[];
+  args?: Record<string, any>;
+};
+
+/**
+ * A `detailedRoute` segment: input tokens, how each is split across paths, and the paths.
+ */
+export type DetailedRouteSegment = {
+  tokensIn: Address[];
+  /** Amounts of each input token sent down each path */
+  weights: Quantity[][];
+  paths: DetailedRouteStep[][];
+};
+
 export type BridgeLatencyEstimate = {
   fromChainId: number;
   toChainId: number;
@@ -289,7 +311,7 @@ export type RouteData = {
   /** Cross-chain intent published by the transaction, when applicable */
   intent?: IntentResponse;
   /** Detailed description of the route */
-  detailedRoute?: string[];
+  detailedRoute?: DetailedRouteSegment[];
   /** Transactions that may need to be executed before the main transaction */
   preTransactions?: PreTransaction[];
   /** Lower-bound source-chain transaction cost in native token base units, when includeTransactionCost is true */
