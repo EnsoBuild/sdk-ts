@@ -194,16 +194,17 @@ const claim = await client.getCctpClaimTransaction({
 
 ### Non-Tokenized Positions
 
-Route to a non-tokenized position:
+Route to a non-tokenized position. `positionOut` is a `positionId` from `getNonTokenizedPositions`:
 
 ```typescript
-// Example: Routing to a Morpho Blue USDC vault position
+// Example: Supplying USDC to a Morpho Blue market
 const nonTokenizedRoute = await ensoClient.getRouteNonTokenized({
   fromAddress: "0xYourAddress",
   chainId: 1,
-  tokenIn: ["0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"], // ETH
-  positionOut: "0xBEeFFF209270748ddd194831b3fa287a5386f5bC", // Morpho USDC vault
-  amountIn: ["1000000000000000000"], // 1 ETH
+  tokenIn: ["0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"], // USDC
+  positionOut:
+    "0x30a0da8cabf25a31805d9f3eca9005540e419f408beecf5cf715c67f3958ee55", // Morpho USDC/PENDLE-LPT market
+  amountIn: ["1000000000"], // 1000 USDC
   receiver: "0xYourAddress",
   slippage: "300", // 3%
   routingStrategy: "delegate",
