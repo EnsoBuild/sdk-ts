@@ -3,6 +3,7 @@ import {
   ActionData,
   ApproveData,
   ApproveParams,
+  AsyncRouteData,
   BalanceParams,
   BridgeStatusData,
   BridgeStatusParams,
@@ -165,12 +166,18 @@ export class EnsoClient {
    *   referralCode: '0123456789ABCDEF'
    * });
    */
+  public getRouteData(
+    params: RouteParams & { allowAsync: true },
+  ): Promise<AsyncRouteData>;
+  public getRouteData(
+    params: RouteParams | SolanaRouteParams,
+  ): Promise<RouteData>;
   public async getRouteData(
     params: RouteParams | SolanaRouteParams,
-  ): Promise<RouteData> {
+  ): Promise<RouteData | AsyncRouteData> {
     const url = "/shortcuts/route";
 
-    return this.request<RouteData>({
+    return this.request<RouteData | AsyncRouteData>({
       method: "GET",
       url,
       params,

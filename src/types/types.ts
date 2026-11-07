@@ -88,6 +88,8 @@ export type RouteParams = {
   executionMode?: ExecutionMode;
   /** Include source-chain transaction cost estimates in native units and USD */
   includeTransactionCost?: boolean;
+  /** Allow async redeems, where tokenOut is paid after the transaction. Cannot be combined with minAmountOut or useIntentAddress */
+  allowAsync?: boolean;
   /** Amount of tokenIn to swap in wei */
   amountIn: Quantity[];
   /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
@@ -346,6 +348,77 @@ export type RouteData = {
   transactionCost?: Quantity;
   /** USD value of transactionCost, when includeTransactionCost is true */
   transactionCostUsd?: string | null;
+};
+
+/**
+ * Contract call described by an async redeem.
+ */
+export type AsyncRedeemCall = {
+  contract: Address;
+  /** Human-readable function signature */
+  signature: string;
+};
+
+/**
+ * Payout of an async redeem: tokenOut is paid to the beneficiary after the transaction.
+ */
+export type AsyncRedeem = {
+  chainId: number;
+  tokenIn: Address;
+  amountIn: Quantity;
+  tokenOut: Address;
+  estimatedAmountOut: Quantity;
+  estimatedMinAmountOut: Quantity;
+  priceImpact?: number | null;
+  /** How the payout amount is priced */
+  pricing: "fixed" | "capped" | "atSettlement";
+  /** Address that receives tokenOut */
+  beneficiary: Address;
+  /** What represents the pending redeem */
+  claim: {
+    type: "erc721" | "erc1155" | "request" | "erc7540" | "account";
+    contract: Address;
+    transferable: boolean;
+    /** Event and argument that carry the claim id */
+    idFrom?: { event: string; arg: string };
+  };
+  /** How tokenOut reaches the beneficiary */
+  settlement: {
+    type: "push" | "claim";
+    by?: "holder" | "controller" | "anyone";
+    call?: AsyncRedeemCall;
+  };
+  timing?: {
+    kind: "delay" | "queue" | "epoch" | "operator";
+    minSeconds?: number;
+    estimatedSeconds?: number;
+    claimWindowSeconds?: number;
+  };
+  cancel?: AsyncRedeemCall & { by: "holder" | "controller" | "beneficiary" };
+  refund?: {
+    by: ("holder" | "controller" | "beneficiary" | "operator" | "automatic")[];
+    settlement: {
+      type: "push" | "claim" | "manual";
+      by?: "holder" | "controller" | "anyone";
+      call?: AsyncRedeemCall;
+    };
+  };
+  /** View call that reports the redeem status */
+  status?: AsyncRedeemCall;
+};
+
+/**
+ * Route response when `allowAsync` is true. An async route returns null amounts
+ * and price impact, and describes the payout in `async`.
+ */
+export type AsyncRouteData = Omit<
+  RouteData,
+  "amountOut" | "minAmountOut" | "priceImpact"
+> & {
+  amountOut: Quantity | Quantity[] | null;
+  minAmountOut?: Quantity | Quantity[] | null;
+  priceImpact?: number | null;
+  async?: AsyncRedeem;
 };
 
 /**
