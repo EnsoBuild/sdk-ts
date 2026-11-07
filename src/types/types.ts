@@ -674,6 +674,16 @@ export type ProtocolData = {
 };
 
 /**
+ * Protocol entry returned by `/protocols`, which names the project `projectId`.
+ */
+export type ProtocolListData = Omit<ProtocolData, "project" | "chains"> & {
+  /** Protocol project (category) */
+  projectId: string;
+  /** Supported chains for this protocol */
+  chains: (Network & { displayName: string | null })[] | null;
+};
+
+/**
  * Parameters for bundle creation.
  */
 export type BundleParams = {

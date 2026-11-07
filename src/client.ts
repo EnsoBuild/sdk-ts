@@ -30,6 +30,7 @@ import {
   PriceParams,
   Project,
   ProtocolData,
+  ProtocolListData,
   ProtocolParams,
   QuoteData,
   QuoteParams,
@@ -319,7 +320,7 @@ export class EnsoClient {
    * Returns all available protocols with supported chains.
    *
    * @param {ProtocolParams} [params] - Optional parameters for filtering protocols
-   * @returns {Promise<ProtocolData[]>} Array of protocol data
+   * @returns {Promise<ProtocolListData[]>} Array of protocol data
    * @throws {Error} If the API request fails
    *
    * @example
@@ -327,10 +328,10 @@ export class EnsoClient {
    */
   public async getProtocolData(
     params?: ProtocolParams,
-  ): Promise<ProtocolData[]> {
+  ): Promise<ProtocolListData[]> {
     const url = `/protocols`;
 
-    return this.request<ProtocolData[]>({
+    return this.request<ProtocolListData[]>({
       method: "GET",
       url,
       params,
