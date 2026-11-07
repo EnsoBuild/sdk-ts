@@ -136,7 +136,7 @@ export class EnsoClient {
     return this.request<ApproveData>({
       url,
       method: "GET",
-      params: { ...params, routingStrategy: "router" },
+      params: { routingStrategy: "router", ...params },
     });
   }
 

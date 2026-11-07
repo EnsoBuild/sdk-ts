@@ -384,6 +384,8 @@ export type ApproveParams = {
   chainId: number;
   /** Amount of tokens to approve in wei */
   amount: Quantity;
+  /** Routing strategy whose contract receives the allowance. Defaults to `router` */
+  routingStrategy?: RoutingStrategy;
 };
 
 /**
