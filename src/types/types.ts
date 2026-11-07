@@ -633,12 +633,14 @@ export type PriceData = {
   decimals: number;
   /** Token symbol */
   symbol: string;
-  /** Unix timestamp of the price */
+  /** Token name */
+  name?: string;
+  /** Unix timestamp of the price, in milliseconds */
   timestamp: number;
   /** Chain ID of the token */
   chainId: number;
-  /** Confidence level of the price (0-1) */
-  confidence: number;
+  /** @deprecated not returned by the API */
+  confidence?: number;
 };
 
 /**
