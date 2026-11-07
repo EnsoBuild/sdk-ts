@@ -1,4 +1,10 @@
-import { Address, EnsoClient, PriceData, RouteData } from "../src";
+import {
+  Address,
+  BridgeStatusData,
+  EnsoClient,
+  PriceData,
+  RouteData,
+} from "../src";
 
 const address = "0x0000000000000000000000000000000000000001" as Address;
 
@@ -58,5 +64,19 @@ describe("response types", () => {
     ] satisfies Awaited<ReturnType<EnsoClient["getProtocolData"]>>;
 
     expect(protocols[0].projectId).toBe("aave");
+  });
+
+  it("types arbitrum-native retryable ticket fields", () => {
+    const status = {
+      sourceChainId: 1,
+      sourceTxHash:
+        "0x1c9b58d69e3659de7bc939f623bb23dd3f1d091733e13cdaeee4378c8ce811c7",
+      status: "inflight",
+      destinationChainId: 42161,
+      retryableTicketId:
+        "0xe45dd652dcb73158df64ba755fa08d44117d36b9ad6e418223febffe53acfc67",
+    } satisfies BridgeStatusData;
+
+    expect(status.retryableTicketId).toBeDefined();
   });
 });

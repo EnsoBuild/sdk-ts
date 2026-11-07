@@ -1077,6 +1077,10 @@ export type BridgeStatusData = {
   mayanStatus?: string;
   refundChainId?: number;
   refundTxHash?: string;
+  /** Arbitrum retryable ticket created by a native deposit */
+  retryableTicketId?: string;
+  /** Unix timestamp in seconds after which the retryable ticket expires */
+  ticketExpiresAt?: number;
   transferType?: "fast" | "standard";
   delayReason?: string;
   forward?: unknown;
