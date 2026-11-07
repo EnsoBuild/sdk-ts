@@ -125,6 +125,34 @@ export type RouteParams = {
 };
 
 /**
+ * Solana address or token mint: Base58-encoded and case-sensitive.
+ */
+export type SolanaAddress = string;
+
+/**
+ * Parameters for an EVM to Solana route. These routes are delivered by Relay,
+ * take one input and one output, and reject explicit minAmountOut and destination fees.
+ */
+export type SolanaRouteParams = Omit<
+  RouteParams,
+  | "destinationChainId"
+  | "receiver"
+  | "tokenOut"
+  | "refundReceiver"
+  | "minAmountOut"
+  | "destinationFeeReceiver"
+> & {
+  /** Chain ID the API uses for Solana */
+  destinationChainId: 1861167595;
+  /** Solana recipient */
+  receiver: SolanaAddress;
+  /** Solana token mints. Native SOL is 11111111111111111111111111111111 */
+  tokenOut: SolanaAddress[];
+  /** Source-chain address that receives refunds. Required for Solana routes */
+  refundReceiver: Address;
+};
+
+/**
  * Represents a segment in a routing path.
  */
 export type RouteSegment = {

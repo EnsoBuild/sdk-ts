@@ -37,6 +37,7 @@ import {
   RouteData,
   RouteNonTokenizedParams,
   RouteParams,
+  SolanaRouteParams,
   StandardData,
   TokenParams,
   WalletBalance,
@@ -147,7 +148,7 @@ export class EnsoClient {
    * Calculates optimal transaction with the best route between two tokens, which may involve
    * several actions that interact with various DeFi protocols.
    *
-   * @param {RouteParams} params - Parameters for the route request
+   * @param {RouteParams | SolanaRouteParams} params - Parameters for the route request
    * @returns {Promise<RouteData>} Route execution data
    * @throws {Error} If the API request fails
    *
@@ -164,7 +165,9 @@ export class EnsoClient {
    *   referralCode: '0123456789ABCDEF'
    * });
    */
-  public async getRouteData(params: RouteParams): Promise<RouteData> {
+  public async getRouteData(
+    params: RouteParams | SolanaRouteParams,
+  ): Promise<RouteData> {
     const url = "/shortcuts/route";
 
     return this.request<RouteData>({
