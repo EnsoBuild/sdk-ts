@@ -113,7 +113,7 @@ const balances = await ensoClient.getBalances({
 Bundle multiple DeFi actions into a single transaction and use results between transactions.
 
 ```typescript
-// Example: Convert ETH to USDC then deposit into Aave V3
+// Example: Convert ETH to USDC, deposit into Aave V3, then send the aUSDC to the user
 const bundleData = await ensoClient.getBundleData(
   {
     fromAddress: "0xYourAddress",
@@ -136,11 +136,23 @@ const bundleData = await ensoClient.getBundleData(
       action: "deposit",
       args: {
         tokenIn: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // USDC
-        tokenOut: "0xbcca60bb61934080951369a648fb03df4f96263c", // aUSDC v3
+        tokenOut: "0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c", // aUSDC v3
         amountIn: {
           useOutputOfCallAt: 0, // Use output from the first action
         },
         primaryAddress: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2", // Aave V3 pool
+      },
+    },
+    {
+      // With `router`, deposit outputs stay in the router until transferred out
+      protocol: "erc20",
+      action: "transfer",
+      args: {
+        token: "0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c", // aUSDC v3
+        receiver: "0xYourAddress",
+        amount: {
+          useOutputOfCallAt: 1, // Use output from the deposit
+        },
       },
     },
   ],
