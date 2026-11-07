@@ -349,17 +349,18 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
     expect(bundle.tx.from).toBeDefined();
   });
 
-  it("ccipBridgeWithCallback - Bridge SolvBTC from BNB to Base and swap to ETH", async () => {
+  // the bnb -> base solvbtc ccip pool is rate-limited to 2 wei, so these use the bnb -> ethereum lane
+  it("ccipBridgeWithCallback - Bridge SolvBTC from BNB to Ethereum and swap to ETH", async () => {
     // Chain IDs
     const BNB_CHAIN_ID = 56;
-    const BASE_CHAIN_ID = 8453;
+    const ETHEREUM_ID = 1;
 
     // Common addresses
     const WALLET_ADDRESS = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
 
     // Token addresses
     const SOLVBTC_BNB = "0x4aae823a6a0b376De6A78e74eCC5b079d38cBCf7";
-    const SOLVBTC_BASE = "0x3B86Ad95859b6AB773f55f8d94B4b9d443EE931f";
+    const SOLVBTC_ETHEREUM = "0x7A56E1C57C7475CCf742a1832B028F0456652F97";
     const NATIVE_TOKEN = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 
     const client = new EnsoClient({
@@ -386,26 +387,26 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
           action: "bridge",
           args: {
             primaryAddress: ccipRouter.router,
-            destinationChainId: BASE_CHAIN_ID,
+            destinationChainId: ETHEREUM_ID,
             tokenIn: SOLVBTC_BNB,
             amountIn: "100000000000000", // 0.0001 SolvBTC
             receiver: WALLET_ADDRESS,
             callback: [
-              // Step 1: Check SolvBTC balance on Base after bridge
+              // Step 1: Check SolvBTC balance on Ethereum after bridge
               {
                 protocol: "enso",
                 action: "balance",
                 args: {
-                  token: SOLVBTC_BASE,
+                  token: SOLVBTC_ETHEREUM,
                 },
               },
-              // Step 2: Swap SolvBTC to native ETH on Base
+              // Step 2: Swap SolvBTC to native ETH on Ethereum
               {
                 protocol: "enso",
                 action: "route",
                 args: {
                   slippage: "100", // 1%
-                  tokenIn: SOLVBTC_BASE,
+                  tokenIn: SOLVBTC_ETHEREUM,
                   tokenOut: NATIVE_TOKEN,
                   amountIn: { useOutputOfCallAt: 0 },
                 },
@@ -433,10 +434,10 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
     expect(action.action).toBe("bridge");
   });
 
-  it("ccipBridgeSimple - Bridge SolvBTC from BNB to Base without callback", async () => {
+  it("ccipBridgeSimple - Bridge SolvBTC from BNB to Ethereum without callback", async () => {
     // Chain IDs
     const BNB_CHAIN_ID = 56;
-    const BASE_CHAIN_ID = 8453;
+    const ETHEREUM_ID = 1;
 
     // Common addresses
     const WALLET_ADDRESS = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
@@ -466,7 +467,7 @@ describeLiveBridging("docs samples integration tests - bridging", () => {
           action: "bridge",
           args: {
             primaryAddress: ccipRouter.router,
-            destinationChainId: BASE_CHAIN_ID,
+            destinationChainId: ETHEREUM_ID,
             tokenIn: SOLVBTC_BNB,
             amountIn: "100000000000000",
             receiver: WALLET_ADDRESS,
