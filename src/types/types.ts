@@ -25,6 +25,12 @@ export type ExecutionMode = "user" | "backend";
  */
 export type CrosschainRouteMode =
   "direct" | "source" | "destination" | "sourceOrDestination" | "full";
+
+/**
+ * Latency/quality trade-off for pathfinding and aggregator querying.
+ * `high` is the API default; `max` costs extra credits.
+ */
+export type RouteEffort = "light" | "medium" | "high" | "max";
 /**
  * Ethereum address format - must be a 42-character hexadecimal string starting with '0x'.
  * @example '0x123456789abcdef123456789abcdef1234567890'
@@ -108,6 +114,8 @@ export type RouteParams = {
   ignoreBridges?: string[];
   /** Controls cross-chain route complexity */
   crosschainRouteMode?: CrosschainRouteMode;
+  /** Latency/quality trade-off for pathfinding and aggregator querying */
+  effort?: RouteEffort;
   /** Flag that indicates if gained tokenOut should be sent to EOA (deprecated) */
   toEoa?: boolean;
   /** Referral code that will be included in an on-chain event */
@@ -312,6 +320,8 @@ export type QuoteParams = {
   ignoreAggregators?: string[];
   /** A list of standards to be ignored from consideration */
   ignoreStandards?: string[];
+  /** Latency/quality trade-off for aggregator querying */
+  effort?: RouteEffort;
 };
 
 /**
