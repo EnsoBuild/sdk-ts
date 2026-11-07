@@ -2,10 +2,12 @@ import { Address, BundleAction, EnsoClient, RouteParams } from "../src";
 
 declare const process: { env: Record<string, string | undefined> };
 
-const apiKey =
-  process.env.ENSO_API_KEY ?? "56b3d1f4-5c59-4fc1-8998-16d001e277bc";
+const apiKey = process.env.ENSO_API_KEY ?? "";
 
-describe("docs samples integration tests - route", () => {
+// live suites hit the prod api, so they need a key
+const describeLive = apiKey ? describe : describe.skip;
+
+describeLive("docs samples integration tests - route", () => {
   const client = new EnsoClient({
     apiKey,
   });

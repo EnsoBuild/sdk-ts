@@ -4,11 +4,12 @@ import { parseUnits } from "viem";
 
 declare const process: { env: Record<string, string | undefined> };
 
-const apiKey =
-  process.env.ENSO_API_KEY ?? "56b3d1f4-5c59-4fc1-8998-16d001e277bc";
+const apiKey = process.env.ENSO_API_KEY ?? "";
 
 const describeLiveBridging =
-  process.env.RUN_LIVE_BRIDGING_TESTS === "true" ? describe : describe.skip;
+  apiKey && process.env.RUN_LIVE_BRIDGING_TESTS === "true"
+    ? describe
+    : describe.skip;
 
 describeLiveBridging("docs samples integration tests - bridging", () => {
   it("mintErUsdCrossChainFromBerachain", async () => {
