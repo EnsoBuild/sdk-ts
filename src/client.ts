@@ -247,7 +247,8 @@ export class EnsoClient {
    */
   public async getTokenData(params: TokenParams): Promise<PaginatedTokenData> {
     const url = `/tokens`;
-    if (!params.page) {
+    // the api stops returning the next cursor when page is also sent
+    if (!params.page && params.cursor === undefined) {
       params.page = 1;
     }
 

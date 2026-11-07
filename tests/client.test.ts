@@ -269,6 +269,15 @@ describe("EnsoClient", () => {
       expect(mock.history.get[0].params.page).toBe(1);
     });
 
+    it("should not add a page when paginating by cursor", async () => {
+      mock.onGet("/tokens").reply(200, { data: [] });
+
+      await client.getTokenData({ chainId: 1, cursor: 16542260 });
+
+      expect(mock.history.get[0].params.cursor).toBe(16542260);
+      expect(mock.history.get[0].params.page).toBeUndefined();
+    });
+
     it("should get price data correctly", async () => {
       const mockPriceData = {
         price: "3600",
