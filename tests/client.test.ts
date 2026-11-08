@@ -125,6 +125,17 @@ describe("EnsoClient", () => {
       expect(mock.history.get[0].params.routingStrategy).toBe("router");
     });
 
+    it("should pass a caller routingStrategy through", async () => {
+      mock.onGet("/wallet/approve").reply(200, mockApproveData);
+
+      await client.getApprovalData({
+        ...approveParams,
+        routingStrategy: "ensowallet-v2",
+      });
+
+      expect(mock.history.get[0].params.routingStrategy).toBe("ensowallet-v2");
+    });
+
     it("should handle API errors gracefully", async () => {
       mock.onGet("/wallet/approve").reply(500, { error: "Server Error" });
 
@@ -256,6 +267,15 @@ describe("EnsoClient", () => {
 
       expect(result).toEqual(mockTokenResponse);
       expect(mock.history.get[0].params.page).toBe(1);
+    });
+
+    it("should not add a page when paginating by cursor", async () => {
+      mock.onGet("/tokens").reply(200, { data: [] });
+
+      await client.getTokenData({ chainId: 1, cursor: 16542260 });
+
+      expect(mock.history.get[0].params.cursor).toBe(16542260);
+      expect(mock.history.get[0].params.page).toBeUndefined();
     });
 
     it("should get price data correctly", async () => {

@@ -3,6 +3,7 @@ import {
   ActionData,
   ApproveData,
   ApproveParams,
+  AsyncRouteData,
   BalanceParams,
   BridgeStatusData,
   BridgeStatusParams,
@@ -30,12 +31,14 @@ import {
   PriceParams,
   Project,
   ProtocolData,
+  ProtocolListData,
   ProtocolParams,
   QuoteData,
   QuoteParams,
   RouteData,
   RouteNonTokenizedParams,
   RouteParams,
+  SolanaRouteParams,
   StandardData,
   TokenParams,
   WalletBalance,
@@ -136,7 +139,7 @@ export class EnsoClient {
     return this.request<ApproveData>({
       url,
       method: "GET",
-      params: { ...params, routingStrategy: "router" },
+      params: { routingStrategy: "router", ...params },
     });
   }
 
@@ -146,7 +149,7 @@ export class EnsoClient {
    * Calculates optimal transaction with the best route between two tokens, which may involve
    * several actions that interact with various DeFi protocols.
    *
-   * @param {RouteParams} params - Parameters for the route request
+   * @param {RouteParams | SolanaRouteParams} params - Parameters for the route request
    * @returns {Promise<RouteData>} Route execution data
    * @throws {Error} If the API request fails
    *
@@ -163,10 +166,18 @@ export class EnsoClient {
    *   referralCode: '0123456789ABCDEF'
    * });
    */
-  public async getRouteData(params: RouteParams): Promise<RouteData> {
+  public getRouteData(
+    params: RouteParams & { allowAsync: true },
+  ): Promise<AsyncRouteData>;
+  public getRouteData(
+    params: RouteParams | SolanaRouteParams,
+  ): Promise<RouteData>;
+  public async getRouteData(
+    params: RouteParams | SolanaRouteParams,
+  ): Promise<RouteData | AsyncRouteData> {
     const url = "/shortcuts/route";
 
-    return this.request<RouteData>({
+    return this.request<RouteData | AsyncRouteData>({
       method: "GET",
       url,
       params,
@@ -247,7 +258,8 @@ export class EnsoClient {
    */
   public async getTokenData(params: TokenParams): Promise<PaginatedTokenData> {
     const url = `/tokens`;
-    if (!params.page) {
+    // the api stops returning the next cursor when page is also sent
+    if (!params.page && params.cursor === undefined) {
       params.page = 1;
     }
 
@@ -318,7 +330,7 @@ export class EnsoClient {
    * Returns all available protocols with supported chains.
    *
    * @param {ProtocolParams} [params] - Optional parameters for filtering protocols
-   * @returns {Promise<ProtocolData[]>} Array of protocol data
+   * @returns {Promise<ProtocolListData[]>} Array of protocol data
    * @throws {Error} If the API request fails
    *
    * @example
@@ -326,10 +338,10 @@ export class EnsoClient {
    */
   public async getProtocolData(
     params?: ProtocolParams,
-  ): Promise<ProtocolData[]> {
+  ): Promise<ProtocolListData[]> {
     const url = `/protocols`;
 
-    return this.request<ProtocolData[]>({
+    return this.request<ProtocolListData[]>({
       method: "GET",
       url,
       params,

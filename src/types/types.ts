@@ -25,6 +25,12 @@ export type ExecutionMode = "user" | "backend";
  */
 export type CrosschainRouteMode =
   "direct" | "source" | "destination" | "sourceOrDestination" | "full";
+
+/**
+ * Latency/quality trade-off for pathfinding and aggregator querying.
+ * `high` is the API default; `max` costs extra credits.
+ */
+export type RouteEffort = "light" | "medium" | "high" | "max";
 /**
  * Ethereum address format - must be a 42-character hexadecimal string starting with '0x'.
  * @example '0x123456789abcdef123456789abcdef1234567890'
@@ -82,6 +88,8 @@ export type RouteParams = {
   executionMode?: ExecutionMode;
   /** Include source-chain transaction cost estimates in native units and USD */
   includeTransactionCost?: boolean;
+  /** Allow async redeems, where tokenOut is paid after the transaction. Cannot be combined with minAmountOut or useIntentAddress */
+  allowAsync?: boolean;
   /** Amount of tokenIn to swap in wei */
   amountIn: Quantity[];
   /** Slippage in basis points (1/10000). If specified, minAmountOut should not be specified */
@@ -108,10 +116,42 @@ export type RouteParams = {
   ignoreBridges?: string[];
   /** Controls cross-chain route complexity */
   crosschainRouteMode?: CrosschainRouteMode;
+  /** Latency/quality trade-off for pathfinding and aggregator querying */
+  effort?: RouteEffort;
+  /** Route cross-chain requests through a destination intent address. Set to false to use a bridge callback instead */
+  useIntentAddress?: boolean;
   /** Flag that indicates if gained tokenOut should be sent to EOA (deprecated) */
   toEoa?: boolean;
   /** Referral code that will be included in an on-chain event */
   referralCode?: string;
+};
+
+/**
+ * Solana address or token mint: Base58-encoded and case-sensitive.
+ */
+export type SolanaAddress = string;
+
+/**
+ * Parameters for an EVM to Solana route. These routes are delivered by Relay,
+ * take one input and one output, and reject explicit minAmountOut and destination fees.
+ */
+export type SolanaRouteParams = Omit<
+  RouteParams,
+  | "destinationChainId"
+  | "receiver"
+  | "tokenOut"
+  | "refundReceiver"
+  | "minAmountOut"
+  | "destinationFeeReceiver"
+> & {
+  /** Chain ID the API uses for Solana */
+  destinationChainId: 1861167595;
+  /** Solana recipient */
+  receiver: SolanaAddress;
+  /** Solana token mints. Native SOL is 11111111111111111111111111111111 */
+  tokenOut: SolanaAddress[];
+  /** Source-chain address that receives refunds. Required for Solana routes */
+  refundReceiver: Address;
 };
 
 /**
@@ -172,6 +212,28 @@ export type Hop = {
   positionOut?: string[];
   /** Off-chain settler for this hop, when it is descriptive metadata rather than an on-chain call */
   via?: "cctp-forwarder" | (string & {});
+};
+
+/**
+ * A single action inside a `detailedRoute` path.
+ */
+export type DetailedRouteStep = {
+  protocol: string;
+  action: string;
+  primaryAddress: Address;
+  tokenIn: Address | Address[];
+  tokenOut: Address | Address[];
+  args?: Record<string, any>;
+};
+
+/**
+ * A `detailedRoute` segment: input tokens, how each is split across paths, and the paths.
+ */
+export type DetailedRouteSegment = {
+  tokensIn: Address[];
+  /** Amounts of each input token sent down each path */
+  weights: Quantity[][];
+  paths: DetailedRouteStep[][];
 };
 
 export type BridgeLatencyEstimate = {
@@ -279,13 +341,84 @@ export type RouteData = {
   /** Cross-chain intent published by the transaction, when applicable */
   intent?: IntentResponse;
   /** Detailed description of the route */
-  detailedRoute?: string[];
+  detailedRoute?: DetailedRouteSegment[];
   /** Transactions that may need to be executed before the main transaction */
   preTransactions?: PreTransaction[];
   /** Lower-bound source-chain transaction cost in native token base units, when includeTransactionCost is true */
   transactionCost?: Quantity;
   /** USD value of transactionCost, when includeTransactionCost is true */
   transactionCostUsd?: string | null;
+};
+
+/**
+ * Contract call described by an async redeem.
+ */
+export type AsyncRedeemCall = {
+  contract: Address;
+  /** Human-readable function signature */
+  signature: string;
+};
+
+/**
+ * Payout of an async redeem: tokenOut is paid to the beneficiary after the transaction.
+ */
+export type AsyncRedeem = {
+  chainId: number;
+  tokenIn: Address;
+  amountIn: Quantity;
+  tokenOut: Address;
+  estimatedAmountOut: Quantity;
+  estimatedMinAmountOut: Quantity;
+  priceImpact?: number | null;
+  /** How the payout amount is priced */
+  pricing: "fixed" | "capped" | "atSettlement";
+  /** Address that receives tokenOut */
+  beneficiary: Address;
+  /** What represents the pending redeem */
+  claim: {
+    type: "erc721" | "erc1155" | "request" | "erc7540" | "account";
+    contract: Address;
+    transferable: boolean;
+    /** Event and argument that carry the claim id */
+    idFrom?: { event: string; arg: string };
+  };
+  /** How tokenOut reaches the beneficiary */
+  settlement: {
+    type: "push" | "claim";
+    by?: "holder" | "controller" | "anyone";
+    call?: AsyncRedeemCall;
+  };
+  timing?: {
+    kind: "delay" | "queue" | "epoch" | "operator";
+    minSeconds?: number;
+    estimatedSeconds?: number;
+    claimWindowSeconds?: number;
+  };
+  cancel?: AsyncRedeemCall & { by: "holder" | "controller" | "beneficiary" };
+  refund?: {
+    by: ("holder" | "controller" | "beneficiary" | "operator" | "automatic")[];
+    settlement: {
+      type: "push" | "claim" | "manual";
+      by?: "holder" | "controller" | "anyone";
+      call?: AsyncRedeemCall;
+    };
+  };
+  /** View call that reports the redeem status */
+  status?: AsyncRedeemCall;
+};
+
+/**
+ * Route response when `allowAsync` is true. An async route returns null amounts
+ * and price impact, and describes the payout in `async`.
+ */
+export type AsyncRouteData = Omit<
+  RouteData,
+  "amountOut" | "minAmountOut" | "priceImpact"
+> & {
+  amountOut: Quantity | Quantity[] | null;
+  minAmountOut?: Quantity | Quantity[] | null;
+  priceImpact?: number | null;
+  async?: AsyncRedeem;
 };
 
 /**
@@ -312,6 +445,8 @@ export type QuoteParams = {
   ignoreAggregators?: string[];
   /** A list of standards to be ignored from consideration */
   ignoreStandards?: string[];
+  /** Latency/quality trade-off for aggregator querying */
+  effort?: RouteEffort;
 };
 
 /**
@@ -372,6 +507,8 @@ export type ApproveParams = {
   chainId: number;
   /** Amount of tokens to approve in wei */
   amount: Quantity;
+  /** Routing strategy whose contract receives the allowance. Defaults to `router` */
+  routingStrategy?: RoutingStrategy;
 };
 
 /**
@@ -597,12 +734,14 @@ export type PriceData = {
   decimals: number;
   /** Token symbol */
   symbol: string;
-  /** Unix timestamp of the price */
+  /** Token name */
+  name?: string;
+  /** Unix timestamp of the price, in milliseconds */
   timestamp: number;
   /** Chain ID of the token */
   chainId: number;
-  /** Confidence level of the price (0-1) */
-  confidence: number;
+  /** @deprecated not returned by the API */
+  confidence?: number;
 };
 
 /**
@@ -633,6 +772,16 @@ export type ProtocolData = {
   logosUri: string[] | null;
   /** Supported chains for this protocol */
   chains: Network[] | null;
+};
+
+/**
+ * Protocol entry returned by `/protocols`, which names the project `projectId`.
+ */
+export type ProtocolListData = Omit<ProtocolData, "project" | "chains"> & {
+  /** Protocol project (category) */
+  projectId: string;
+  /** Supported chains for this protocol */
+  chains: (Network & { displayName: string | null })[] | null;
 };
 
 /**
@@ -860,8 +1009,6 @@ export interface NonTokenizedParams {
   protocolSlug?: string;
   /** Chain ID of the network of the nontokenized position */
   chainId?: number;
-  /** Chain ID of the destination network for cross-chain bridging */
-  destinationChainId?: number;
   /** Ethereum addresses of the nontokenized positions */
   address?: Address[];
   /** Ethereum addresses for contract interaction of nontokenized position */
@@ -1029,6 +1176,10 @@ export type BridgeStatusData = {
   mayanStatus?: string;
   refundChainId?: number;
   refundTxHash?: string;
+  /** Arbitrum retryable ticket created by a native deposit */
+  retryableTicketId?: string;
+  /** Unix timestamp in seconds after which the retryable ticket expires */
+  ticketExpiresAt?: number;
   transferType?: "fast" | "standard";
   delayReason?: string;
   forward?: unknown;
