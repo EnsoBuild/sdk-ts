@@ -46,6 +46,7 @@ import {
   StandardData,
   TokenData,
   TokenParams,
+  UserOperation,
   WalletBalance,
 } from "./types/types";
 
@@ -99,6 +100,7 @@ export type {
   StandardData,
   TokenData,
   TokenParams,
+  UserOperation,
   WalletBalance,
 };
 
