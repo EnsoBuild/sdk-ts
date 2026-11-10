@@ -1,12 +1,20 @@
 import {
   Address,
   BridgeStatusData,
+  BundleData,
   EnsoClient,
+  NonTokenizedRouteData,
   PriceData,
   RouteData,
+  UserOperation,
 } from "../src";
 
 const address = "0x0000000000000000000000000000000000000001" as Address;
+
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
 
 // fixtures are trimmed live api responses
 describe("response types", () => {
@@ -78,5 +86,18 @@ describe("response types", () => {
     } satisfies BridgeStatusData;
 
     expect(status.retryableTicketId).toBeDefined();
+  });
+
+  it("types userOp as an optional UserOperation", () => {
+    const checks = [
+      true satisfies Equal<BundleData["userOp"], UserOperation | undefined>,
+      true satisfies Equal<RouteData["userOp"], UserOperation | undefined>,
+      true satisfies Equal<
+        NonTokenizedRouteData["userOp"],
+        UserOperation | undefined
+      >,
+    ];
+
+    expect(checks).toEqual([true, true, true]);
   });
 });

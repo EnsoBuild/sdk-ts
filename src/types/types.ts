@@ -69,6 +69,42 @@ export type WalletTransaction = Omit<Transaction, "value"> & {
 };
 
 /**
+ * ERC-4337 user operation returned when the shortcut is built for a smart account.
+ */
+export type UserOperation = {
+  /** Smart account sending the operation */
+  sender: string;
+  /** Anti-replay nonce from the EntryPoint */
+  nonce: string;
+  /** Account factory, only set when the account is not deployed yet */
+  factory?: string;
+  /** Data passed to the account factory */
+  factoryData?: string;
+  /** Call data executed by the account */
+  callData: string;
+  /** Gas limit for the execution call */
+  callGasLimit: string;
+  /** Gas limit for the verification step */
+  verificationGasLimit: string;
+  /** Gas paid to the bundler on top of verification and execution */
+  preVerificationGas: string;
+  /** Maximum fee per gas */
+  maxFeePerGas: string;
+  /** Maximum priority fee per gas */
+  maxPriorityFeePerGas: string;
+  /** Paymaster sponsoring the operation */
+  paymaster?: string;
+  /** Gas limit for the paymaster verification step */
+  paymasterVerificationGasLimit?: string;
+  /** Gas limit for the paymaster post-operation step */
+  paymasterPostOpGasLimit?: string;
+  /** Data passed to the paymaster */
+  paymasterData?: string;
+  /** Signature over the user operation */
+  signature: string;
+};
+
+/**
  * Parameters for getting route data between two tokens.
  */
 export type RouteParams = {
@@ -342,6 +378,8 @@ export type RouteData = {
   intent?: IntentResponse;
   /** Detailed description of the route */
   detailedRoute?: DetailedRouteSegment[];
+  /** ERC-4337 user operation, present when `fromAddress` is an ERC-4337 account */
+  userOp?: UserOperation;
   /** Transactions that may need to be executed before the main transaction */
   preTransactions?: PreTransaction[];
   /** Lower-bound source-chain transaction cost in native token base units, when includeTransactionCost is true */
@@ -489,6 +527,8 @@ export type NonTokenizedRouteData = {
   feeAmount?: Quantity[];
   /** Enso fee amounts */
   ensoFeeAmount?: Quantity[];
+  /** ERC-4337 user operation, present when `fromAddress` is an ERC-4337 account */
+  userOp?: UserOperation;
   /** Estimated bridge durations for cross-chain routes */
   bridgingEstimates?: BridgeLatencyEstimate[];
   /** Unix timestamp in seconds after which the quote may expire */
@@ -834,6 +874,8 @@ export type BundleData = {
   priceImpact?: number | null;
   /** Fee amounts by token address */
   feeAmount?: Record<Address, Quantity>;
+  /** ERC-4337 user operation, present when `fromAddress` is an ERC-4337 account */
+  userOp?: UserOperation;
   /** @deprecated use `preTransactions` instead */
   approvals?: WalletTransaction[];
   /** Transactions that may need to be executed before the main transaction */
