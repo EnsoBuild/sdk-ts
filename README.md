@@ -192,6 +192,68 @@ const claim = await client.getCctpClaimTransaction({
 });
 ```
 
+### API v2: typed assets and positions
+
+`getBundleDataV2` takes the same query and actions as `getBundleData` and returns
+typed results instead of `amountsOut`, `minAmountsOut`, `approvals` and
+`bridgingEstimates`:
+
+- `assetsOut`: assets that reached an account outside the executor (fungible
+  amounts and ERC-721 receipts), with their recipient and category;
+- `positions`: positions created or changed, with owners, `measurements[]`
+  (e.g. CLMM liquidity, collateral) and `debts[]` before and after the transaction,
+  and how complete that measurement is (`coverage`);
+- `minAssetsOut`: on-chain enforced minimums per fungible asset and recipient;
+- `actionOutputs`: per requested action, with `includeActionOutputs: true`.
+
+v2 is single-chain and supports the `router`, `ensowallet-v2` and `delegate`
+strategies.
+
+```typescript
+const bundle = await client.getBundleDataV2(
+  { chainId: 1, fromAddress: "0x123...", routingStrategy: "router" },
+  [
+    {
+      protocol: "alchemix-vaults-v3",
+      action: "borrow",
+      args: {
+        primaryAddress: "0xAlchemist...",
+        tokenId: "271",
+        tokenOut: "0xalETH...",
+        amountOut: "1000000000000",
+        receiver: "0x123...",
+      },
+    },
+  ],
+);
+```
+
+`getPositionRouteV2` acts on one position and returns the same response. The
+`position` is a listed market (`positionId`, e.g. a Morpho market), a held NFT
+(`collection` + `tokenId`) or a new CLMM range (`collection` plus a V3
+`poolAddress`, or V4 pool-key `args`):
+
+```typescript
+const topUp = await client.getPositionRouteV2({
+  chainId: 1,
+  fromAddress: "0x123...",
+  routingStrategy: "ensowallet-v2",
+  action: "depositclmm",
+  position: {
+    protocol: "uniswap-v3",
+    collection: "0xC364...",
+    tokenId: "1371164",
+  },
+  assetsIn: [
+    { address: "0xC02a...", amount: "1000000000000000" },
+    { address: "0xdAC1...", amount: "5000000" },
+  ],
+});
+```
+
+Receiptless markets report `receipt: "none"` with `coverage.measurements`
+`notMeasured`. The v1 methods are unchanged.
+
 ### Non-Tokenized Positions
 
 Route to a non-tokenized position. `positionOut` is a `positionId` from `getNonTokenizedPositions`:

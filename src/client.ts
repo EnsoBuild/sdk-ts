@@ -1,4 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import type {
+  BundleDataV2,
+  BundleParamsV2,
+  PositionRouteData,
+  PositionRouteRequest,
+} from "./types/v2";
 import {
   ActionData,
   ApproveData,
@@ -59,6 +65,7 @@ const DEFAULT_BASE_URL = "https://api.enso.build/api/v1";
  */
 export class EnsoClient {
   private client: AxiosInstance;
+  private v2BaseURL: string;
 
   /**
    * Creates an instance of EnsoClient.
@@ -74,6 +81,8 @@ export class EnsoClient {
     baseURL?: string;
     apiKey: string;
   }) {
+    // v2 sits beside v1: `.../api/v1` -> `.../api/v2`.
+    this.v2BaseURL = baseURL.replace(/\/v1\/?$/, "/v2");
     this.client = axios.create({
       baseURL,
       headers: {
@@ -394,6 +403,39 @@ export class EnsoClient {
       url,
       params,
       data: actions,
+    });
+  }
+
+  /**
+   * Bundles actions with typed results (API v2): assets received, positions created or
+   * changed with measured state, and on-chain minimums, instead of `amountsOut`.
+   * Same request body as {@link getBundleData}; single-chain only.
+   */
+  public async getBundleDataV2(
+    params: BundleParamsV2,
+    actions: BundleAction[],
+  ): Promise<BundleDataV2> {
+    return this.request<BundleDataV2>({
+      method: "POST",
+      baseURL: this.v2BaseURL,
+      url: "/shortcuts/bundle",
+      params,
+      data: actions,
+    });
+  }
+
+  /**
+   * Creates, changes or redeems one position (API v2): a listed market, a held NFT or a new
+   * CLMM range. Runs on the v2 bundle pipeline and returns its typed response.
+   */
+  public async getPositionRouteV2(
+    request: PositionRouteRequest,
+  ): Promise<PositionRouteData> {
+    return this.request<PositionRouteData>({
+      method: "POST",
+      baseURL: this.v2BaseURL,
+      url: "/shortcuts/route/position",
+      data: request,
     });
   }
 

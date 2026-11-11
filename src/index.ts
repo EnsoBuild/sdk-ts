@@ -107,3 +107,32 @@ export type {
 export type * from "./types/actions";
 
 export { EnsoClient } from "./client";
+
+export type {
+  AssetKind,
+  AssetAmount,
+  AssetReceipt,
+  ScalarChange,
+  PositionMetric,
+  PositionMeasurement,
+  PositionDebt,
+  PositionReceipt,
+  PositionResult,
+  ActionResult,
+  MinAssetOut,
+  RoutingStrategyV2,
+  BundleParamsV2,
+  PreTransactionV2,
+  BundleDataV2,
+  AssetInput,
+  PositionReference,
+  PositionAction,
+  PositionRouteRequest,
+  PositionRouteData,
+} from "./types/v2";
+export {
+  AssetType,
+  AssetOutputCategory,
+  MeasurementCoverage,
+  AssetTransferability,
+} from "./types/v2";
