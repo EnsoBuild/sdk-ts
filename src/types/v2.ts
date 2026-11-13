@@ -73,7 +73,7 @@ export type PositionResult = {
   asset?:
     | { type: "erc721"; address: Address; tokenId: string }
     | { type: "erc20"; address: Address };
-  exists?: { before?: boolean; after?: boolean };
+  /** An NFT position's owner around the transaction; null when the token does not exist (minted after, burned before). */
   owner?: { before?: Address | null; after?: Address | null };
   measurements?: PositionMeasurement[];
   debts?: PositionDebt[];
