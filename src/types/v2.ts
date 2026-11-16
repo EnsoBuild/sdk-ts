@@ -1,6 +1,7 @@
 // API v2: typed assets, positions and per-action outputs. Mirrors the API's v2 response schema.
 import type {
   Address,
+  AsyncRedeem,
   BundleData,
   BundleParams,
   PreTransaction,
@@ -28,6 +29,8 @@ export enum AssetOutputCategory {
   Refund = "refund",
   Transfer = "transfer",
   Swap = "swap",
+  /** A redeem request's queued withdrawal, held until it settles. */
+  Claim = "claim",
 }
 export enum MeasurementCoverage {
   Complete = "complete",
@@ -135,9 +138,9 @@ export type AssetInput =
 
 /** Which position a request acts on. */
 export type PositionReference =
-  /** A listed market (ERC-20 receipt, receiptless, or an NFT market with an optional held id). */
+  /** A listed market (ERC-20 receipt, receiptless, or an NFT market with an optional held id); `protocol` is looked up when omitted. */
   | {
-      protocol: string;
+      protocol?: string;
       positionId: string;
       collection?: Address;
       tokenId?: string;
@@ -160,8 +163,19 @@ export type PositionReference =
       tokenId?: never;
     };
 
+/** Each protocol supports a subset; an unsupported one is refused with a 400. */
 export type PositionAction =
-  "deposit" | "borrow" | "repay" | "redeem" | "depositclmm" | "redeemclmm";
+  | "deposit"
+  | "depositwithestimate"
+  | "depositclmm"
+  | "withdraw"
+  | "redeem"
+  | "redeemwithestimate"
+  | "redeemclmm"
+  | "requestredeem"
+  | "borrow"
+  | "repay"
+  | "harvest";
 
 export type PositionRouteRequest = {
   chainId: number;
@@ -180,6 +194,32 @@ export type PositionRouteRequest = {
   /** Action arguments (e.g. `amountOut`, `ticks`, `liquidity`); identity keys are refused. */
   args?: Record<string, unknown>;
   includeActionOutputs?: boolean;
+  /** Slippage in basis points for the swaps that fund or unwind the position. */
+  slippage?: string;
+  fee?: string[];
+  feeReceiver?: Address;
+  referralCode?: string;
+  ignoreAggregators?: string[];
+  ignoreStandards?: string[];
+  spender?: Address;
+  /** v2 is single-chain: when given, it must equal `chainId`. */
+  destinationChainId?: number;
+};
+/** What a deposit received, in deposit-token order. */
+export type DepositedAsset = {
+  chainId: number;
+  type: "native" | "erc20";
+  address: Address;
+  amount: string;
+  /** The least the deposit receives, enforced on chain; absent when nothing bounds it. */
+  minAmount?: string;
+  /** The amount in the protocol's own precision, where it differs. */
+  protocolAmount?: string;
 };
 /** The v2 bundle response; positions carry their market identity and receipt class. */
-export type PositionRouteData = BundleDataV2;
+export type PositionRouteData = BundleDataV2 & {
+  /** Deposits only. */
+  assetsDeposited?: DepositedAsset[];
+  /** `requestredeem` only: the estimated payout, the claim and how it settles. */
+  asyncRedeem?: AsyncRedeem;
+};

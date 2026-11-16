@@ -129,6 +129,7 @@ export type {
   PositionAction,
   PositionRouteRequest,
   PositionRouteData,
+  DepositedAsset,
 } from "./types/v2";
 export {
   AssetType,

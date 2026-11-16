@@ -1,9 +1,11 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { EnsoClient } from "../src/client";
+import { AssetOutputCategory } from "../src/types/v2";
 import type {
   BundleDataV2,
   PositionReference,
+  PositionRouteData,
   PositionRouteRequest,
 } from "../src/types/v2";
 
@@ -103,6 +105,7 @@ describe("API v2", () => {
   test("a position is a listed market, a held NFT or a new range", () => {
     const valid: PositionReference[] = [
       { protocol: "morpho-markets-v1", positionId: "0xmarket" },
+      { positionId: "0xmarket" },
       {
         protocol: "alchemix-vaults-v3",
         positionId: "0xalchemist",
@@ -122,6 +125,45 @@ describe("API v2", () => {
     const bare = { protocol: "uniswap-v3" } as const;
     // @ts-expect-error a position needs a market or a collection
     const nothing: PositionReference = bare;
-    expect([...valid, heldWithPool, nothing]).toHaveLength(6);
+    expect([...valid, heldWithPool, nothing]).toHaveLength(7);
+  });
+
+  test("a redeem request sends its swap options and reads its claim and payout", async () => {
+    const client = new EnsoClient({ apiKey: "local-fixture" });
+    const queue = "0x3333333333333333333333333333333333333333";
+    const body: PositionRouteRequest = {
+      chainId: 1,
+      fromAddress: owner,
+      routingStrategy: "router",
+      action: "requestredeem",
+      position: { positionId: "0xteller" },
+      assetsIn: [{ address: collection, amount: "1000" }],
+      tokensOut: [owner],
+      slippage: "30",
+      referralCode: "ref",
+      ignoreAggregators: ["paraswap"],
+    };
+    const response = {
+      assetsOut: [
+        {
+          chainId: 1,
+          type: "erc721",
+          address: queue,
+          tokenId: "12",
+          recipient: owner,
+          category: AssetOutputCategory.Claim,
+        },
+      ],
+      minAssetsOut: [],
+      positions: [],
+      asyncRedeem: { estimatedAmountOut: "990" },
+    };
+    mock
+      .onPost("https://api.enso.build/api/v2/shortcuts/route/position")
+      .reply(200, response);
+    const quote: PositionRouteData = await client.getPositionRouteV2(body);
+    expect(JSON.parse(mock.history.post[0].data)).toEqual(body);
+    expect(quote.assetsOut[0].category).toBe("claim");
+    expect(quote.asyncRedeem).toEqual({ estimatedAmountOut: "990" });
   });
 });
