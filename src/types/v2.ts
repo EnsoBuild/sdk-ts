@@ -52,6 +52,8 @@ export type AssetReceipt = AssetAmount & {
   /** Index into `positions` of the position this asset came from. */
   positionIndex?: number;
   transferability?: AssetTransferability;
+  /** Fungible only: the minimum enforced on chain for this row. */
+  minAmount?: string;
 };
 /** Values before and after the whole transaction; absent when a read failed. */
 export type ScalarChange = { before?: string; after?: string; delta?: string };
@@ -63,6 +65,16 @@ export type PositionMeasurement = ScalarChange & {
 };
 export type PositionDebt = ScalarChange & {
   asset: { type: "erc20"; address: Address };
+};
+/** What entered a position, per fungible token. */
+export type PositionAssetIn = {
+  type: "native" | "erc20";
+  address: Address;
+  amount: string;
+  /** The least the deposit receives, enforced on chain (a zap leg); absent when nothing bounds it. */
+  minAmount?: string;
+  /** The amount in the protocol's own precision, where it differs. */
+  protocolAmount?: string;
 };
 /** How the position is held: an ERC-20 receipt, an NFT, or a ledger entry without a token. */
 export type PositionReceipt = "erc20" | "erc721" | "none";
@@ -78,6 +90,8 @@ export type PositionResult = {
     | { type: "erc20"; address: Address };
   /** An NFT position's owner around the transaction; null when the token does not exist (minted after, burned before). */
   owner?: { before?: Address | null; after?: Address | null };
+  /** What the transaction put into the position; absent when it was not measured. */
+  assetsIn?: PositionAssetIn[];
   measurements?: PositionMeasurement[];
   debts?: PositionDebt[];
   coverage?: {
@@ -96,12 +110,6 @@ export type ActionResult = {
   assetsOut: AssetReceipt[];
   positionIndexes: number[];
 };
-/** A minimum enforced on chain for one fungible asset at one account. */
-export type MinAssetOut = Extract<AssetAmount, { type: "native" | "erc20" }> & {
-  chainId: number;
-  recipient: Address;
-};
-
 export type RoutingStrategyV2 = "router" | "ensowallet-v2" | "delegate";
 
 /** Same query as v1 bundles; v2 is single-chain and drops the legacy strategies. */
@@ -125,7 +133,6 @@ export type BundleDataV2 = Omit<
   | "preTransactions"
 > & {
   preTransactions?: PreTransactionV2[];
-  minAssetsOut: MinAssetOut[];
   assetsOut: AssetReceipt[];
   positions: PositionResult[];
   actionOutputs?: ActionResult[];
@@ -205,21 +212,8 @@ export type PositionRouteRequest = {
   /** v2 is single-chain: when given, it must equal `chainId`. */
   destinationChainId?: number;
 };
-/** What a deposit received, in deposit-token order. */
-export type DepositedAsset = {
-  chainId: number;
-  type: "native" | "erc20";
-  address: Address;
-  amount: string;
-  /** The least the deposit receives, enforced on chain; absent when nothing bounds it. */
-  minAmount?: string;
-  /** The amount in the protocol's own precision, where it differs. */
-  protocolAmount?: string;
-};
 /** The v2 bundle response; positions carry their market identity and receipt class. */
 export type PositionRouteData = BundleDataV2 & {
-  /** Deposits only. */
-  assetsDeposited?: DepositedAsset[];
   /** `requestredeem` only: the estimated payout, the claim and how it settles. */
   asyncRedeem?: AsyncRedeem;
 };

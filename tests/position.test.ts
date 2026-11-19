@@ -38,7 +38,6 @@ describe("API v2", () => {
     };
     const response = {
       assetsOut: [],
-      minAssetsOut: [],
       positions: [
         {
           chainId: 1,
@@ -71,7 +70,6 @@ describe("API v2", () => {
     const response = {
       assetsOut: [],
       positions: [],
-      minAssetsOut: [],
     } as unknown as BundleDataV2;
     mock
       .onPost("http://127.0.0.1:31251/api/v2/shortcuts/bundle")
@@ -154,7 +152,6 @@ describe("API v2", () => {
           category: AssetOutputCategory.Claim,
         },
       ],
-      minAssetsOut: [],
       positions: [],
       asyncRedeem: { estimatedAmountOut: "990" },
     };

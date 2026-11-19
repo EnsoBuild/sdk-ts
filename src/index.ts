@@ -119,7 +119,6 @@ export type {
   PositionReceipt,
   PositionResult,
   ActionResult,
-  MinAssetOut,
   RoutingStrategyV2,
   BundleParamsV2,
   PreTransactionV2,
@@ -129,7 +128,7 @@ export type {
   PositionAction,
   PositionRouteRequest,
   PositionRouteData,
-  DepositedAsset,
+  PositionAssetIn,
 } from "./types/v2";
 export {
   AssetType,

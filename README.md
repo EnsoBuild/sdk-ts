@@ -199,11 +199,11 @@ typed results instead of `amountsOut`, `minAmountsOut`, `approvals` and
 `bridgingEstimates`:
 
 - `assetsOut`: assets that reached an account outside the executor (fungible
-  amounts and ERC-721 receipts), with their recipient and category;
-- `positions`: positions created or changed, with owners, `measurements[]`
-  (e.g. CLMM liquidity, collateral) and `debts[]` before and after the transaction,
-  and how complete that measurement is (`coverage`);
-- `minAssetsOut`: on-chain enforced minimums per fungible asset and recipient;
+  amounts and ERC-721 receipts), with their recipient, category and, where one is
+  enforced on chain, their `minAmount`;
+- `positions`: positions created or changed, with owners, what went into them
+  (`assetsIn`), `measurements[]` (e.g. CLMM liquidity, collateral) and `debts[]`
+  before and after the transaction, and how complete that measurement is (`coverage`);
 - `actionOutputs`: per requested action, with `includeActionOutputs: true`.
 
 v2 is single-chain and supports the `router`, `ensowallet-v2` and `delegate`
