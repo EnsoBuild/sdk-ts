@@ -119,6 +119,8 @@ export type BundleParamsV2 = Omit<BundleParams, "routingStrategy"> & {
   routingStrategy?: RoutingStrategyV2;
   /** Per requested action outputs in `actionOutputs`. */
   includeActionOutputs?: boolean;
+  /** Measures what went into positions whose input amounts are only known at execution (swap-funded deposits); two extra simulations per measured action, charged as extra compute units. */
+  measureAssetsIn?: boolean;
 };
 export type PreTransactionV2 = PreTransaction & {
   assetType?: AssetKind;
@@ -203,6 +205,8 @@ export type PositionRouteRequest = {
   /** Action arguments (e.g. `amountOut`, `ticks`, `liquidity`); identity keys are refused. */
   args?: Record<string, unknown>;
   includeActionOutputs?: boolean;
+  /** Measures what went into the position when its input amounts are only known at execution (swap-funded deposits); two extra simulations, charged as extra compute units. */
+  measureAssetsIn?: boolean;
   /** Slippage in basis points for the swaps that fund or unwind the position. */
   slippage?: string;
   fee?: string[];

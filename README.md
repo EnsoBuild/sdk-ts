@@ -206,6 +206,12 @@ typed results instead of `amountsOut`, `minAmountsOut`, `approvals` and
   before and after the transaction, and how complete that measurement is (`coverage`);
 - `actionOutputs`: per requested action, with `includeActionOutputs: true`.
 
+`assetsIn` is reported whenever it is exact without extra work (fixed amounts,
+top-ups, repays). When a deposit is funded by a swap, its amounts are only known at
+execution: pass `measureAssetsIn: true` to measure them (two extra simulations per
+measured action, charged as extra compute units); otherwise `coverage.assetsIn` is
+`notMeasured`.
+
 v2 is single-chain and supports the `router`, `ensowallet-v2` and `delegate`
 strategies.
 
