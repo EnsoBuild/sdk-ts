@@ -202,7 +202,7 @@ typed results instead of `amountsOut`, `minAmountsOut`, `approvals` and
   amounts and ERC-721 receipts), with their recipient, category and, where one is
   enforced on chain, their `minAmount`;
 - `positions`: positions created or changed, with owners, what went into them
-  (`assetsIn`), `measurements[]` (e.g. CLMM liquidity, collateral) and `debts[]`
+  (`assetsIn`, exact; `coverage.assetsIn` says whether it is complete), `measurements[]` (e.g. CLMM liquidity, collateral) and `debts[]`
   before and after the transaction, and how complete that measurement is (`coverage`);
 - `actionOutputs`: per requested action, with `includeActionOutputs: true`.
 

@@ -90,13 +90,15 @@ export type PositionResult = {
     | { type: "erc20"; address: Address };
   /** An NFT position's owner around the transaction; null when the token does not exist (minted after, burned before). */
   owner?: { before?: Address | null; after?: Address | null };
-  /** What the transaction put into the position; absent when it was not measured. */
+  /** What the transaction put into the position, exact; see `coverage.assetsIn`. */
   assetsIn?: PositionAssetIn[];
   measurements?: PositionMeasurement[];
   debts?: PositionDebt[];
   coverage?: {
     measurements?: MeasurementCoverage;
     rewards?: MeasurementCoverage;
+    /** `complete`: `assetsIn` is exact; `partial`: it lists only what is known; `notMeasured`: tokens went in but no amount is known; `notApplicable`: nothing went in. */
+    assetsIn?: MeasurementCoverage;
   };
 };
 /** One requested action's gross outputs (`includeActionOutputs`). */
