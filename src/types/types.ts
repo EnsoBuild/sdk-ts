@@ -116,6 +116,12 @@ export type RouteParams = {
   spender?: Address;
   /** Ethereum address that receives dust/refunds from route execution */
   refundReceiver?: Address;
+  /** Ethereum address that receives the unused part of a bridge fee (Stargate, CCIP, LayerZero Teller, Arbitrum native). Defaults to refundReceiver */
+  bridgeFeeRefundReceiver?: Address;
+  /** Ethereum address that receives bridged funds refunded on the source chain (Relay, Mayan). Defaults to refundReceiver, then spender, then fromAddress */
+  sourceBridgeRefundReceiver?: Address;
+  /** Ethereum address that receives bridged funds refunded on the destination chain (intents, Stargate and CCIP callbacks, Arbitrum native). Defaults to receiver, and on intents to refundReceiver, then receiver */
+  destinationBridgeRefundReceiver?: Address;
   /** Chain ID of the network to execute the transaction on */
   chainId: number;
   /** Chain ID of the destination network for cross-chain bridging */
@@ -177,6 +183,7 @@ export type SolanaRouteParams = Omit<
   | "receiver"
   | "tokenOut"
   | "refundReceiver"
+  | "destinationBridgeRefundReceiver"
   | "minAmountOut"
   | "destinationFeeReceiver"
 > & {
@@ -842,6 +849,12 @@ export type BundleParams = {
   spender?: Address;
   /** Ethereum address that receives dust/refunds from bundle execution */
   refundReceiver?: Address;
+  /** Ethereum address that receives the unused part of a bridge fee (Stargate, CCIP, LayerZero Teller, Arbitrum native). Defaults to refundReceiver, applies to every bridge in the bundle */
+  bridgeFeeRefundReceiver?: Address;
+  /** Ethereum address that receives bridged funds refunded on the source chain (Relay, Mayan). Defaults to refundReceiver, then spender, then fromAddress */
+  sourceBridgeRefundReceiver?: Address;
+  /** Ethereum address that receives bridged funds refunded on the destination chain (intents, Stargate and CCIP callbacks, Arbitrum native). Defaults to receiver, and on intents to refundReceiver, then receiver */
+  destinationBridgeRefundReceiver?: Address;
   /** A list of swap aggregators to be ignored from consideration */
   ignoreAggregators?: string[];
   /** Referral code that will be included in an on-chain event */
