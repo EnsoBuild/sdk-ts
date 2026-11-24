@@ -65,14 +65,14 @@ describe("API v2", () => {
   test("v2 bundles keep the v1 body and query beside a custom v1 base URL", async () => {
     const client = new EnsoClient({
       apiKey: "local-fixture",
-      baseURL: "http://127.0.0.1:31251/api/v1",
+      baseURL: "http://127.0.0.1:3000/api/v1",
     });
     const response = {
       assetsOut: [],
       positions: [],
     } as unknown as BundleDataV2;
     mock
-      .onPost("http://127.0.0.1:31251/api/v2/shortcuts/bundle")
+      .onPost("http://127.0.0.1:3000/api/v2/shortcuts/bundle")
       .reply(200, response);
     const actions = [
       {
@@ -161,6 +161,65 @@ describe("API v2", () => {
     const quote: PositionRouteData = await client.getPositionRouteV2(body);
     expect(JSON.parse(mock.history.post[0].data)).toEqual(body);
     expect(quote.assetsOut[0].category).toBe("claim");
+    expect(quote.assetsOut[0].category === "claim").toBe(true);
     expect(quote.asyncRedeem).toEqual({ estimatedAmountOut: "990" });
+  });
+
+  test("custom non-/v1 baseURL requires explicit v2BaseURL for v2 calls", async () => {
+    const gatewayClient = new EnsoClient({
+      apiKey: "local-fixture",
+      baseURL: "https://gw.example.com/enso",
+    });
+    await expect(
+      gatewayClient.getBundleDataV2(
+        { chainId: 1, fromAddress: owner, routingStrategy: "router" },
+        [],
+      ),
+    ).rejects.toThrow(/v2BaseURL/);
+
+    const explicitClient = new EnsoClient({
+      apiKey: "local-fixture",
+      baseURL: "https://gw.example.com/enso",
+      v2BaseURL: "https://gw.example.com/enso-v2",
+    });
+    const response = {
+      assetsOut: [],
+      positions: [
+        {
+          chainId: 1,
+          receipt: "erc721",
+          coverage: { assetsIn: "notMeasured" },
+        },
+      ],
+    } as unknown as BundleDataV2;
+    mock
+      .onPost("https://gw.example.com/enso-v2/shortcuts/bundle")
+      .reply(200, response);
+    const out = await explicitClient.getBundleDataV2(
+      { chainId: 1, fromAddress: owner, routingStrategy: "router" },
+      [
+        {
+          protocol: "uniswap-v3",
+          action: "depositclmm",
+          args: {
+            tokenIn: [collection],
+            tokenOut: collection,
+            amountIn: ["100"],
+            tokenId: "7",
+          },
+        },
+        {
+          protocol: "boring-vault",
+          action: "requestredeem",
+          args: {
+            tokenIn: collection,
+            tokenOut: owner,
+            amountIn: "100",
+            primaryAddress: collection,
+          },
+        },
+      ],
+    );
+    expect(out.positions[0].coverage?.assetsIn === "notMeasured").toBe(true);
   });
 });

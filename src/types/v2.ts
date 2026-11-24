@@ -47,11 +47,11 @@ export enum AssetTransferability {
 export type AssetReceipt = AssetAmount & {
   chainId: number;
   recipient: Address;
-  category?: AssetOutputCategory;
+  category?: `${AssetOutputCategory}`;
   labels?: string[];
   /** Index into `positions` of the position this asset came from. */
   positionIndex?: number;
-  transferability?: AssetTransferability;
+  transferability?: `${AssetTransferability}`;
   /** Fungible only: the minimum enforced on chain for this row. */
   minAmount?: string;
 };
@@ -95,10 +95,10 @@ export type PositionResult = {
   measurements?: PositionMeasurement[];
   debts?: PositionDebt[];
   coverage?: {
-    measurements?: MeasurementCoverage;
-    rewards?: MeasurementCoverage;
+    measurements?: `${MeasurementCoverage}`;
+    rewards?: `${MeasurementCoverage}`;
     /** `complete`: `assetsIn` is exact; `partial`: it lists only what is known; `notMeasured`: tokens went in but no amount is known; `notApplicable`: nothing went in. */
-    assetsIn?: MeasurementCoverage;
+    assetsIn?: `${MeasurementCoverage}`;
   };
 };
 /** One requested action's gross outputs (`includeActionOutputs`). */

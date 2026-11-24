@@ -65,30 +65,46 @@ const DEFAULT_BASE_URL = "https://api.enso.build/api/v1";
  */
 export class EnsoClient {
   private client: AxiosInstance;
-  private v2BaseURL: string;
+  private v2BaseURL?: string;
 
   /**
    * Creates an instance of EnsoClient.
    *
    * @param {Object} config - Configuration object
    * @param {string} config.apiKey - API key for authentication (required)
-   * @param {string} [config.baseURL] - Base URL for the API (optional, defaults to production URL)
+   * @param {string} [config.baseURL] - Base URL for the v1 API (optional, defaults to production URL)
+   * @param {string} [config.v2BaseURL] - Base URL for the v2 API (optional; derived from `baseURL` when it ends in `/v1`)
    */
   constructor({
     baseURL = DEFAULT_BASE_URL,
+    v2BaseURL,
     apiKey,
   }: {
     baseURL?: string;
+    v2BaseURL?: string;
     apiKey: string;
   }) {
     // v2 sits beside v1: `.../api/v1` -> `.../api/v2`.
-    this.v2BaseURL = baseURL.replace(/\/v1\/?$/, "/v2");
+    this.v2BaseURL =
+      v2BaseURL ??
+      (/\/v1\/?$/.test(baseURL)
+        ? baseURL.replace(/\/v1\/?$/, "/v2")
+        : undefined);
     this.client = axios.create({
       baseURL,
       headers: {
         Authorization: `Bearer ${apiKey}`,
       },
     });
+  }
+
+  private requireV2BaseURL(): string {
+    if (!this.v2BaseURL) {
+      throw new Error(
+        "Cannot derive v2BaseURL from baseURL; pass v2BaseURL explicitly or use a baseURL ending in /v1",
+      );
+    }
+    return this.v2BaseURL;
   }
 
   /**
@@ -417,7 +433,7 @@ export class EnsoClient {
   ): Promise<BundleDataV2> {
     return this.request<BundleDataV2>({
       method: "POST",
-      baseURL: this.v2BaseURL,
+      baseURL: this.requireV2BaseURL(),
       url: "/shortcuts/bundle",
       params,
       data: actions,
@@ -433,7 +449,7 @@ export class EnsoClient {
   ): Promise<PositionRouteData> {
     return this.request<PositionRouteData>({
       method: "POST",
-      baseURL: this.v2BaseURL,
+      baseURL: this.requireV2BaseURL(),
       url: "/shortcuts/route/position",
       data: request,
     });

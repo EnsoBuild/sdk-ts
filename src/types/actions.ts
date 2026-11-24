@@ -120,20 +120,26 @@ export type MultiOutSingleDepositAction = ProtocolAction<
   "multioutsingledeposit",
   Omit<SingleDepositArgs, "tokenOut"> & { tokenOut: Address[] }
 >;
+export type DepositWithEstimateAction = ProtocolAction<
+  "depositwithestimate",
+  DepositArgs
+>;
 export type DepositCLMMAction = ProtocolAction<
   "depositclmm",
-  WithReceiver & {
-    tokenIn: Address[];
-    tokenOut: Address;
-    amountIn: AmountArg[];
-    /** Lower and upper ticks for the concentrated liquidity position. */
-    ticks: [Quantity, Quantity] | Quantity[];
-    poolFee?: Quantity;
-    /** Tick spacing for CLMMs that derive pools from spacing rather than fee. */
-    tickSpacing?: Quantity;
-    /** Hook contract for hook-enabled CLMMs. */
-    hook?: Address;
-  }
+  WithReceiver &
+    WithOptionalTokenId & {
+      tokenIn: Address[];
+      tokenOut: Address;
+      amountIn: AmountArg[];
+      /** Lower and upper ticks for creating a new concentrated liquidity position. */
+      ticks?: [Quantity, Quantity] | Quantity[];
+      poolFee?: Quantity;
+      /** Tick spacing for CLMMs that derive pools from spacing rather than fee. */
+      tickSpacing?: Quantity;
+      /** Hook contract for hook-enabled CLMMs. */
+      hook?: Address;
+      primaryAddress?: Address;
+    }
 >;
 
 type RedeemArgs = WithReceiver &
@@ -162,6 +168,11 @@ type MultiRedeemArgs = Omit<
 };
 
 export type RedeemAction = ProtocolAction<"redeem", RedeemArgs>;
+export type RedeemWithEstimateAction = ProtocolAction<
+  "redeemwithestimate",
+  RedeemArgs
+>;
+export type RequestRedeemAction = ProtocolAction<"requestredeem", RedeemArgs>;
 export type SingleRedeemAction = ProtocolAction<
   "singleredeem",
   SingleRedeemArgs
@@ -511,7 +522,10 @@ export type BundleAction =
   | TransferFromAction
   | PermitTransferFromAction
   | DepositAction
+  | DepositWithEstimateAction
   | RedeemAction
+  | RedeemWithEstimateAction
+  | RequestRedeemAction
   | DepositCLMMAction
   | RedeemCLMMAction
   | TokenizedSingleDepositAction
